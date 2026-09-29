@@ -18,7 +18,7 @@
     .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
   </style>
 
-  <!-- LIBRERÍAS DE ACCIÓN EXTERNAS ALTERNATIVAS -->
+  <!-- LIBRERÍAS EXTERNAS (Firma, PDF y EmailJS) -->
   <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
   <script src="https://jsdelivr.net"></script>
@@ -27,9 +27,8 @@
   <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
 
-  <!-- LÓGICA DE CONTROL DE ALTA PRIORIDAD -->
+  <!-- LÓGICA DE CONTROL PRINCIPAL -->
   <script>
-    // Capturador total de errores
     window.onerror = function(message, source, lineno) {
       alert("Error en ejecución: " + message + "\nLínea: " + lineno);
       return false;
@@ -44,46 +43,50 @@
       appId: "1:729388358915:web:d6db0be41af4e60a5c5d36"
     };
 
-    let auth, padTech, padAdmin;
+    let auth;
+    let padTech, padAdmin;
     let urlParams = new URLSearchParams(window.location.search);
     let modoAprobar = urlParams.get('mode') === 'aprobar';
 
-    // Inicializar Firebase inmediatamente
+    // Inicializar Firebase inmediatamente antes de levantar el DOM
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
+    } else {
+      alert("Error: No se pudo cargar Firebase desde la red.");
     }
 
     if (window.emailjs) {
       emailjs.init("l_6FNZetkO_cSgx5A");
     }
 
-    // Función nativa e independiente para procesar el inicio de sesión
+    // Procesar Inicio de Sesión
     function procesarLogin() {
-      alert("Botón presionado. Leyendo datos...");
-      
       const emailValue = document.getElementById('email').value.trim().toLowerCase();
       const passwordValue = document.getElementById('password').value;
       const errorDiv = document.getElementById('error-message');
+      const btnLoginSubmit = document.getElementById('btn-submit-login');
 
       if (!emailValue || !passwordValue) {
-        alert("Atención: Por favor digite su correo y contraseña.");
+        alert("Por favor digite su correo y contraseña.");
         return;
       }
 
-      alert("Intentando conectar con Firebase para el usuario: " + emailValue);
+      btnLoginSubmit.disabled = true;
+      btnLoginSubmit.innerText = "Verificando...";
 
       auth.signInWithEmailAndPassword(emailValue, passwordValue)
-        .then((userCredential) => {
-          alert("¡Autenticación Exitosa de Google Firebase! Entrando al formulario...");
+        .then(() => {
+          errorDiv.innerText = "";
         })
         .catch((error) => {
-          alert("RECHAZADO POR FIREBASE:\nCódigo: " + error.code + "\nMensaje: " + error.message);
-          errorDiv.innerText = "Error: " + error.message;
+          btnLoginSubmit.disabled = false;
+          btnLoginSubmit.innerText = "Iniciar Sesión";
+          errorDiv.innerText = "Error: Usuario o contraseña incorrectos.";
+          alert("Rechazado por Firebase: " + error.message);
         });
     }
 
-    // Control dinámico de pantallas al cargar la interfaz
     document.addEventListener("DOMContentLoaded", () => {
       const loginScreen = document.getElementById('login-screen');
       const mainScreen = document.getElementById('main-form-screen');
@@ -126,20 +129,22 @@
           setTimeout(() => resizeCanvas(canvasAdmin, padAdmin), 300);
         }
       } else {
-        auth.onAuthStateChanged((user) => {
-          if (user) {
-            loginScreen.classList.add('hidden');
-            mainScreen.classList.remove('hidden');
-            userDisplay.innerText = user.email;
-            if (!padTech && canvasTech && window.SignaturePad) {
-              padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
-              setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
+        if (auth) {
+          auth.onAuthStateChanged((user) => {
+            if (user) {
+              loginScreen.classList.add('hidden');
+              mainScreen.classList.remove('hidden');
+              userDisplay.innerText = user.email;
+              if (!padTech && canvasTech && window.SignaturePad) {
+                padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
+                setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
+              }
+            } else {
+              mainScreen.classList.add('hidden');
+              loginScreen.classList.remove('hidden');
             }
-          } else {
-            mainScreen.classList.add('hidden');
-            loginScreen.classList.remove('hidden');
-          }
-        });
+          });
+        }
       }
 
       document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
@@ -148,22 +153,27 @@
       btnSubmit.addEventListener('click', async () => {
         if (!modoAprobar) {
           if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
-          if (!clientInput.value || !workInput.value) { alert("Llena cliente y descripción."); return; }
+          if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
 
           const base64TechSig = encodeURIComponent(padTech.toDataURL());
-          const link = `${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${encodeURIComponent(clientInput.value)}&detalle=${encodeURIComponent(workInput.value)}&techSig=${base64TechSig}`;
-          window.open(`https://wa.me TÉCNICO*%0ACliente: ${clientInput.value}%0A${link}`, '_blank');
+          const cliente = encodeURIComponent(clientInput.value);
+          const detalle = encodeURIComponent(workInput.value);
+          
+          const link = `${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig}`;
+          window.open(`https://wa.me REPORTE TÉCNICO*%0ACliente: ${clientInput.value}%0AEnlace de aprobación: ${link}`, '_blank');
         } else {
-          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta firma admin."); return; }
+          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
           btnSubmit.disabled = true;
+          btnSubmit.innerText = "Enviando PDF...";
           try {
             const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(document.getElementById('pdf-area')).outputPdf('datauristring');
             await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
-            alert("Enviado por EmailJS");
+            alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
             window.location.href = window.location.origin + window.location.pathname;
           } catch (err) {
-            alert("Error EmailJS: " + err.message);
+            alert("Error al enviar PDF: " + err.message);
             btnSubmit.disabled = false;
+            btnSubmit.innerText = "Firmar y Enviar PDF";
           }
         }
       });
@@ -186,13 +196,10 @@
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
       <input type="password" id="password" class="input-field" placeholder="••••••••">
       
-      <!-- Se enlaza mediante un disparador de clic nativo a prueba de fallos -->
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
     </div>
   </div>
 
-  <!-- PANTALLA 2: FORMULARIO DINÁMICO -->
+  <!-- PANTALLA 2: FORMULARIO DINÁMICO (TÉCNICO / APROBACIÓN) -->
   <div id="main-form-screen" class="card hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
-      <span style="font-size: 12px; color: #6b7280; font-weight: bold;" id="user-display">Modo Consulta</span>
-      
+    
