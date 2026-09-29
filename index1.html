@@ -5,16 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sistema de Reportes Técnicos</title>
   
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; margin: 0; padding: 16px; color: #1f2937; }
+    .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
+    .hidden { display: none !important; }
+    .input-field { width: 100%; padding: 12px; margin-top: 4px; margin-bottom: 16px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+    .btn { width: 100%; background: #2563eb; color: white; font-weight: bold; padding: 14px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+    .canvas-container { border: 2px dashed #9ca3af; border-radius: 8px; background: #fafafa; position: relative; margin-bottom: 8px; touch-action: none; }
+    canvas { width: 100%; height: 150px; display: block; border-radius: 8px; }
+    .btn-clear { background: #6b7280; padding: 6px 12px; font-size: 12px; margin-bottom: 16px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .error-msg { color: #ef4444; font-weight: bold; margin-bottom: 12px; font-size: 14px; text-align: center; }
+    .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
+  </style>
 
-  <!-- CARGA PRIORITARIA DE LIBRERÍAS DE ACCIÓN EXTERNAS -->
-  <script src="https://jsdelivr.net"></script>
+  <!-- LIBRERÍAS DE ACCIÓN EXTERNAS ALTERNATIVAS (Firma, PDF y EmailJS) -->
+  <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
   <script src="https://jsdelivr.net"></script>
 
-  <!-- CARGA PRIORITARIA Y COMPATIBLE DE FIREBASE CORE CLÁSICO -->
-  <script src="https://gstatic.com"></script>
-  <script src="https://gstatic.com"></script>
+  <!-- NUEVOS ENLACES DE FIREBASE CLÁSICO DESDE CLOUDFLARE (Evita bloqueos de gstatic) -->
+  <script src="https://cloudflare.com"></script>
+  <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
@@ -74,7 +85,136 @@
     <button id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
 
-  <!-- SE AGREGA EL ATRIBUTO DEFER PARA ESPERAR LA DESCARGA DE LIBRERÍAS EXTERNAS -->
-  <script src="app.js" defer></script>
-</body>
-</html>
+  <!-- LÓGICA DE CONTROL TOTAL EN LÍNEA -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
+      authDomain: "://firebaseapp.com",
+      projectId: "appformatosmtto",
+      storageBucket: "appformatosmtto.firebasestorage.app",
+      messagingSenderId: "729388358915",
+      appId: "1:729388358915:web:d6db0be41af4e60a5c5d36"
+    };
+
+    // Validación a prueba de fallos de red
+    if (typeof firebase === 'undefined') {
+      alert("Error crítico de enlace. Intenta refrescar o usar datos móviles.");
+    } else {
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+
+      if (window.emailjs) {
+        emailjs.init("l_6FNZetkO_cSgx5A");
+      }
+
+      let padTech, padAdmin;
+      let urlParams = new URLSearchParams(window.location.search);
+      let modoAprobar = urlParams.get('mode') === 'aprobar';
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const loginScreen = document.getElementById('login-screen');
+        const mainScreen = document.getElementById('main-form-screen');
+        const loginForm = document.getElementById('login-form');
+        const errorDiv = document.getElementById('error-message');
+        const userDisplay = document.getElementById('user-display');
+        const btnLogout = document.getElementById('btn-logout');
+        const btnSubmit = document.getElementById('btn-submit-main');
+        
+        const canvasTech = document.getElementById('signature-tech');
+        const canvasAdmin = document.getElementById('signature-admin');
+        const imgTechSig = document.getElementById('img-tech-sig');
+        const clientInput = document.getElementById('client-name');
+        const workInput = document.getElementById('work-description');
+
+        function resizeCanvas(canvas, pad) {
+          if (!canvas || canvas.classList.contains('hidden')) return;
+          const ratio = Math.max(window.devicePixelRatio || 1, 1);
+          canvas.width = canvas.offsetWidth * ratio;
+          canvas.height = canvas.offsetHeight * ratio;
+          canvas.getContext("2d").scale(ratio, ratio);
+          if (pad) pad.clear();
+        }
+
+        // CONTROL DE VISTAS (MODO TÉCNICO / ADMINISTRADOR DESDE LINK)
+        if (modoAprobar) {
+          loginScreen.classList.add('hidden');
+          mainScreen.classList.remove('hidden');
+          btnLogout.classList.add('hidden');
+          
+          document.getElementById('view-badge').innerText = "Modo Aprobación";
+          document.getElementById('view-badge').style.background = "#dcfce7";
+          document.getElementById('view-badge').style.color = "#15803d";
+          document.getElementById('view-title').innerText = "Aprobación de Formato";
+          userDisplay.innerText = "Administrador";
+
+          clientInput.value = urlParams.get('cliente') || '';
+          workInput.value = urlParams.get('detalle') || '';
+          clientInput.disabled = true;
+          workInput.disabled = true;
+
+          canvasTech.classList.add('hidden');
+          document.getElementById('btn-clear-tech').classList.add('hidden');
+          imgTechSig.classList.remove('hidden');
+          imgTechSig.src = urlParams.get('techSig') || '';
+
+          document.getElementById('block-admin-sig').classList.remove('hidden');
+          btnSubmit.innerText = "Firmar y Enviar PDF";
+          btnSubmit.style.background = "#2563eb";
+
+          if (window.SignaturePad) {
+            padAdmin = new SignaturePad(canvasAdmin, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(220, 38, 38)' });
+            setTimeout(() => resizeCanvas(canvasAdmin, padAdmin), 300);
+          }
+        } else {
+          auth.onAuthStateChanged((user) => {
+            if (user) {
+              loginScreen.classList.add('hidden');
+              mainScreen.classList.remove('hidden');
+              userDisplay.innerText = user.email;
+              errorDiv.innerText = "";
+              
+              if (!padTech && canvasTech && window.SignaturePad) {
+                padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
+                setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
+              }
+            } else {
+              mainScreen.classList.add('hidden');
+              loginScreen.classList.remove('hidden');
+            }
+          });
+        }
+
+        // LOGIN ACCIÓN
+        loginForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          auth.signInWithEmailAndPassword(document.getElementById('email').value.trim().toLowerCase(), document.getElementById('password').value)
+            .catch(() => errorDiv.innerText = "Error: Credenciales incorrectas.");
+        });
+
+    document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
+document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
+// PROCESAR FORMULARIO
+btnSubmit.addEventListener('click', async () => {
+if (!modoAprobar) {
+if (!padTech || padTech.isEmpty()) { alert("Por favor, estampe su firma."); return; }
+const base64TechSig = encodeURIComponent(padTech.toDataURL());
+const link = ${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${encodeURIComponent(clientInput.value)}&detalle=${encodeURIComponent(workInput.value)}&techSig=${base64TechSig};
+window.open(https://wa.me REPORTE*%0ACliente: ${clientInput.value}%0AEnlace de aprobación: ${link}, '_blank');
+} else {
+if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
+btnSubmit.disabled = true;
+btnSubmit.innerText = "Enviando...";
+try {
+const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(document.getElementById('pdf-area')).outputPdf('datauristring');
+await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
+alert("¡Reporte enviado con éxito por EmailJS!");
+window.location.href = window.location.origin + window.location.pathname;
+} catch (err) {
+alert("Error: " + err.message);
+btnSubmit.disabled = false;
+}
+}
+});
+btnLogout.addEventListener('click', () => auth.signOut());
+});
+                                             }
