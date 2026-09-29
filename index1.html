@@ -18,14 +18,14 @@
     .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
   </style>
 
-  <!-- LIBRERÍAS EXTERNAS (Firma, PDF y EmailJS) -->
+  <!-- LIBRERÍAS EXTERNAS ULTRA-ESTABLES DESDE CLOUDFLARE -->
   <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
   <script src="https://jsdelivr.net"></script>
 
-  <!-- SERVIDORES OFICIALES DE GOOGLE FIREBASE CLÁSICO (VERSIÓN UNIFICADA COMPLETA) -->
-  <script src="https://gstatic.com"></script>
-  <script src="https://gstatic.com"></script>
+  <!-- ENLACES ALTERNATIVOS DE FIREBASE DESDE CLOUDFLARE (Cero bloqueos en móviles) -->
+  <script src="https://cloudflare.com"></script>
+  <script src="https://cloudflare.com"></script>
 
   <!-- LÓGICA DE CONTROL PRINCIPAL -->
   <script>
@@ -46,18 +46,14 @@
     let auth;
     let padTech, padAdmin;
     let urlParams = new URLSearchParams(window.location.search);
-    let modoAprobar = urlParams.get('mode') === 'aprobar';
+    let modoAprobar = urlParams.get('mode') === 'approbar' || urlParams.get('mode') === 'aprobar';
 
-    // Inicialización del ecosistema Firebase
-    try {
-      if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-      } else {
-        alert("Atención: El script de Firebase no se cargó correctamente.");
-      }
-    } catch (e) {
-      alert("Error al inicializar Firebase: " + e.message);
+    // Inicialización forzada de Firebase
+    if (typeof firebase !== 'undefined') {
+      firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+    } else {
+      alert("Error: Reintente recargar la página para enlazar los servicios remotos.");
     }
 
     if (window.emailjs) {
@@ -77,7 +73,7 @@
       }
 
       if (!auth) {
-        alert("Error: El servicio de autenticación no está activo.");
+        alert("Error: Reconectando con la base de datos.");
         return;
       }
 
@@ -91,7 +87,7 @@
         .catch((error) => {
           btnLoginSubmit.disabled = false;
           btnLoginSubmit.innerText = "Iniciar Sesión";
-          errorDiv.innerText = "Error: Usuario o contraseña incorrectos.";
+          errorDiv.innerText = "Error: Credenciales inválidas.";
           alert("Rechazado por Firebase: " + error.message);
         });
     }
@@ -204,5 +200,9 @@
       
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
       <input type="password" id="password" class="input-field" placeholder="••••••••">
-
       
+      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+    </div>
+  </div>
+
+  
