@@ -18,17 +18,78 @@
     .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
   </style>
 
-  <!-- LIBRERÍAS EXTERNAS ULTRA-ESTABLES DESDE CLOUDFLARE -->
+  <!-- LIBRERÍAS EXTERNAS (Firma, PDF y EmailJS) -->
   <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
   <script src="https://jsdelivr.net"></script>
 
-  <!-- ENLACES ALTERNATIVOS DE FIREBASE DESDE CLOUDFLARE (Cero bloqueos en móviles) -->
-  <script src="https://cloudflare.com"></script>
-  <script src="https://cloudflare.com"></script>
+  <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE CLÁSICO -->
+  <script src="https://gstatic.com"></script>
+  <script src="https://gstatic.com"></script>
+</head>
+<body>
 
-  <!-- LÓGICA DE CONTROL PRINCIPAL -->
+  <!-- PANTALLA 1: INICIO DE SESIÓN -->
+  <div id="login-screen" class="card">
+    <h2 style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
+    <div id="error-message" class="error-msg"></div>
+    
+    <div>
+      <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
+      <input type="email" id="email" class="input-field" placeholder="correo@empresa.com">
+      
+      <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
+      <input type="password" id="password" class="input-field" placeholder="••••••••">
+      
+      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: FORMULARIO DINÁMICO (TÉCNICO / APROBACIÓN) -->
+  <div id="main-form-screen" class="card hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
+      <span style="font-size: 12px; color: #6b7280; font-weight: bold;" id="user-display">Modo Consulta</span>
+      <button id="btn-logout" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: bold; cursor: pointer;">Salir</button>
+    </div>
+
+    <div id="view-badge" class="badge">Modo Técnico</div>
+    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Formulario de Servicio</h2>
+    
+    <!-- Este bloque completo se transformará en el PDF -->
+    <div id="pdf-area" style="padding: 10px; background: white;">
+      <label style="font-weight: bold; font-size: 14px;">Nombre del Cliente</label>
+      <input type="text" id="client-name" class="input-field" placeholder="Ej. Juan Pérez">
+
+      <label style="font-weight: bold; font-size: 14px;">Descripción del Trabajo Realizado</label>
+      <textarea id="work-description" class="input-field" rows="4" placeholder="Detalle técnico..." style="resize: none; font-family: sans-serif;"></textarea>
+
+      <!-- Bloque Firma Técnico -->
+      <div id="block-tech-sig">
+        <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
+        <div class="canvas-container" id="container-canvas-tech">
+          <canvas id="signature-tech"></canvas>
+          <img id="img-tech-sig" class="hidden" style="width: 100%; height: 150px; object-fit: contain;" alt="Firma Técnico">
+        </div>
+        <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
+      </div>
+
+      <!-- Bloque Firma Administrador -->
+      <div id="block-admin-sig" class="hidden">
+        <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Administrador)</label>
+        <div class="canvas-container">
+          <canvas id="signature-admin"></canvas>
+        </div>
+        <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma Admin</button>
+      </div>
+    </div>
+
+    <!-- Botón de acción principal -->
+    <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
+  </div>
+
+  <!-- LÓGICA DE CONTROL PRINCIPAL BLINDADA -->
   <script>
+    // Capturador general de errores en vivo
     window.onerror = function(message, source, lineno) {
       alert("Error en ejecución: " + message + "\nLínea: " + lineno);
       return false;
@@ -46,21 +107,21 @@
     let auth;
     let padTech, padAdmin;
     let urlParams = new URLSearchParams(window.location.search);
-    let modoAprobar = urlParams.get('mode') === 'approbar' || urlParams.get('mode') === 'aprobar';
+    let modoAprobar = urlParams.get('mode') === 'aprobar';
 
-    // Inicialización forzada de Firebase
+    // Inicialización de Firebase
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
     } else {
-      alert("Error: Reintente recargar la página para enlazar los servicios remotos.");
+      alert("Error crítico: No se cargó la librería de Firebase.");
     }
 
     if (window.emailjs) {
       emailjs.init("l_6FNZetkO_cSgx5A");
     }
 
-    // Acción del botón Iniciar Sesión
+    // Procesar Inicio de Sesión
     function procesarLogin() {
       const emailValue = document.getElementById('email').value.trim().toLowerCase();
       const passwordValue = document.getElementById('password').value;
@@ -69,11 +130,6 @@
 
       if (!emailValue || !passwordValue) {
         alert("Por favor digite su correo y contraseña.");
-        return;
-      }
-
-      if (!auth) {
-        alert("Error: Reconectando con la base de datos.");
         return;
       }
 
@@ -113,6 +169,7 @@
         if (pad) pad.clear();
       }
 
+      // Evaluar Roles de Entrada
       if (modoAprobar) {
         loginScreen.classList.add('hidden');
         mainScreen.classList.remove('hidden');
@@ -121,10 +178,12 @@
         workInput.value = urlParams.get('detalle') || '';
         clientInput.disabled = true;
         workInput.disabled = true;
+        
         canvasTech.classList.add('hidden');
         document.getElementById('btn-clear-tech').classList.add('hidden');
         imgTechSig.classList.remove('hidden');
         imgTechSig.src = urlParams.get('techSig') || '';
+        
         document.getElementById('block-admin-sig').classList.remove('hidden');
         btnSubmit.innerText = "Firmar y Enviar PDF";
         btnSubmit.style.background = "#2563eb";
@@ -143,66 +202,41 @@
               if (!padTech && canvasTech && window.SignaturePad) {
                 padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
                 setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
-              }
-            } else {
-              mainScreen.classList.add('hidden');
-              loginScreen.classList.remove('hidden');
-            }
-          });
-        }
-      }
-
-      document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
-      document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
-
-      btnSubmit.addEventListener('click', async () => {
-        if (!modoAprobar) {
-          if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
-          if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
-
-          const base64TechSig = encodeURIComponent(padTech.toDataURL());
-          const cliente = encodeURIComponent(clientInput.value);
-          const detalle = encodeURIComponent(workInput.value);
-          
-          const link = `${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig}`;
-          window.open(`https://wa.me REPORTE TÉCNICO*%0ACliente: ${clientInput.value}%0AEnlace de aprobación: ${link}`, '_blank');
-        } else {
-          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
-          btnSubmit.disabled = true;
-          btnSubmit.innerText = "Enviando PDF...";
-          try {
-            const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(document.getElementById('pdf-area')).outputPdf('datauristring');
-            await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
-            alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
-            window.location.href = window.location.origin + window.location.pathname;
-          } catch (err) {
-            alert("Error al enviar PDF: " + err.message);
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "Firmar y Enviar PDF";
-          }
-        }
-      });
-
-      document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
-    });
-  </script>
-</head>
-<body>
-
-  <!-- PANTALLA 1: INICIO DE SESIÓN -->
-  <div id="login-screen" class="card">
-    <h2 style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
-    <div id="error-message" class="error-msg"></div>
-    
-    <div>
-      <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
-      <input type="email" id="email" class="input-field" placeholder="correo@empresa.com">
-      
-      <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
-      <input type="password" id="password" class="input-field" placeholder="••••••••">
-      
-      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-    </div>
-  </div>
-
-  
+    }
+} else {
+mainScreen.classList.add('hidden');
+loginScreen.classList.remove('hidden');
+}
+});
+}
+}
+document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
+document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
+// Procesar Envíos
+btnSubmit.addEventListener('click', async () => {
+if (!modoAprobar) {
+if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
+if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
+const base64TechSig = encodeURIComponent(padTech.toDataURL());
+const cliente = encodeURIComponent(clientInput.value);
+const detalle = encodeURIComponent(workInput.value);
+const link = ${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig};
+window.open(https://wa.me REPORTE TÉCNICO*%0ACliente: ${clientInput.value}%0AEnlace de aprobación: ${link}, '_blank');
+} else {
+if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
+btnSubmit.disabled = true;
+btnSubmit.innerText = "Enviando PDF...";
+try {
+const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(document.getElementById('pdf-area')).outputPdf('datauristring');
+await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
+alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
+window.location.href = window.location.origin + window.location.pathname;
+} catch (err) {
+alert("Error al enviar PDF: " + err.message);
+btnSubmit.disabled = false;
+btnSubmit.innerText = "Firmar y Enviar PDF";
+}
+}
+});
+document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
+});
