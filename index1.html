@@ -55,7 +55,7 @@
     <div id="view-badge" class="badge">Modo Técnico</div>
     <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Formulario de Servicio</h2>
     
-    <!-- Este bloque completo se transformará en el PDF -->
+    <!-- Bloque de captura para el PDF final -->
     <div id="pdf-area" style="padding: 10px; background: white;">
       <label style="font-weight: bold; font-size: 14px;">Nombre del Cliente</label>
       <input type="text" id="client-name" class="input-field" placeholder="Ej. Juan Pérez">
@@ -83,13 +83,12 @@
       </div>
     </div>
 
-    <!-- Botón de acción principal -->
+    <!-- Botón Central Operativo -->
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
 
-  <!-- LÓGICA DE CONTROL PRINCIPAL BLINDADA -->
+  <!-- LÓGICA DE CONTROL TOTAL OPERATIVA -->
   <script>
-    // Capturador general de errores en vivo
     window.onerror = function(message, source, lineno) {
       alert("Error en ejecución: " + message + "\nLínea: " + lineno);
       return false;
@@ -109,27 +108,33 @@
     let urlParams = new URLSearchParams(window.location.search);
     let modoAprobar = urlParams.get('mode') === 'aprobar';
 
-    // Inicialización de Firebase
+    // Inicializar Firebase
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
-    } else {
-      alert("Error crítico: No se cargó la librería de Firebase.");
     }
 
     if (window.emailjs) {
       emailjs.init("l_6FNZetkO_cSgx5A");
     }
 
-    // Procesar Inicio de Sesión
+    // Procesar Inicio de Sesión Forzado y Seguro
     function procesarLogin() {
-      const emailValue = document.getElementById('email').value.trim().toLowerCase();
-      const passwordValue = document.getElementById('password').value;
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
       const errorDiv = document.getElementById('error-message');
       const btnLoginSubmit = document.getElementById('btn-submit-login');
 
+      if (!emailInput || !passwordInput) {
+        alert("Error de carga interna en el formulario.");
+        return;
+      }
+
+      const emailValue = emailInput.value.trim().toLowerCase();
+      const passwordValue = passwordInput.value;
+
       if (!emailValue || !passwordValue) {
-        alert("Por favor digite su correo y contraseña.");
+        alert("Por favor ingrese su correo electrónico y contraseña.");
         return;
       }
 
@@ -169,7 +174,6 @@
         if (pad) pad.clear();
       }
 
-      // Evaluar Roles de Entrada
       if (modoAprobar) {
         loginScreen.classList.add('hidden');
         mainScreen.classList.remove('hidden');
@@ -202,7 +206,7 @@
               if (!padTech && canvasTech && window.SignaturePad) {
                 padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
                 setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
-    }
+}
 } else {
 mainScreen.classList.add('hidden');
 loginScreen.classList.remove('hidden');
@@ -212,7 +216,6 @@ loginScreen.classList.remove('hidden');
 }
 document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
 document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
-// Procesar Envíos
 btnSubmit.addEventListener('click', async () => {
 if (!modoAprobar) {
 if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
