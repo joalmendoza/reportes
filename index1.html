@@ -5,17 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sistema de Reportes Técnicos</title>
   
-  <!-- Vinculación del archivo de estilos locales -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- LIBRERÍAS DE ACCIÓN EXTERNAS (Firma, PDF y EmailJS) -->
+  <!-- CARGA PRIORITARIA DE LIBRERÍAS DE ACCIÓN EXTERNAS -->
   <script src="https://jsdelivr.net"></script>
   <script src="https://cloudflare.com"></script>
   <script src="https://jsdelivr.net"></script>
 
-  <!-- NÚCLEO DE FIREBASE AUTOCONTENIDO (Evita bloqueos de localhost) -->
-  <script src="https://cloudflare.com"></script>
-  <script src="https://cloudflare.com"></script>
+  <!-- CARGA PRIORITARIA Y COMPATIBLE DE FIREBASE CORE CLÁSICO -->
+  <script src="https://gstatic.com"></script>
+  <script src="https://gstatic.com"></script>
 </head>
 <body>
 
@@ -75,7 +74,7 @@
     <button id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
 
-  <!-- Vinculación de la lógica de control local -->
-  <script src="app.js"></script>
+  <!-- SE AGREGA EL ATRIBUTO DEFER PARA ESPERAR LA DESCARGA DE LIBRERÍAS EXTERNAS -->
+  <script src="app.js" defer></script>
 </body>
 </html>
