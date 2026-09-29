@@ -23,9 +23,9 @@
   <script src="https://cloudflare.com"></script>
   <script src="https://jsdelivr.net"></script>
 
-  <!-- ENLACES DE FIREBASE CLÁSICO DESDE CLOUDFLARE -->
-  <script src="https://cloudflare.com"></script>
-  <script src="https://cloudflare.com"></script>
+  <!-- SERVIDORES OFICIALES DE GOOGLE FIREBASE CLÁSICO (VERSIÓN UNIFICADA COMPLETA) -->
+  <script src="https://gstatic.com"></script>
+  <script src="https://gstatic.com"></script>
 
   <!-- LÓGICA DE CONTROL PRINCIPAL -->
   <script>
@@ -48,19 +48,23 @@
     let urlParams = new URLSearchParams(window.location.search);
     let modoAprobar = urlParams.get('mode') === 'aprobar';
 
-    // Inicializar Firebase inmediatamente antes de levantar el DOM
-    if (typeof firebase !== 'undefined') {
-      firebase.initializeApp(firebaseConfig);
-      auth = firebase.auth();
-    } else {
-      alert("Error: No se pudo cargar Firebase desde la red.");
+    // Inicialización del ecosistema Firebase
+    try {
+      if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+      } else {
+        alert("Atención: El script de Firebase no se cargó correctamente.");
+      }
+    } catch (e) {
+      alert("Error al inicializar Firebase: " + e.message);
     }
 
     if (window.emailjs) {
       emailjs.init("l_6FNZetkO_cSgx5A");
     }
 
-    // Procesar Inicio de Sesión
+    // Acción del botón Iniciar Sesión
     function procesarLogin() {
       const emailValue = document.getElementById('email').value.trim().toLowerCase();
       const passwordValue = document.getElementById('password').value;
@@ -69,6 +73,11 @@
 
       if (!emailValue || !passwordValue) {
         alert("Por favor digite su correo y contraseña.");
+        return;
+      }
+
+      if (!auth) {
+        alert("Error: El servicio de autenticación no está activo.");
         return;
       }
 
@@ -195,11 +204,5 @@
       
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
       <input type="password" id="password" class="input-field" placeholder="••••••••">
-      
-      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-    </div>
-  </div>
 
-  <!-- PANTALLA 2: FORMULARIO DINÁMICO (TÉCNICO / APROBACIÓN) -->
-  <div id="main-form-screen" class="card hidden">
-    
+      
