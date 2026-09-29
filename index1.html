@@ -18,12 +18,12 @@
     .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
   </style>
 
-  <!-- LIBRERÍAS DE ACCIÓN EXTERNAS ALTERNATIVAS (Firma, PDF y EmailJS) -->
+  <!-- LIBRERÍAS DE ACCIÓN EXTERNAS ALTERNATIVAS -->
   <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
   <script src="https://jsdelivr.net"></script>
 
-  <!-- NUEVOS ENLACES DE FIREBASE CLÁSICO DESDE CLOUDFLARE (Evita bloqueos de gstatic) -->
+  <!-- ENLACES DE FIREBASE CLÁSICO DESDE CLOUDFLARE -->
   <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
 </head>
@@ -34,15 +34,15 @@
     <h2 style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
     <div id="error-message" class="error-msg"></div>
     
-    <form id="login-form">
+    <div>
       <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
-      <input type="email" id="email" class="input-field" placeholder="correo@empresa.com" required>
+      <input type="email" id="email" class="input-field" placeholder="correo@empresa.com">
       
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
-      <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+      <input type="password" id="password" class="input-field" placeholder="••••••••">
       
-      <button type="submit" class="btn">Iniciar Sesión</button>
-    </form>
+      <button type="button" id="btn-submit-login" class="btn">Iniciar Sesión</button>
+    </div>
   </div>
 
   <!-- PANTALLA 2: FORMULARIO DINÁMICO (TÉCNICO / APROBACIÓN) -->
@@ -57,10 +57,10 @@
     
     <div id="pdf-area" style="padding: 10px; background: white;">
       <label style="font-weight: bold; font-size: 14px;">Nombre del Cliente</label>
-      <input type="text" id="client-name" class="input-field" required>
+      <input type="text" id="client-name" class="input-field">
 
       <label style="font-weight: bold; font-size: 14px;">Descripción del Trabajo Realizado</label>
-      <textarea id="work-description" class="input-field" rows="4" style="resize: none; font-family: sans-serif;" required></textarea>
+      <textarea id="work-description" class="input-field" rows="4" style="resize: none; font-family: sans-serif;"></textarea>
 
       <!-- Bloque Firma Técnico -->
       <div id="block-tech-sig">
@@ -82,10 +82,10 @@
       </div>
     </div>
 
-    <button id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
+    <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
 
-  <!-- LÓGICA DE CONTROL TOTAL EN LÍNEA -->
+  <!-- LÓGICA DE CONTROL TOTAL SIN FORMULARIO TRADICIONAL -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
@@ -96,10 +96,7 @@
       appId: "1:729388358915:web:d6db0be41af4e60a5c5d36"
     };
 
-    // Validación a prueba de fallos de red
-    if (typeof firebase === 'undefined') {
-      alert("Error crítico de enlace. Intenta refrescar o usar datos móviles.");
-    } else {
+    if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       const auth = firebase.auth();
 
@@ -114,7 +111,7 @@
       document.addEventListener("DOMContentLoaded", () => {
         const loginScreen = document.getElementById('login-screen');
         const mainScreen = document.getElementById('main-form-screen');
-        const loginForm = document.getElementById('login-form');
+        const btnLoginSubmit = document.getElementById('btn-submit-login');
         const errorDiv = document.getElementById('error-message');
         const userDisplay = document.getElementById('user-display');
         const btnLogout = document.getElementById('btn-logout');
@@ -135,7 +132,6 @@
           if (pad) pad.clear();
         }
 
-        // CONTROL DE VISTAS (MODO TÉCNICO / ADMINISTRADOR DESDE LINK)
         if (modoAprobar) {
           loginScreen.classList.add('hidden');
           mainScreen.classList.remove('hidden');
@@ -184,22 +180,41 @@
           });
         }
 
-        // LOGIN ACCIÓN
-        loginForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          auth.signInWithEmailAndPassword(document.getElementById('email').value.trim().toLowerCase(), document.getElementById('password').value)
-            .catch(() => errorDiv.innerText = "Error: Credenciales incorrectas.");
-        });
+        // CONTROL REMOTO MANUAL (Evita el parpadeo del Submit tradicional)
+        btnLoginSubmit.addEventListener('click', () => {
+          const emailValue = document.getElementById('email').value.trim().toLowerCase();
+          const passwordValue = document.getElementById('password').value;
 
-    document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
+          if (!emailValue || !passwordValue) {
+            errorDiv.innerText = "Por favor diligencie todos los campos.";
+            return;
+          }
+
+          btnLoginSubmit.disabled = true;
+          btnLoginSubmit.innerText = "Validando credenciales...";
+
+    auth.signInWithEmailAndPassword(emailValue, passwordValue)
+.then(() => {
+errorDiv.innerText = "";
+})
+.catch((error) => {
+btnLoginSubmit.disabled = false;
+btnLoginSubmit.innerText = "Iniciar Sesión";
+errorDiv.innerText = "Error: Usuario o contraseña incorrectos.";
+alert("Error de autenticación: " + error.message);
+});
+});
+document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
 document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
-// PROCESAR FORMULARIO
 btnSubmit.addEventListener('click', async () => {
 if (!modoAprobar) {
-if (!padTech || padTech.isEmpty()) { alert("Por favor, estampe su firma."); return; }
+if (!padTech || padTech.isEmpty()) { alert("Por favor, el técnico debe firmar el documento."); return; }
+if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
 const base64TechSig = encodeURIComponent(padTech.toDataURL());
-const link = ${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${encodeURIComponent(clientInput.value)}&detalle=${encodeURIComponent(workInput.value)}&techSig=${base64TechSig};
-window.open(https://wa.me REPORTE*%0ACliente: ${clientInput.value}%0AEnlace de aprobación: ${link}, '_blank');
+const cliente = encodeURIComponent(clientInput.value);
+const detalle = encodeURIComponent(workInput.value);
+const link = ${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig};
+window.open(https://wa.me REPORTE TÉCNICO*%0ACliente: ${clientInput.value}%0AEnlace de aprobación: ${link}, '_blank');
 } else {
 if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
 btnSubmit.disabled = true;
@@ -210,11 +225,11 @@ await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.g
 alert("¡Reporte enviado con éxito por EmailJS!");
 window.location.href = window.location.origin + window.location.pathname;
 } catch (err) {
-alert("Error: " + err.message);
+alert("Error al enviar PDF: " + err.message);
 btnSubmit.disabled = false;
 }
 }
 });
 btnLogout.addEventListener('click', () => auth.signOut());
 });
-                                             }
+    }
