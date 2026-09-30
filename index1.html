@@ -16,15 +16,13 @@
     .success-box { color: #10b981; }
   </style>
 
-  <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE CLÁSICO DESDE CDN DE GOOGLE -->
-  <script src="https://gstatic.com"></script>
-  <script src="https://gstatic.com"></script>
+  <!-- LIBRERÍAS DE FIREBASE ALMACENADAS DESDE UN PROVEEDOR RESPALDO MÁS ABIERTO -->
+  <script src="https://cloudflare.com"></script>
+  <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
-  <!-- CONTENEDOR PRINCIPAL -->
   <div class="card">
-    
     <!-- PANTALLA 1: INICIO DE SESIÓN -->
     <div id="screen-login">
       <h2>Paso 1: Validar Usuario</h2>
@@ -41,7 +39,7 @@
       </div>
     </div>
 
-    <!-- PANTALLA 2: METAS LOGRADAS (PANTALLA DE ÉXITO) -->
+    <!-- PANTALLA 2: PANTALLA DE ÉXITO -->
     <div id="screen-success" class="hidden success-box">
       <svg xmlns="http://w3.org" style="height: 64px; width: 64px; margin: 0 auto 16px auto;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -52,12 +50,9 @@
       
       <button type="button" class="btn btn-danger" onclick="cerrarSesionPrueba()">Cerrar Sesión de Prueba</button>
     </div>
-
   </div>
 
-  <!-- CONTROL DE EVENTOS JAVASCRIPT DIRECTO -->
   <script>
-    // Configuración de tu base de datos AppFormatosMtto
     const firebaseConfig = {
       apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
       authDomain: "://firebaseapp.com",
@@ -69,15 +64,14 @@
 
     let auth;
 
-    // Inicializar Firebase de forma aislada
+    // Inicializar Firebase validando si las librerías alternativas cargaron
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
     } else {
-      alert("Error grave: Las librerías de Google Firebase no se cargaron en el móvil.");
+      document.write('<h2 style="color:red;padding:20px;">Error de red crítico. El navegador móvil bloqueó el sistema de login por completo. Intente encender sus datos móviles e intentar de nuevo.</h2>');
     }
 
-    // Monitoreo en tiempo real del estado de sesión
     document.addEventListener("DOMContentLoaded", () => {
       if (auth) {
         auth.onAuthStateChanged((user) => {
@@ -86,12 +80,10 @@
           const userConnectedText = document.getElementById('user-connected');
 
           if (user) {
-            // Si el usuario ingresa de forma correcta, cambiamos de pantalla inmediatamente
             loginScreen.classList.add('hidden');
             successScreen.classList.remove('hidden');
             userConnectedText.innerText = "Conectado como: " + user.email;
           } else {
-            // Si no está logueado, regresamos al formulario limpio
             successScreen.classList.add('hidden');
             loginScreen.classList.remove('hidden');
           }
@@ -99,7 +91,6 @@
       }
     });
 
-    // Función manual que se activa al presionar el botón azul
     function ejecutarAutenticacion() {
       const emailValue = document.getElementById('email').value.trim().toLowerCase();
       const passwordValue = document.getElementById('password').value;
@@ -107,33 +98,28 @@
       const actionButton = document.getElementById('btn-submit-login');
 
       if (!emailValue || !passwordValue) {
-        alert("Por favor introduce los datos completos de tu técnico de prueba.");
+        alert("Por favor introduce los datos completos.");
         return;
       }
 
       actionButton.disabled = true;
-      actionButton.innerText = "Consultando base de datos de Google...";
+      actionButton.innerText = "Verificando credenciales...";
 
-      // Petición directa a los servidores de Firebase
       auth.signInWithEmailAndPassword(emailValue, passwordValue)
         .then(() => {
           errorDiv.innerText = "";
-          alert("¡Firebase dice: Acceso Concedido!");
         })
         .catch((error) => {
           actionButton.disabled = false;
           actionButton.innerText = "Conectar con Firebase";
           errorDiv.innerText = "Fallo de ingreso: Credenciales inválidas.";
-          alert("RECHAZADO POR GOOGLE FIREBASE:\n\nMensaje: " + error.message);
+          alert("RECHAZADO POR FIREBASE:\n\n" + error.message);
         });
     }
 
-    // Función para limpiar la prueba y volver a empezar
     function cerrarSesionPrueba() {
       if (auth) {
-        auth.signOut().then(() => {
-          alert("Sesión cerrada.");
-        });
+        auth.signOut();
       }
     }
   </script>
