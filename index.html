@@ -18,12 +18,12 @@
     .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
   </style>
 
-  <!-- LIBRERÍAS EXTERNAS (Firma, PDF y EmailJS) -->
-  <script src="https://cloudflare.com"></script>
-  <script src="https://cloudflare.com"></script>
+  <!-- LIBRERÍAS EXTERNAS CORREGIDAS (Firma y PDF) -->
   <script src="https://jsdelivr.net"></script>
+  <script src="https://cloudflare.com"></script>
 
-  <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE CLÁSICO -->
+  <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE CLÁSICO CORREGIDAS (v9 Compat) -->
+  <script src="https://gstatic.com"></script>
   <script src="https://gstatic.com"></script>
   <script src="https://gstatic.com"></script>
 </head>
@@ -84,7 +84,6 @@
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
-
   <!-- LÓGICA DE CONTROL TOTAL OPERATIVA -->
   <script>
     window.onerror = function(message, source, lineno) {
@@ -94,7 +93,7 @@
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
-      authDomain: "://firebaseapp.com",
+      authDomain: "appformatosmtto.firebaseapp.com",
       projectId: "appformatosmtto",
       storageBucket: "appformatosmtto.firebasestorage.app",
       messagingSenderId: "729388358915",
@@ -202,31 +201,39 @@
       }
 
       document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
-document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
-btnSubmit.addEventListener('click', async () => {
-if (!modoAprobar) {
-if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
-if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
-const base64TechSig = encodeURIComponent(padTech.toDataURL());
-const cliente = encodeURIComponent(clientInput.value);
-const detalle = encodeURIComponent(workInput.value);
-const link = ${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig};
-window.open(https://wa.me REPORTE TÉCNICO*%0ACliente: ${clientInput.value}%0AEnlace de aprobación: ${link}, '_blank');
-} else {
-if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
-btnSubmit.disabled = true;
-btnSubmit.innerText = "Enviando PDF...";
-try {
-const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(document.getElementById('pdf-area')).outputPdf('datauristring');
-await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
-alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
-window.location.href = window.location.origin + window.location.pathname;
-} catch (err) {
-alert("Error al enviar PDF: " + err.message);
-btnSubmit.disabled = false;
-btnSubmit.innerText = "Firmar y Enviar PDF";
-}
-}
-});
-document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
-});
+      document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
+      
+      btnSubmit.addEventListener('click', async () => {
+        if (!modoAprobar) {
+          if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
+          if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
+          
+          const base64TechSig = encodeURIComponent(padTech.toDataURL());
+          const cliente = encodeURIComponent(clientInput.value);
+          const detalle = encodeURIComponent(workInput.value);
+          const link = `${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig}`;
+          
+          window.open(`https://wa.me TÉCNICO*%0ACliente: ${cliente}%0AEnlace de aprobación: ${encodeURIComponent(link)}`, '_blank');
+        } else {
+          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
+          btnSubmit.disabled = true;
+          btnSubmit.innerText = "Enviando PDF...";
+          try {
+            const element = document.getElementById('pdf-area');
+            const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(element).outputPdf('datauristring');
+            await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
+            alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
+            window.location.href = window.location.origin + window.location.pathname;
+          } catch (err) {
+            alert("Error al enviar PDF: " + err.message);
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "Firmar y Enviar PDF";
+          }
+        }
+      });
+      
+      document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
+    });
+  </script>
+</body>
+</html>
