@@ -200,10 +200,66 @@
 
         btnLoginSubmit.disabled = true;
         btnLoginSubmit.innerText = "Verificando...";
+  <!-- CONTROL OPERATIVO ULTRA LIMPIO -->
+  <script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
+      authDomain: "appformatosmtto.firebaseapp.com",
+      projectId: "appformatosmtto",
+      storageBucket: "appformatosmtto.firebasestorage.app",
+      messagingSenderId: "729388358915",
+      appId: "1:729388358915:web:d6db0be41af4e60a5c5d36"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let padTech, padAdmin;
+    const urlParams = new URLSearchParams(window.location.search);
+    const modoAprobar = (urlParams.get('mode') === 'aprobar');
+
+    const loginScreen = document.getElementById('login-screen');
+    const mainScreen = document.getElementById('main-form-screen');
+    const userDisplay = document.getElementById('user-display');
+    const btnSubmit = document.getElementById('btn-submit-main');
+    const btnLoginSubmit = document.getElementById('btn-submit-login');
+    const errorDiv = document.getElementById('error-message');
+    
+    const canvasTech = document.getElementById('signature-tech');
+    const canvasAdmin = document.getElementById('signature-admin');
+    const imgTechSig = document.getElementById('img-tech-sig');
+    const clientInput = document.getElementById('client-name');
+    const workInput = document.getElementById('work-description');
+
+    function resizeCanvas(canvas, pad) {
+      if (!canvas || canvas.classList.contains('hidden')) return;
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+      if (pad) pad.clear();
+    }
+
+    // ACCIÓN DIRECTA DEL BOTÓN LOGIN
+    if (btnLoginSubmit) {
+      btnLoginSubmit.addEventListener('click', () => {
+        const emailValue = document.getElementById('email').value.trim().toLowerCase();
+        const passwordValue = document.getElementById('password').value;
+
+        if (!emailValue || !passwordValue) {
+          alert("Por favor ingrese correo y contraseña.");
+          return;
+        }
+
+        btnLoginSubmit.disabled = true;
+        btnLoginSubmit.innerText = "Verificando...";
 
         signInWithEmailAndPassword(auth, emailValue, passwordValue)
-          .then(() => { 
-            errorDiv.innerText = ""; 
+          .then(() => {
+            errorDiv.innerText = "";
             btnLoginSubmit.disabled = false;
             btnLoginSubmit.innerText = "Iniciar Sesión";
           })
@@ -211,12 +267,12 @@
             btnLoginSubmit.disabled = false;
             btnLoginSubmit.innerText = "Iniciar Sesión";
             errorDiv.innerText = "Error: Credenciales inválidas.";
-            alert("Rechazado por Firebase: " + error.message);
+            alert("Error de Firebase: " + error.message);
           });
-      };
+      });
     }
 
-    // Validación de flujos de pantalla
+    // CONTROL DE PANTALLAS
     if (modoAprobar) {
       loginScreen.classList.add('hidden');
       mainScreen.classList.remove('hidden');
@@ -256,8 +312,8 @@
       });
     }
 
-    document.getElementById('btn-clear-tech').onclick = () => padTech && padTech.clear();
-    document.getElementById('btn-clear-admin').onclick = () => padAdmin && padAdmin.clear();
+    document.getElementById('btn-clear-tech').onclick = () => { if (padTech) padTech.clear(); };
+    document.getElementById('btn-clear-admin').onclick = () => { if (padAdmin) padAdmin.clear(); };
     
     btnSubmit.onclick = async () => {
       if (!modoAprobar) {
@@ -267,19 +323,25 @@
         const base64TechSig = encodeURIComponent(padTech.toDataURL());
         const cliente = encodeURIComponent(clientInput.value);
         const detalle = encodeURIComponent(workInput.value);
-        const link = `${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig}`;
+        const link = window.location.origin + window.location.pathname + "?mode=aprobar&cliente=" + cliente + "&detalle=" + detalle + "&techSig=" + base64TechSig;
         
-        window.open(`https://wa.me TÉCNICO*%0ACliente: ${cliente}%0AEnlace de aprobación: ${encodeURIComponent(link)}`, '_blank');
+        window.open("https://wa.me TÉCNICO*%0ACliente: " + cliente + "%0AEnlace de aprobación: " + encodeURIComponent(link), "_blank");
       } else {
         if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
         btnSubmit.disabled = true;
         btnSubmit.innerText = "Enviando PDF...";
         try {
-          const element = document.getElementById('pdf-area');
-          const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(element).outputPdf('datauristring');
-          await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
-          alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
-          window.location.href = window.location.origin + window.location.pathname;
+          if (window.html2pdf && window.emailjs) {
+            const element = document.getElementById('pdf-area');
+            const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(element).outputPdf('datauristring');
+            await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
+            alert("¡Reporte aprobado y enviado con éxito!");
+            window.location.href = window.location.origin + window.location.pathname;
+          } else {
+            alert("Librerías de PDF o EmailJS no cargadas.");
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "Firmar y Enviar PDF";
+          }
         } catch (err) {
           alert("Error al enviar PDF: " + err.message);
           btnSubmit.disabled = false;
@@ -292,6 +354,7 @@
   </script>
 </body>
 </html>
+
 
 
   
