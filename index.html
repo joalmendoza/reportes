@@ -18,15 +18,16 @@
     .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
   </style>
 
-  <!-- LIBRERÍAS EXTERNAS CORREGIDAS (Firma y PDF) -->
+  <!-- LIBRERÍAS EXTERNAS ULTRA ESTABLES (Firma y PDF) -->
   <script src="https://jsdelivr.net"></script>
   <script src="https://cloudflare.com"></script>
 
-  <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE CLÁSICO CORREGIDAS (v9 Compat) -->
-  <!-- LIBRERÍAS DE GOOGLE FIREBASE ULTRA ESTABLES (v9 Compat) -->
-  <script src="https://cloudflare.com"></script>
-  <script src="https://cloudflare.com"></script>
-  <script src="https://cloudflare.com"></script>
+  <!-- CONEXIÓN DIRECTA Y MODULAR DE FIREBASE (Garantiza carga en celulares) -->
+  <script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
+    window.firebaseModules = { initializeApp, getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut };
+  </script>
 </head>
 <body>
 
@@ -85,7 +86,7 @@
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
-  <!-- LÓGICA DE CONTROL TOTAL OPERATIVA -->
+    <!-- LÓGICA DE CONTROL TOTAL OPERATIVA -->
   <script>
     window.onerror = function(message, source, lineno) {
       alert("Error en ejecución: " + message + "\nLínea: " + lineno);
@@ -94,7 +95,7 @@
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
-      authDomain: "appformatosmtto.firebaseapp.com",
+      authDomain: "://firebaseapp.com",
       projectId: "appformatosmtto",
       storageBucket: "appformatosmtto.firebasestorage.app",
       messagingSenderId: "729388358915",
@@ -105,17 +106,17 @@
     let padTech, padAdmin;
     let urlParams = new URLSearchParams(window.location.search);
     let modoAprobar = urlParams.get('mode') === 'aprobar';
+    let modules = window.firebaseModules;
 
-    // REPARACIÓN DE INICIALIZACIÓN DE FIREBASE CLÁSICO
-    try {
-      if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-      } else {
-        alert("Error crítico: Las librerías de Firebase no se cargaron en el navegador.");
-      }
-    } catch (e) {
-      alert("Error inicializando Firebase: " + e.message);
+    if (modules) {
+      const app = modules.initializeApp(firebaseConfig);
+      auth = modules.getAuth(app);
+    } else {
+      alert("Error crítico: Fallo en el puente modular de Firebase.");
+    }
+
+    if (window.emailjs) {
+      emailjs.init("l_6FNZetkO_cSgx5A");
     }
 
     function procesarLogin() {
@@ -132,14 +133,20 @@
       btnLoginSubmit.disabled = true;
       btnLoginSubmit.innerText = "Verificando...";
 
-      auth.signInWithEmailAndPassword(emailValue, passwordValue)
-        .then(() => { errorDiv.innerText = ""; })
-        .catch((error) => {
-          btnLoginSubmit.disabled = false;
-          btnLoginSubmit.innerText = "Iniciar Sesión";
-          errorDiv.innerText = "Error: Credenciales inválidas.";
-          alert("Rechazado por Firebase: " + error.message);
-        });
+      if (auth && modules) {
+        modules.signInWithEmailAndPassword(auth, emailValue, passwordValue)
+          .then(() => { errorDiv.innerText = ""; })
+          .catch((error) => {
+            btnLoginSubmit.disabled = false;
+            btnLoginSubmit.innerText = "Iniciar Sesión";
+            errorDiv.innerText = "Error: Credenciales inválidas.";
+            alert("Rechazado por Firebase: " + error.message);
+          });
+      } else {
+        alert("El servicio de autenticación no está listo.");
+        btnLoginSubmit.disabled = false;
+        btnLoginSubmit.innerText = "Iniciar Sesión";
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -186,8 +193,8 @@
           setTimeout(() => resizeCanvas(canvasAdmin, padAdmin), 300);
         }
       } else {
-        if (auth) {
-          auth.onAuthStateChanged((user) => {
+        if (auth && modules) {
+          modules.onAuthStateChanged(auth, (user) => {
             if (user) {
               loginScreen.classList.add('hidden');
               mainScreen.classList.remove('hidden');
@@ -236,7 +243,7 @@
         }
       });
       
-      document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
+      document.getElementById('btn-logout').addEventListener('click', () => auth && modules && modules.signOut(auth));
     });
   </script>
 </body>
