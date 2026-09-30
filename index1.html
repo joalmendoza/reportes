@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Validación Real de Firebase</title>
+  <title>Depuración Conexión Firebase</title>
   
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; margin: 0; padding: 16px; color: #1f2937; text-align: center; }
@@ -16,16 +16,24 @@
     .success-box { color: #10b981; }
   </style>
 
-  <!-- LIBRERÍAS CLÁSICAS DE FIREBASE DESDE UN SERVIDOR DE ALTA COMPATIBILIDAD CON NAVEGADORES MÓVILES -->
+  <!-- Capturador de errores globales de Javascript -->
+  <script>
+    window.onerror = function(message, source, lineno) {
+      alert("Error de Sistema: " + message + "\nLínea: " + lineno);
+      return false;
+    };
+  </script>
+
+  <!-- LIBRERÍAS CLÁSICAS DE FIREBASE DESDE SERVIDORES DE RESPALDO GLOBAL -->
   <script src="https://cloudflare.com"></script>
   <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
   <div class="card">
-    <!-- PANTALLA 1: INICIO DE SESIÓN COMPULSORIO -->
+    <!-- PANTALLA 1: INICIO DE SESIÓN -->
     <div id="screen-login">
-      <h2>Fase 1: Login Real de Firebase</h2>
+      <h2>Prueba de Conexión Real</h2>
       <div id="error-message" class="error-msg"></div>
       
       <div>
@@ -35,25 +43,25 @@
         <label style="font-weight: bold; font-size: 14px; display: block; text-align: left;">Contraseña</label>
         <input type="password" id="password" class="input-field" placeholder="••••••••">
         
-        <button type="button" id="btn-submit-login" class="btn" onclick="ejecutarAutenticacionReal()">Validar en Firebase</button>
+        <button type="button" id="btn-submit-login" class="btn" onclick="probarAccesoReal()">Validar en Firebase Real</button>
       </div>
     </div>
 
-    <!-- PANTALLA 2: METAS LOGRADAS CON DATOS REALES -->
+    <!-- PANTALLA 2: CONTROL EXCELENTE -->
     <div id="screen-success" class="hidden success-box">
       <svg xmlns="http://w3.org" style="height: 64px; width: 64px; margin: 0 auto 16px auto;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <h2>¡CONEXIÓN REAL LOGRADA!</h2>
-      <p style="font-size: 18px; font-weight: 500; color: #374151;">Firebase comparó tus datos en internet y confirmó que la clave es correcta.</p>
+      <h2>¡CONEXIÓN INTERNET OK!</h2>
+      <p style="font-size: 16px; color: #374151;">Tu celular logró romper el bloqueo, viajó a los servidores de Google y validó al usuario.</p>
       <p id="user-connected" style="font-weight: bold; background: #f3f4f6; padding: 10px; border-radius: 8px; margin-top: 15px; color: #1f2937;"></p>
       
-      <button type="button" class="btn btn-danger" onclick="cerrarSesionReal()">Cerrar Sesión Real</button>
+      <button type="button" class="btn btn-danger" onclick="cerrarSesionPrueba()">Cerrar Sesión</button>
     </div>
   </div>
 
   <script>
-    // Configuración exacta de tu proyecto Firebase (AppFormatosMtto)
+    // Configuración vinculada a tu proyecto AppFormatosMtto
     const firebaseConfig = {
       apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
       authDomain: "://firebaseapp.com",
@@ -65,15 +73,15 @@
 
     let auth;
 
-    // Inicializar obligatoriamente la librería remota
+    // Intentar encender el motor real de Google
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
     } else {
-      alert("Alerta de conexión: Tu celular sigue bloqueando el acceso a Firebase. Para esta prueba, apaga tu Wi-Fi por un momento y usa tus datos móviles.");
+      alert("Diagnóstico: El script base de Firebase sigue bloqueado en la red actual de este celular.");
     }
 
-    // El observador real cambiará de pantalla solo si Google confirma la sesión
+    // Escucha en tiempo real de Google Firebase
     document.addEventListener("DOMContentLoaded", () => {
       if (auth) {
         auth.onAuthStateChanged((user) => {
@@ -84,7 +92,7 @@
           if (user) {
             loginScreen.classList.add('hidden');
             successScreen.classList.remove('hidden');
-            userConnectedText.innerText = "Usuario Autenticado: " + user.email;
+            userConnectedText.innerText = "Conectado real: " + user.email;
           } else {
             successScreen.classList.add('hidden');
             loginScreen.classList.remove('hidden');
@@ -93,8 +101,8 @@
       }
     });
 
-    // Petición de validación estricta y real
-    function ejecutarAutenticacionReal() {
+    // Función de envío directo a internet
+    function probarAccesoReal() {
       const emailValue = document.getElementById('email').value.trim().toLowerCase();
       const passwordValue = document.getElementById('password').value;
       const errorDiv = document.getElementById('error-message');
@@ -106,31 +114,33 @@
       }
 
       if (!auth) {
-        alert("No se puede validar porque las librerías de Google siguen bloqueadas en este dispositivo.");
+        alert("Error: No se puede realizar la consulta porque las librerías de Google están inactivas en el dispositivo.");
         return;
       }
 
       actionButton.disabled = true;
-      actionButton.innerText = "Consultando base de datos real de Google...";
+      actionButton.innerText = "Enviando datos a Google Firebase...";
 
-      // Mandar datos reales a Firebase
+      // Intentar el inicio de sesión real en los servidores de Google
       auth.signInWithEmailAndPassword(emailValue, passwordValue)
         .then((userCredential) => {
-          alert("¡Firebase real dice: Acceso Concedido!");
+          alert("¡RESPUESTA EXITOSA!\n\nGoogle Firebase validó tus credenciales y concedió el acceso.");
         })
         .catch((error) => {
           actionButton.disabled = false;
-          actionButton.innerText = "Validar en Firebase";
-          errorDiv.innerText = "Error de Firebase: " + error.message;
-          alert("RECHAZADO POR FIREBASE REAL:\n\n" + error.message);
+          actionButton.innerText = "Validar en Firebase Real";
+          errorDiv.innerText = "Error: " + error.message;
+          
+          // Alerta con el código de error exacto que responde Google
+          alert("RESPUESTA NEGATIVA DE FIREBASE:\n\nCódigo: " + error.code + "\nMensaje: " + error.message);
         });
     }
 
-    function cerrarSesionReal() {
+    function cerrarSesionPrueba() {
       if (auth) {
         auth.signOut().then(() => {
           document.getElementById('btn-submit-login').disabled = false;
-          document.getElementById('btn-submit-login').innerText = "Validar en Firebase";
+          document.getElementById('btn-submit-login').innerText = "Validar en Firebase Real";
         });
       }
     }
