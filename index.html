@@ -43,6 +43,7 @@
       <input type="password" id="password" class="input-field" placeholder="••••••••">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v2</p>
     </div>
   </div>
 
@@ -63,6 +64,8 @@
       <label style="font-weight: bold; font-size: 14px;">Descripción del Trabajo Realizado</label>
       <textarea id="work-description" class="input-field" rows="4" placeholder="Detalle técnico..." style="resize: none; font-family: sans-serif;"></textarea>
 
+      <div id="fechas-info" style="font-size:13px; color:#374151; line-height:1.6; margin-bottom:16px;"></div>
+
       <!-- Firma Técnico -->
       <div id="block-tech-sig">
         <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
@@ -78,6 +81,7 @@
         <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Administrador)</label>
         <div class="canvas-container">
           <canvas id="signature-admin"></canvas>
+          <img id="img-admin-sig" class="hidden" style="width: 100%; height: 150px; object-fit: contain;" alt="Firma Administrador">
         </div>
         <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma Admin</button>
       </div>
@@ -109,13 +113,47 @@
     }
 
     // ---------- EMAILJS ----------
+    // Datos de EmailJS: cópialos tal cual desde tu cuenta en emailjs.com
+    // En la pantalla de EmailJS la primera letra puede ser "l" minúscula o "I" mayúscula
+    // (y la "O" puede ser cero). La app prueba las variantes hasta que una funcione.
+    var EMAILJS_PUBLIC_KEYS = [
+      "I_6FNZetkO_cSgx5A",
+      "l_6FNZetkO_cSgx5A",
+      "I_6FNZetk0_cSgx5A",
+      "l_6FNZetk0_cSgx5A"
+    ];
+    var EMAILJS_PUBLIC_KEY = EMAILJS_PUBLIC_KEYS[0];
+    var EMAILJS_SERVICE_ID = "service_m3xvu2j";      // Email Services > Service ID
+    var EMAILJS_TEMPLATE_ID = "template_loi9vam";    // Email Templates > Template ID
+
     if (window.emailjs) {
-      emailjs.init("l_6FNZetkO_cSgx5A");
+      emailjs.init(EMAILJS_PUBLIC_KEY);
     }
 
     var padTech, padAdmin;
     var urlParams = new URLSearchParams(window.location.search);
     var modoAprobar = (urlParams.get('mode') === 'aprobar');
+    var hp = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    var modoVer = (hp.get('mode') === 'ver');
+
+    // ---------- CONFIGURACIÓN ----------
+    var WHATSAPP_COORDINADOR = "573105398897";
+    var CORREOS_DESTINO = "jorge.mendoza@carval.com.co, formatosmtto.carval@gmail.com";
+
+    // Fecha y hora en horario de Colombia
+    function ahora() {
+      var d = new Date();
+      var fecha = d.toLocaleDateString('es-CO', { timeZone: 'America/Bogota', day: '2-digit', month: '2-digit', year: 'numeric' });
+      var hora = d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: true });
+      return { fecha: fecha, hora: hora };
+    }
+
+    function pintarFechas(repFecha, repHora, aprFecha, aprHora) {
+      var html = "";
+      if (repFecha) html += "<b>Reporte del técnico:</b> " + repFecha + " - " + repHora + "<br>";
+      if (aprFecha) html += "<b>Visto bueno del coordinador:</b> " + aprFecha + " - " + aprHora;
+      document.getElementById('fechas-info').innerHTML = html;
+    }
 
     // ---------- LOGIN ----------
     function procesarLogin() {
@@ -152,17 +190,27 @@
 
     // Firma reducida (JPEG pequeño) para que el enlace de WhatsApp no quede gigante
     function firmaLiviana(canvas) {
+      var w = 240;
+      var h = Math.round(w * canvas.height / canvas.width);
       var c = document.createElement('canvas');
-      c.width = 300;
-      c.height = 100;
+      c.width = w;
+      c.height = h;
       var ctx = c.getContext('2d');
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 300, 100);
-      ctx.drawImage(canvas, 0, 0, 300, 100);
-      return c.toDataURL('image/jpeg', 0.6);
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(canvas, 0, 0, w, h);
+      return c.toDataURL('image/jpeg', 0.5);
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+      var diag = document.getElementById('diag');
+      if (diag) {
+        diag.innerText = "v2 | firebase: " + (window.firebase ? "ok" : "NO") +
+          " | firma: " + (window.SignaturePad ? "ok" : "NO") +
+          " | pdf: " + (window.html2pdf ? "ok" : "NO") +
+          " | email: " + (window.emailjs ? "ok" : "NO");
+      }
+
       var loginScreen = document.getElementById('login-screen');
       var mainScreen = document.getElementById('main-form-screen');
       var userDisplay = document.getElementById('user-display');
@@ -183,7 +231,37 @@
         if (pad) pad.clear();
       }
 
-      if (modoAprobar) {
+      if (modoVer) {
+        // ----- MODO VER: reporte ya firmado (llega por el enlace del correo) -----
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        userDisplay.innerText = "Reporte firmado";
+        document.getElementById('btn-logout').classList.add('hidden');
+        document.getElementById('view-badge').innerText = "Reporte aprobado";
+        document.getElementById('view-title').innerText = "Reporte de Servicio";
+        clientInput.value = hp.get('cliente') || '';
+        workInput.value = hp.get('detalle') || '';
+        clientInput.disabled = true;
+        workInput.disabled = true;
+        workInput.style.height = 'auto';
+        workInput.style.height = workInput.scrollHeight + 'px';
+
+        canvasTech.classList.add('hidden');
+        document.getElementById('btn-clear-tech').classList.add('hidden');
+        imgTechSig.classList.remove('hidden');
+        imgTechSig.src = hp.get('firmaTec') || '';
+
+        document.getElementById('block-admin-sig').classList.remove('hidden');
+        canvasAdmin.classList.add('hidden');
+        document.getElementById('btn-clear-admin').classList.add('hidden');
+        var imgAdm = document.getElementById('img-admin-sig');
+        imgAdm.classList.remove('hidden');
+        imgAdm.src = hp.get('firmaAdm') || '';
+
+        pintarFechas(hp.get('fecha'), hp.get('hora'), hp.get('fechaApr'), hp.get('horaApr'));
+        btnSubmit.innerText = "Descargar PDF";
+        btnSubmit.style.background = "#2563eb";
+      } else if (modoAprobar) {
         // ----- MODO ADMINISTRADOR (llega por el enlace de WhatsApp) -----
         loginScreen.classList.add('hidden');
         mainScreen.classList.remove('hidden');
@@ -199,6 +277,7 @@
         document.getElementById('btn-clear-tech').classList.add('hidden');
         imgTechSig.classList.remove('hidden');
         imgTechSig.src = urlParams.get('techSig') || '';
+        pintarFechas(urlParams.get('fecha'), urlParams.get('hora'), null, null);
 
         document.getElementById('block-admin-sig').classList.remove('hidden');
         btnSubmit.innerText = "Firmar y Enviar PDF";
@@ -230,33 +309,93 @@
       document.getElementById('btn-clear-admin').onclick = function() { if (padAdmin) padAdmin.clear(); };
 
       btnSubmit.onclick = async function() {
+        if (modoVer) {
+          btnSubmit.disabled = true;
+          btnSubmit.innerText = "Generando PDF...";
+          try {
+            await html2pdf().set({ margin: 10, filename: 'Reporte_' + (hp.get('cliente') || 'servicio') + '.pdf' })
+              .from(document.getElementById('pdf-area')).save();
+          } catch (e) {
+            alert("No se pudo generar el PDF: " + (e.message || e));
+          }
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "Descargar PDF";
+          return;
+        }
         if (!modoAprobar) {
           // ----- Técnico: genera enlace y lo manda por WhatsApp -----
           if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
           if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
 
+          var t = ahora();
           var firma = encodeURIComponent(firmaLiviana(canvasTech));
           var cliente = encodeURIComponent(clientInput.value);
           var detalle = encodeURIComponent(workInput.value);
           var link = window.location.origin + window.location.pathname +
-                     "?mode=aprobar&cliente=" + cliente + "&detalle=" + detalle + "&techSig=" + firma;
+                     "?mode=aprobar&cliente=" + cliente + "&detalle=" + detalle +
+                     "&fecha=" + encodeURIComponent(t.fecha) + "&hora=" + encodeURIComponent(t.hora) +
+                     "&techSig=" + firma;
 
-          var texto = "*REPORTE TÉCNICO*\nCliente: " + clientInput.value + "\nEnlace de aprobación: " + link;
-          window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
+          var texto = "*REPORTE TÉCNICO*\nCliente: " + clientInput.value +
+                      "\nFecha: " + t.fecha + " " + t.hora +
+                      "\nEnlace de aprobación: " + link;
+
+          // Va directo al coordinador, sin escoger contacto
+          window.open("https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto), "_blank");
+
+          // Deja el formulario limpio para otro reporte
+          clientInput.value = "";
+          workInput.value = "";
+          padTech.clear();
+          btnSubmit.innerText = "¡Enviado! Puedes hacer otro reporte";
+          setTimeout(function() { btnSubmit.innerText = "Enviar a WhatsApp"; }, 4000);
         } else {
           // ----- Admin: firma, genera PDF y lo envía por correo -----
           if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Enviando PDF...";
           try {
-            if (window.html2pdf && window.emailjs) {
-              var element = document.getElementById('pdf-area');
-              var pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(element).outputPdf('datauristring');
-              await emailjs.send("service_m3xvu2j", "template_loi9vam", {
+            if (window.emailjs) {
+              var a = ahora();
+              pintarFechas(urlParams.get('fecha'), urlParams.get('hora'), a.fecha, a.hora);
+
+              // Enlace al reporte firmado (los datos viajan en el # del enlace)
+              var hl = new URLSearchParams();
+              hl.set('mode', 'ver');
+              hl.set('cliente', urlParams.get('cliente') || '');
+              hl.set('detalle', urlParams.get('detalle') || '');
+              hl.set('fecha', urlParams.get('fecha') || '');
+              hl.set('hora', urlParams.get('hora') || '');
+              hl.set('fechaApr', a.fecha);
+              hl.set('horaApr', a.hora);
+              hl.set('firmaTec', urlParams.get('techSig') || '');
+              hl.set('firmaAdm', firmaLiviana(canvasAdmin));
+              var linkReporte = window.location.origin + window.location.pathname + '#' + hl.toString();
+
+              var paramsCorreo = {
+                to_email: CORREOS_DESTINO,
                 cliente: urlParams.get('cliente'),
                 detalle: urlParams.get('detalle'),
-                content_pdf: pdfBase64
-              });
+                fecha_reporte: urlParams.get('fecha') || '',
+                hora_reporte: urlParams.get('hora') || '',
+                fecha_aprobacion: a.fecha,
+                hora_aprobacion: a.hora,
+                link_reporte: linkReporte
+              };
+
+              // Prueba cada variante de la llave hasta que EmailJS la acepte
+              var enviado = false, ultimoError = null;
+              for (var i = 0; i < EMAILJS_PUBLIC_KEYS.length && !enviado; i++) {
+                try {
+                  await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, paramsCorreo, EMAILJS_PUBLIC_KEYS[i]);
+                  enviado = true;
+                } catch (errEnvio) {
+                  ultimoError = errEnvio;
+                  var msg = ((errEnvio && errEnvio.text) || "").toLowerCase();
+                  if (msg.indexOf("account not found") === -1) break; // otro error: no tiene caso seguir probando
+                }
+              }
+              if (!enviado) throw ultimoError;
               alert("¡Reporte aprobado y enviado con éxito!");
               window.location.href = window.location.origin + window.location.pathname;
             } else {
@@ -265,7 +404,12 @@
               btnSubmit.innerText = "Firmar y Enviar PDF";
             }
           } catch (err) {
-            alert("Error al enviar PDF: " + (err.text || err.message || err));
+            alert("Error al enviar PDF: " + (err.text || err.message || err) + (err.status ? " (código " + err.status + ")" : "") +
+                  "\n\nSe va a descargar el PDF en tu celular para que no pierdas el reporte.");
+            try {
+              html2pdf().set({ margin: 10, filename: 'Reporte_' + (urlParams.get('cliente') || 'cliente') + '.pdf' })
+                .from(document.getElementById('pdf-area')).save();
+            } catch (e2) {}
             btnSubmit.disabled = false;
             btnSubmit.innerText = "Firmar y Enviar PDF";
           }
