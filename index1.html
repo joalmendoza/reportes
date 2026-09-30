@@ -16,9 +16,9 @@
     .success-box { color: #10b981; }
   </style>
 
-  <!-- LIBRERÍAS DE FIREBASE ALMACENADAS DESDE UN PROVEEDOR RESPALDO MÁS ABIERTO -->
-  <script src="https://cloudflare.com"></script>
-  <script src="https://cloudflare.com"></script>
+  <!-- UNPKG: SERVIDOR ALTERNATIVO DE ALTA COMPATIBILIDAD MÓVIL (EVITA BLOQUEOS DE RED) -->
+  <script src="https://unpkg.com"></script>
+  <script src="https://unpkg.com"></script>
 </head>
 <body>
 
@@ -64,12 +64,12 @@
 
     let auth;
 
-    // Inicializar Firebase validando si las librerías alternativas cargaron
+    // Validación forzada del motor de autenticación
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
     } else {
-      document.write('<h2 style="color:red;padding:20px;">Error de red crítico. El navegador móvil bloqueó el sistema de login por completo. Intente encender sus datos móviles e intentar de nuevo.</h2>');
+      document.write('<h3 style="color:red;padding:20px;text-align:center;">El navegador de tu celular sigue bloqueando las librerías de Google. Por favor, apaga tu Wi-Fi por un momento, activa tus datos móviles y recarga la página para forzar la conexión.</h3>');
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -99,6 +99,11 @@
 
       if (!emailValue || !passwordValue) {
         alert("Por favor introduce los datos completos.");
+        return;
+      }
+
+      if (!auth) {
+        alert("El motor de Firebase no está listo. Revisa las letras rojas.");
         return;
       }
 
