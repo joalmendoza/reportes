@@ -195,6 +195,16 @@
     }
 
     // ---------- LOGIN ----------
+    function mensajeAuth(error) {
+      var c = (error && error.code) || "";
+      if (c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-login-credentials')
+        return "Correo o contraseña incorrectos.";
+      if (c === 'auth/network-request-failed') return "Sin conexión a internet. Inténtalo de nuevo.";
+      if (c === 'auth/too-many-requests') return "Demasiados intentos. Espera unos minutos.";
+      if (c === 'auth/operation-not-allowed') return "El acceso con correo y contraseña no está activado en Firebase.";
+      return "Error: " + (c || (error && error.message) || "desconocido");
+    }
+
     function procesarLogin() {
       var emailValue = document.getElementById('email').value.trim().toLowerCase();
       var passwordValue = document.getElementById('password').value;
@@ -206,17 +216,31 @@
 
       btn.disabled = true;
       btn.innerText = "Verificando...";
+      errorDiv.innerText = "";
+
+      var terminado = false;
+      // Si Firebase no responde en 20 segundos, se libera el botón
+      var timer = setTimeout(function() {
+        if (terminado) return;
+        btn.disabled = false;
+        btn.innerText = "Iniciar Sesión";
+        errorDiv.innerText = "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
+      }, 20000);
 
       auth.signInWithEmailAndPassword(emailValue, passwordValue)
         .then(function() {
+          terminado = true;
+          clearTimeout(timer);
           errorDiv.innerText = "";
           btn.disabled = false;
           btn.innerText = "Iniciar Sesión";
         })
         .catch(function(error) {
+          terminado = true;
+          clearTimeout(timer);
           btn.disabled = false;
           btn.innerText = "Iniciar Sesión";
-          errorDiv.innerText = "Error: Credenciales inválidas.";
+          errorDiv.innerText = mensajeAuth(error);
           console.log(error.code, error.message);
         });
     }
@@ -224,7 +248,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v3 | firebase: " + (window.firebase ? "ok" : "NO") +
+        diag.innerText = "v3.1 | firebase: " + (window.firebase ? "ok" : "NO") +
           " | bd: " + (db ? "ok" : "NO") +
           " | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
@@ -431,7 +455,7 @@
             if (!aprobadoGuardado) {
               var a = ahora();
               var firmaAdm = firmaImagen(canvasAdmin, 400, 0.7);
-                // Solo se agrega la firma del coordinador; lo del técnico no se puede cambiar
+              // Solo se agrega la firma del coordinador; lo del técnico no se puede cambiar
               await db.collection('reportes').doc(reporteId).update({
                 firmaAdm: firmaAdm,
                 fechaApr: a.fecha,
