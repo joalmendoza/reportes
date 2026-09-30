@@ -21,13 +21,6 @@
   <!-- LIBRERÍAS EXTERNAS ULTRA ESTABLES (Firma y PDF) -->
   <script src="https://jsdelivr.net"></script>
   <script src="https://cloudflare.com"></script>
-
-  <!-- CONEXIÓN DIRECTA Y MODULAR DE FIREBASE (Garantiza carga en celulares) -->
-  <script type="module">
-    import { initializeApp } from "https://gstatic.com";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
-    window.firebaseModules = { initializeApp, getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut };
-  </script>
 </head>
 <body>
 
@@ -43,7 +36,7 @@
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
       <input type="password" id="password" class="input-field" placeholder="••••••••">
       
-      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+      <button type="button" id="btn-submit-login" class="btn">Iniciar Sesión</button>
     </div>
   </div>
 
@@ -86,8 +79,11 @@
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
-    <!-- LÓGICA DE CONTROL TOTAL OPERATIVA -->
-  <script>
+    <!-- CONTROL OPERATIVO UNIFICADO -->
+  <script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
+
     window.onerror = function(message, source, lineno) {
       alert("Error en ejecución: " + message + "\nLínea: " + lineno);
       return false;
@@ -102,51 +98,16 @@
       appId: "1:729388358915:web:d6db0be41af4e60a5c5d36"
     };
 
-    let auth;
+    // Inicialización inmediata y garantizada
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
     let padTech, padAdmin;
     let urlParams = new URLSearchParams(window.location.search);
     let modoAprobar = urlParams.get('mode') === 'aprobar';
-    let modules = window.firebaseModules;
-
-    if (modules) {
-      const app = modules.initializeApp(firebaseConfig);
-      auth = modules.getAuth(app);
-    } else {
-      alert("Error crítico: Fallo en el puente modular de Firebase.");
-    }
 
     if (window.emailjs) {
       emailjs.init("l_6FNZetkO_cSgx5A");
-    }
-
-    function procesarLogin() {
-      const emailValue = document.getElementById('email').value.trim().toLowerCase();
-      const passwordValue = document.getElementById('password').value;
-      const errorDiv = document.getElementById('error-message');
-      const btnLoginSubmit = document.getElementById('btn-submit-login');
-
-      if (!emailValue || !passwordValue) {
-        alert("Por favor ingrese su correo electrónico y contraseña.");
-        return;
-      }
-
-      btnLoginSubmit.disabled = true;
-      btnLoginSubmit.innerText = "Verificando...";
-
-      if (auth && modules) {
-        modules.signInWithEmailAndPassword(auth, emailValue, passwordValue)
-          .then(() => { errorDiv.innerText = ""; })
-          .catch((error) => {
-            btnLoginSubmit.disabled = false;
-            btnLoginSubmit.innerText = "Iniciar Sesión";
-            errorDiv.innerText = "Error: Credenciales inválidas.";
-            alert("Rechazado por Firebase: " + error.message);
-          });
-      } else {
-        alert("El servicio de autenticación no está listo.");
-        btnLoginSubmit.disabled = false;
-        btnLoginSubmit.innerText = "Iniciar Sesión";
-      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -154,6 +115,8 @@
       const mainScreen = document.getElementById('main-form-screen');
       const userDisplay = document.getElementById('user-display');
       const btnSubmit = document.getElementById('btn-submit-main');
+      const btnLoginSubmit = document.getElementById('btn-submit-login');
+      const errorDiv = document.getElementById('error-message');
       
       const canvasTech = document.getElementById('signature-tech');
       const canvasAdmin = document.getElementById('signature-admin');
@@ -168,6 +131,31 @@
         canvas.height = canvas.offsetHeight * ratio;
         canvas.getContext("2d").scale(ratio, ratio);
         if (pad) pad.clear();
+      }
+
+      // Gestión del botón de inicio de sesión vinculado correctamente
+      if (btnLoginSubmit) {
+        btnLoginSubmit.addEventListener('click', () => {
+          const emailValue = document.getElementById('email').value.trim().toLowerCase();
+          const passwordValue = document.getElementById('password').value;
+
+          if (!emailValue || !passwordValue) {
+            alert("Por favor ingrese su correo electrónico y contraseña.");
+            return;
+          }
+
+          btnLoginSubmit.disabled = true;
+          btnLoginSubmit.innerText = "Verificando...";
+
+          signInWithEmailAndPassword(auth, emailValue, passwordValue)
+            .then(() => { errorDiv.innerText = ""; })
+            .catch((error) => {
+              btnLoginSubmit.disabled = false;
+              btnLoginSubmit.innerText = "Iniciar Sesión";
+              errorDiv.innerText = "Error: Credenciales inválidas.";
+              alert("Rechazado por Firebase: " + error.message);
+            });
+        });
       }
 
       if (modoAprobar) {
@@ -193,22 +181,20 @@
           setTimeout(() => resizeCanvas(canvasAdmin, padAdmin), 300);
         }
       } else {
-        if (auth && modules) {
-          modules.onAuthStateChanged(auth, (user) => {
-            if (user) {
-              loginScreen.classList.add('hidden');
-              mainScreen.classList.remove('hidden');
-              userDisplay.innerText = user.email;
-              if (!padTech && canvasTech && window.SignaturePad) {
-                padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
-                setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
-              }
-            } else {
-              mainScreen.classList.add('hidden');
-              loginScreen.classList.remove('hidden');
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            loginScreen.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+            userDisplay.innerText = user.email;
+            if (!padTech && canvasTech && window.SignaturePad) {
+              padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
+              setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
             }
-          });
-        }
+          } else {
+            mainScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+          }
+        });
       }
 
       document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
@@ -243,8 +229,10 @@
         }
       });
       
-      document.getElementById('btn-logout').addEventListener('click', () => auth && modules && modules.signOut(auth));
+      document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
     });
   </script>
 </body>
 </html>
+
+  
