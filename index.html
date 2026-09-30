@@ -133,106 +133,165 @@
         if (pad) pad.clear();
       }
 
-      // Gestión del botón de inicio de sesión vinculado correctamente
-      if (btnLoginSubmit) {
-        btnLoginSubmit.addEventListener('click', () => {
-          const emailValue = document.getElementById('email').value.trim().toLowerCase();
-          const passwordValue = document.getElementById('password').value;
+  <!-- CONTROL OPERATIVO UNIFICADO -->
+  <script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://gstatic.com";
 
-          if (!emailValue || !passwordValue) {
-            alert("Por favor ingrese su correo electrónico y contraseña.");
-            return;
-          }
+    window.onerror = function(message, source, lineno) {
+      alert("Error en ejecución: " + message + "\nLínea: " + lineno);
+      return false;
+    };
 
-          btnLoginSubmit.disabled = true;
-          btnLoginSubmit.innerText = "Verificando...";
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
+      authDomain: "://firebaseapp.com",
+      projectId: "appformatosmtto",
+      storageBucket: "appformatosmtto.firebasestorage.app",
+      messagingSenderId: "729388358915",
+      appId: "1:729388358915:web:d6db0be41af4e60a5c5d36"
+    };
 
-          signInWithEmailAndPassword(auth, emailValue, passwordValue)
-            .then(() => { errorDiv.innerText = ""; })
-            .catch((error) => {
-              btnLoginSubmit.disabled = false;
-              btnLoginSubmit.innerText = "Iniciar Sesión";
-              errorDiv.innerText = "Error: Credenciales inválidas.";
-              alert("Rechazado por Firebase: " + error.message);
-            });
-        });
-      }
+    // Inicialización inmediata y garantizada
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-      if (modoAprobar) {
-        loginScreen.classList.add('hidden');
-        mainScreen.classList.remove('hidden');
-        userDisplay.innerText = "Administrador";
-        clientInput.value = urlParams.get('cliente') || '';
-        workInput.value = urlParams.get('detalle') || '';
-        clientInput.disabled = true;
-        workInput.disabled = true;
-        
-        canvasTech.classList.add('hidden');
-        document.getElementById('btn-clear-tech').classList.add('hidden');
-        imgTechSig.classList.remove('hidden');
-        imgTechSig.src = urlParams.get('techSig') || '';
-        
-        document.getElementById('block-admin-sig').classList.remove('hidden');
-        btnSubmit.innerText = "Firmar y Enviar PDF";
-        btnSubmit.style.background = "#2563eb";
+    let padTech, padAdmin;
+    let urlParams = new URLSearchParams(window.location.search);
+    let modoAprobar = urlParams.get('mode') === 'aprobar';
 
-        if (window.SignaturePad) {
-          padAdmin = new SignaturePad(canvasAdmin, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(220, 38, 38)' });
-          setTimeout(() => resizeCanvas(canvasAdmin, padAdmin), 300);
+    if (window.emailjs) {
+      emailjs.init("l_6FNZetkO_cSgx5A");
+    }
+
+    // EJECUCIÓN DIRECTA E INMEDIATA PARA EL ENTORNO MÓVIL
+    const loginScreen = document.getElementById('login-screen');
+    const mainScreen = document.getElementById('main-form-screen');
+    const userDisplay = document.getElementById('user-display');
+    const btnSubmit = document.getElementById('btn-submit-main');
+    const btnLoginSubmit = document.getElementById('btn-submit-login');
+    const errorDiv = document.getElementById('error-message');
+    
+    const canvasTech = document.getElementById('signature-tech');
+    const canvasAdmin = document.getElementById('signature-admin');
+    const imgTechSig = document.getElementById('img-tech-sig');
+    const clientInput = document.getElementById('client-name');
+    const workInput = document.getElementById('work-description');
+
+    function resizeCanvas(canvas, pad) {
+      if (!canvas || canvas.classList.contains('hidden')) return;
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+      if (pad) pad.clear();
+    }
+
+    // Vinculación directa del botón de Login sin esperar eventos de ventana
+    if (btnLoginSubmit) {
+      btnLoginSubmit.onclick = function() {
+        const emailValue = document.getElementById('email').value.trim().toLowerCase();
+        const passwordValue = document.getElementById('password').value;
+
+        if (!emailValue || !passwordValue) {
+          alert("Por favor ingrese su correo electrónico y contraseña.");
+          return;
         }
-      } else {
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            loginScreen.classList.add('hidden');
-            mainScreen.classList.remove('hidden');
-            userDisplay.innerText = user.email;
-            if (!padTech && canvasTech && window.SignaturePad) {
-              padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
-              setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
-            }
-          } else {
-            mainScreen.classList.add('hidden');
-            loginScreen.classList.remove('hidden');
-          }
-        });
-      }
 
-      document.getElementById('btn-clear-tech').addEventListener('click', () => padTech && padTech.clear());
-      document.getElementById('btn-clear-admin').addEventListener('click', () => padAdmin && padAdmin.clear());
+        btnLoginSubmit.disabled = true;
+        btnLoginSubmit.innerText = "Verificando...";
+
+        signInWithEmailAndPassword(auth, emailValue, passwordValue)
+          .then(() => { 
+            errorDiv.innerText = ""; 
+            btnLoginSubmit.disabled = false;
+            btnLoginSubmit.innerText = "Iniciar Sesión";
+          })
+          .catch((error) => {
+            btnLoginSubmit.disabled = false;
+            btnLoginSubmit.innerText = "Iniciar Sesión";
+            errorDiv.innerText = "Error: Credenciales inválidas.";
+            alert("Rechazado por Firebase: " + error.message);
+          });
+      };
+    }
+
+    // Validación de flujos de pantalla
+    if (modoAprobar) {
+      loginScreen.classList.add('hidden');
+      mainScreen.classList.remove('hidden');
+      userDisplay.innerText = "Administrador";
+      clientInput.value = urlParams.get('cliente') || '';
+      workInput.value = urlParams.get('detalle') || '';
+      clientInput.disabled = true;
+      workInput.disabled = true;
       
-      btnSubmit.addEventListener('click', async () => {
-        if (!modoAprobar) {
-          if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
-          if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
-          
-          const base64TechSig = encodeURIComponent(padTech.toDataURL());
-          const cliente = encodeURIComponent(clientInput.value);
-          const detalle = encodeURIComponent(workInput.value);
-          const link = `${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig}`;
-          
-          window.open(`https://wa.me TÉCNICO*%0ACliente: ${cliente}%0AEnlace de aprobación: ${encodeURIComponent(link)}`, '_blank');
-        } else {
-          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
-          btnSubmit.disabled = true;
-          btnSubmit.innerText = "Enviando PDF...";
-          try {
-            const element = document.getElementById('pdf-area');
-            const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(element).outputPdf('datauristring');
-            await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
-            alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
-            window.location.href = window.location.origin + window.location.pathname;
-          } catch (err) {
-            alert("Error al enviar PDF: " + err.message);
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "Firmar y Enviar PDF";
+      canvasTech.classList.add('hidden');
+      document.getElementById('btn-clear-tech').classList.add('hidden');
+      imgTechSig.classList.remove('hidden');
+      imgTechSig.src = urlParams.get('techSig') || '';
+      
+      document.getElementById('block-admin-sig').classList.remove('hidden');
+      btnSubmit.innerText = "Firmar y Enviar PDF";
+      btnSubmit.style.background = "#2563eb";
+
+      if (window.SignaturePad) {
+        padAdmin = new SignaturePad(canvasAdmin, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(220, 38, 38)' });
+        setTimeout(() => resizeCanvas(canvasAdmin, padAdmin), 300);
+      }
+    } else {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loginScreen.classList.add('hidden');
+          mainScreen.classList.remove('hidden');
+          userDisplay.innerText = user.email;
+          if (!padTech && canvasTech && window.SignaturePad) {
+            padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
+            setTimeout(() => resizeCanvas(canvasTech, padTech), 300);
           }
+        } else {
+          mainScreen.classList.add('hidden');
+          loginScreen.classList.remove('hidden');
         }
       });
-      
-      document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-    });
+    }
+
+    document.getElementById('btn-clear-tech').onclick = () => padTech && padTech.clear();
+    document.getElementById('btn-clear-admin').onclick = () => padAdmin && padAdmin.clear();
+    
+    btnSubmit.onclick = async () => {
+      if (!modoAprobar) {
+        if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
+        if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
+        
+        const base64TechSig = encodeURIComponent(padTech.toDataURL());
+        const cliente = encodeURIComponent(clientInput.value);
+        const detalle = encodeURIComponent(workInput.value);
+        const link = `${window.location.origin}${window.location.pathname}?mode=aprobar&cliente=${cliente}&detalle=${detalle}&techSig=${base64TechSig}`;
+        
+        window.open(`https://wa.me TÉCNICO*%0ACliente: ${cliente}%0AEnlace de aprobación: ${encodeURIComponent(link)}`, '_blank');
+      } else {
+        if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma administrador."); return; }
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Enviando PDF...";
+        try {
+          const element = document.getElementById('pdf-area');
+          const pdfBase64 = await html2pdf().set({ margin: 10, filename: 'Reporte.pdf' }).from(element).outputPdf('datauristring');
+          await emailjs.send("service_m3xvu2j", "template_loi9vam", { cliente: urlParams.get('cliente'), detalle: urlParams.get('detalle'), content_pdf: pdfBase64 });
+          alert("¡Reporte aprobado y enviado con éxito por EmailJS!");
+          window.location.href = window.location.origin + window.location.pathname;
+        } catch (err) {
+          alert("Error al enviar PDF: " + err.message);
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "Firmar y Enviar PDF";
+        }
+      }
+    };
+    
+    document.getElementById('btn-logout').onclick = () => signOut(auth);
   </script>
 </body>
 </html>
+
 
   
