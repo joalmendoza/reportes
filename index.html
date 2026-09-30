@@ -105,13 +105,16 @@
     let urlParams = new URLSearchParams(window.location.search);
     let modoAprobar = urlParams.get('mode') === 'aprobar';
 
-    if (typeof firebase !== 'undefined') {
-      firebase.initializeApp(firebaseConfig);
-      auth = firebase.auth();
-    }
-
-    if (window.emailjs) {
-      emailjs.init("l_6FNZetkO_cSgx5A");
+    // REPARACIÓN DE INICIALIZACIÓN DE FIREBASE CLÁSICO
+    try {
+      if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+      } else {
+        alert("Error crítico: Las librerías de Firebase no se cargaron en el navegador.");
+      }
+    } catch (e) {
+      alert("Error inicializando Firebase: " + e.message);
     }
 
     function procesarLogin() {
