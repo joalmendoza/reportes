@@ -20,21 +20,17 @@
     .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
   </style>
 
-  <!-- LIBRERÍAS -->
+  <!-- LIBRERÍAS (ya no se usa el SDK de Firebase: se habla directo con la API, más liviano y estable) -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
-  <!-- FIREBASE (versión compat) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
   <!-- PANTALLA 1: INICIO DE SESIÓN -->
   <div id="login-screen" class="card">
-    <h2 style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
+    <h2 id="login-title" style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
+    <p id="login-nota" style="text-align:center; font-size:14px; color:#6b7280; margin:-10px 0 14px;"></p>
     <div id="error-message" class="error-msg"></div>
 
     <div>
@@ -45,8 +41,16 @@
       <input type="password" id="password" class="input-field" placeholder="••••••••">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v3</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v5</p>
     </div>
+  </div>
+
+  <!-- PANTALLA DEL COORDINADOR (sesión activa) -->
+  <div id="home-coord" class="card hidden" style="text-align:center;">
+    <h2 style="margin-top:0;">Sesión de coordinador</h2>
+    <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
+    <p style="font-size:14px; color:#6b7280;">Tu sesión sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
+    <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
   </div>
 
   <!-- PANTALLA 2: FORMULARIO -->
@@ -66,8 +70,6 @@
       <label style="font-weight: bold; font-size: 14px;">Descripción del Trabajo Realizado</label>
       <textarea id="work-description" class="input-field" rows="4" placeholder="Detalle técnico..." style="resize: none; font-family: sans-serif;"></textarea>
 
-      <div id="fechas-info" style="font-size:13px; color:#374151; line-height:1.6; margin-bottom:16px;"></div>
-
       <!-- Firma Técnico -->
       <div id="block-tech-sig">
         <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
@@ -75,16 +77,18 @@
           <canvas id="signature-tech"></canvas>
           <img id="img-tech-sig" class="hidden firma-img" alt="Firma Técnico">
         </div>
+        <div id="fecha-tec" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
         <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
       </div>
 
-      <!-- Firma Administrador -->
+      <!-- Firma Coordinador -->
       <div id="block-admin-sig" class="hidden">
         <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
         <div class="canvas-container">
           <canvas id="signature-admin"></canvas>
           <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
         </div>
+        <div id="fecha-adm" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
         <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
       </div>
     </div>
@@ -98,25 +102,12 @@
       return false;
     };
 
-    // ---------- FIREBASE ----------
-    var firebaseConfig = {
-      apiKey: "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA",
-      authDomain: "appformatosmtto.firebaseapp.com",
-      projectId: "appformatosmtto",
-      storageBucket: "appformatosmtto.firebasestorage.app",
-      messagingSenderId: "729388358915",
-      appId: "1:729388358915:web:d6db0be41af4e60a5c5d36"
-    };
+    // ---------- CONFIGURACIÓN ----------
+    var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
+    var PROYECTO = "appformatosmtto";
+    var WHATSAPP_COORDINADOR = "573105398897";
+    var CORREOS_DESTINO = "jorge.mendoza@carval.com.co, formatosmtto.carval@gmail.com";
 
-    var auth = null;
-    var db = null;
-    if (window.firebase) {
-      firebase.initializeApp(firebaseConfig);
-      auth = firebase.auth();
-      if (firebase.firestore) db = firebase.firestore();
-    }
-
-    // ---------- EMAILJS ----------
     var EMAILJS_SERVICE_ID = "service_m3xvu2j";
     var EMAILJS_TEMPLATE_ID = "template_loi9vam";
     // La primera letra puede ser "I" mayúscula o "l" minúscula, y la "O" puede ser cero.
@@ -127,13 +118,152 @@
       "I_6FNZetk0_cSgx5A",
       "l_6FNZetk0_cSgx5A"
     ];
-    if (window.emailjs) {
-      emailjs.init(EMAILJS_PUBLIC_KEYS[0]);
+    if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
+
+    // ===== INICIO BLOQUE API =====
+    var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
+    var sesion = null; // { email, idToken, refreshToken, expira }
+
+    function guardarSesion(s) {
+      sesion = s;
+      try {
+        if (s) localStorage.setItem('sesionTecnico', JSON.stringify(s));
+        else localStorage.removeItem('sesionTecnico');
+      } catch (e) {}
     }
 
-    // ---------- CONFIGURACIÓN ----------
-    var WHATSAPP_COORDINADOR = "573105398897";
-    var CORREOS_DESTINO = "jorge.mendoza@carval.com.co, formatosmtto.carval@gmail.com";
+    function leerSesion() {
+      try {
+        var t = localStorage.getItem('sesionTecnico');
+        return t ? JSON.parse(t) : null;
+      } catch (e) { return null; }
+    }
+
+    // fetch con tiempo límite y errores claros
+    async function pedir(url, opciones, limiteMs) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, limiteMs || 20000);
+      try {
+        var cfg = Object.assign({}, opciones || {});
+        if (ctrl) cfg.signal = ctrl.signal;
+        var r = await fetch(url, cfg);
+        var data = {};
+        try { data = await r.json(); } catch (e) {}
+        if (!r.ok) {
+          var err = new Error((data.error && data.error.message) || ("HTTP " + r.status));
+          err.status = r.status;
+          err.apiMessage = (data.error && data.error.message) || "";
+          throw err;
+        }
+        return data;
+      } catch (e) {
+        if (e && e.name === 'AbortError') {
+          var t = new Error("Sin respuesta del servidor");
+          t.code = 'timeout';
+          throw t;
+        }
+        if (e && e.name === 'TypeError') {
+          var n = new Error("Sin conexión");
+          n.code = 'red';
+          throw n;
+        }
+        throw e;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function aCampos(obj) {
+      var f = {};
+      Object.keys(obj).forEach(function(k) { f[k] = { stringValue: String(obj[k] == null ? '' : obj[k]) }; });
+      return f;
+    }
+
+    function deCampos(fields) {
+      var o = {};
+      Object.keys(fields || {}).forEach(function(k) {
+        var v = fields[k];
+        o[k] = (v && v.stringValue !== undefined) ? v.stringValue : '';
+      });
+      return o;
+    }
+
+    function nuevoId() {
+      var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      var out = "";
+      var arr = new Uint8Array(20);
+      (window.crypto || window.msCrypto).getRandomValues(arr);
+      for (var i = 0; i < 20; i++) out += chars.charAt(arr[i] % chars.length);
+      return out;
+    }
+
+    async function iniciarSesionApi(email, clave, rol) {
+      var d = await pedir("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: clave, returnSecureToken: true })
+      });
+      guardarSesion({
+        rol: rol || 'tecnico',
+        email: d.email,
+        idToken: d.idToken,
+        refreshToken: d.refreshToken,
+        expira: Date.now() + (parseInt(d.expiresIn, 10) - 120) * 1000
+      });
+    }
+
+    async function tokenValido() {
+      if (!sesion) { var e0 = new Error("Sesión cerrada"); e0.code = 'sin-sesion'; throw e0; }
+      if (Date.now() < sesion.expira) return sesion.idToken;
+      var d;
+      try {
+        d = await pedir("https://securetoken.googleapis.com/v1/token?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(sesion.refreshToken)
+        });
+      } catch (e) {
+        if (e.status === 400 || e.status === 401) { e.code = 'sin-sesion'; }
+        throw e;
+      }
+      guardarSesion({
+        rol: sesion.rol,
+        email: sesion.email,
+        idToken: d.id_token,
+        refreshToken: d.refresh_token,
+        expira: Date.now() + (parseInt(d.expires_in, 10) - 120) * 1000
+      });
+      return sesion.idToken;
+    }
+
+    async function crearReporte(datos) {
+      var token = await tokenValido();
+      var id = nuevoId();
+      await pedir(FS_BASE + "/reportes?documentId=" + id + "&key=" + API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ fields: aCampos(datos) })
+      });
+      return id;
+    }
+
+    async function leerReporte(id) {
+      var d = await pedir(FS_BASE + "/reportes/" + encodeURIComponent(id) + "?key=" + API_KEY);
+      return deCampos(d.fields);
+    }
+
+    // Solo se pueden agregar estos 4 campos; la firma del técnico no se puede tocar
+    async function firmarReporte(id, datos) {
+      var token = await tokenValido();
+      var mascara = ['firmaAdm', 'fechaApr', 'horaApr', 'estado']
+        .map(function(k) { return "updateMask.fieldPaths=" + k; }).join("&");
+      await pedir(FS_BASE + "/reportes/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ fields: aCampos(datos) })
+      });
+    }
+    // ===== FIN BLOQUE API =====
 
     var urlParams = new URLSearchParams(window.location.search);
     var modo = urlParams.get('mode');
@@ -154,10 +284,10 @@
     }
 
     function pintarFechas(repFecha, repHora, aprFecha, aprHora) {
-      var html = "";
-      if (repFecha) html += "<b>Reporte del técnico:</b> " + repFecha + " - " + repHora + "<br>";
-      if (aprFecha) html += "<b>Visto bueno del coordinador:</b> " + aprFecha + " - " + aprHora;
-      document.getElementById('fechas-info').innerHTML = html;
+      document.getElementById('fecha-tec').innerHTML =
+        repFecha ? "<b>Fecha y hora del reporte:</b> " + repFecha + " - " + repHora : "";
+      document.getElementById('fecha-adm').innerHTML =
+        aprFecha ? "<b>Visto bueno del coordinador:</b> " + aprFecha + " - " + aprHora : "";
     }
 
     // Convierte la firma dibujada en una imagen JPEG liviana
@@ -190,69 +320,57 @@
 
     function textoError(e) {
       if (!e) return "desconocido";
-      if (e.code === 'permission-denied') return "sin permiso en la base de datos (revisa las reglas de Firestore)";
-      return e.text || e.message || String(e);
+      if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
+      if (e.code === 'red') return "sin conexión a internet";
+      if (e.status === 403) return "sin permiso en la base de datos (revisa las reglas de Firestore)";
+      if (e.status === 404) return "no se encontró en la base de datos";
+      return e.text || e.apiMessage || e.message || String(e);
+    }
+
+    function mensajeLogin(e) {
+      if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
+      if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
+      var m = (e.apiMessage || e.message || "").toUpperCase();
+      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0 || m.indexOf("EMAIL_NOT_FOUND") >= 0)
+        return "Correo o contraseña incorrectos.";
+      if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos. Espera unos minutos.";
+      if (m.indexOf("OPERATION_NOT_ALLOWED") >= 0) return "El acceso con correo y contraseña no está activado en Firebase.";
+      if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
+      return "Error: " + (e.apiMessage || e.message || "desconocido");
     }
 
     // ---------- LOGIN ----------
-    function mensajeAuth(error) {
-      var c = (error && error.code) || "";
-      if (c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-login-credentials')
-        return "Correo o contraseña incorrectos.";
-      if (c === 'auth/network-request-failed') return "Sin conexión a internet. Inténtalo de nuevo.";
-      if (c === 'auth/too-many-requests') return "Demasiados intentos. Espera unos minutos.";
-      if (c === 'auth/operation-not-allowed') return "El acceso con correo y contraseña no está activado en Firebase.";
-      return "Error: " + (c || (error && error.message) || "desconocido");
-    }
-
-    function procesarLogin() {
+    async function procesarLogin() {
       var emailValue = document.getElementById('email').value.trim().toLowerCase();
       var passwordValue = document.getElementById('password').value;
       var errorDiv = document.getElementById('error-message');
       var btn = document.getElementById('btn-submit-login');
 
-      if (!auth) { alert("Firebase no cargó. Revisa tu conexión y recarga la página."); return; }
       if (!emailValue || !passwordValue) { alert("Por favor ingrese correo y contraseña."); return; }
 
       btn.disabled = true;
       btn.innerText = "Verificando...";
       errorDiv.innerText = "";
 
-      var terminado = false;
-      // Si Firebase no responde en 20 segundos, se libera el botón
-      var timer = setTimeout(function() {
-        if (terminado) return;
-        btn.disabled = false;
-        btn.innerText = "Iniciar Sesión";
-        errorDiv.innerText = "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
-      }, 20000);
-
-      auth.signInWithEmailAndPassword(emailValue, passwordValue)
-        .then(function() {
-          terminado = true;
-          clearTimeout(timer);
-          errorDiv.innerText = "";
-          btn.disabled = false;
-          btn.innerText = "Iniciar Sesión";
-        })
-        .catch(function(error) {
-          terminado = true;
-          clearTimeout(timer);
-          btn.disabled = false;
-          btn.innerText = "Iniciar Sesión";
-          errorDiv.innerText = mensajeAuth(error);
-          console.log(error.code, error.message);
-        });
+      try {
+        await iniciarSesionApi(emailValue, passwordValue, modoAprobar ? 'coordinador' : 'tecnico');
+        document.getElementById('password').value = "";
+        if (window.alIniciarSesion) window.alIniciarSesion();
+      } catch (e) {
+        errorDiv.innerText = mensajeLogin(e);
+        console.log(e);
+      }
+      btn.disabled = false;
+      btn.innerText = "Iniciar Sesión";
     }
 
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v3.1 | firebase: " + (window.firebase ? "ok" : "NO") +
-          " | bd: " + (db ? "ok" : "NO") +
-          " | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v5 | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
-          " | email: " + (window.emailjs ? "ok" : "NO");
+          " | email: " + (window.emailjs ? "ok" : "NO") +
+          " | red: " + (navigator.onLine ? "ok" : "NO");
       }
 
       var loginScreen = document.getElementById('login-screen');
@@ -271,11 +389,13 @@
       var btnClearTech = document.getElementById('btn-clear-tech');
       var btnClearAdmin = document.getElementById('btn-clear-admin');
       var blockAdmin = document.getElementById('block-admin-sig');
+      var homeCoord = document.getElementById('home-coord');
 
       var datosReporte = null;      // datos cargados desde la base de datos
       var vistaFinal = false;       // true = reporte ya aprobado (solo lectura)
       var aprobadoGuardado = false; // true = la firma del coordinador ya quedó guardada
       var infoAprobacion = null;
+      var cargaFallida = false;
 
       function resizeCanvas(canvas, pad) {
         if (!canvas || canvas.classList.contains('hidden')) return;
@@ -318,7 +438,7 @@
 
       function mostrarParaFirmar(d) {
         ponerDatosTecnico(d);
-        badge.innerText = "Modo Administrador";
+        badge.innerText = "Modo Coordinador";
         titulo.innerText = "Aprobación de Servicio";
         blockAdmin.classList.remove('hidden');
         btnSubmit.innerText = "Firmar y Enviar a Correo";
@@ -329,57 +449,106 @@
         }
       }
 
-      if (modoAprobar || modoVer) {
-        // ----- Coordinador / visor: entra por enlace, sin login -----
+      function fallaCarga(texto, detalle) {
+        cargaFallida = true;
+        userDisplay.innerText = texto;
+        badge.innerText = "Sin cargar";
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "Reintentar";
+        btnSubmit.style.background = "#6b7280";
+        alert(detalle);
+      }
+
+      // ----- Técnico: pantallas -----
+      function mostrarLogin() {
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        document.getElementById('login-title').innerText = "Acceso de Técnicos";
+        document.getElementById('login-nota').innerText = "";
+      }
+
+      function pedirLoginCoordinador() {
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        document.getElementById('login-title').innerText = "Acceso del Coordinador";
+        document.getElementById('login-nota').innerText = "Inicia sesión para aprobar el reporte.";
+      }
+
+      function mostrarHomeCoord(mensaje) {
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.remove('hidden');
+        document.getElementById('home-coord-msg').innerText = mensaje || "";
+      }
+
+      function iniciarPadTecnico() {
+        if (!padTech && canvasTech && window.SignaturePad) {
+          padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
+          setTimeout(function() { resizeCanvas(canvasTech, padTech); }, 300);
+        }
+      }
+
+      function mostrarFormularioTecnico() {
         loginScreen.classList.add('hidden');
         mainScreen.classList.remove('hidden');
-        document.getElementById('btn-logout').classList.add('hidden');
+        userDisplay.innerText = sesion ? sesion.email : '';
+        iniciarPadTecnico();
+      }
+
+      // Carga el reporte desde la base de datos (coordinador o visor)
+      function cargarReporte() {
+        loginScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        // El botón Salir solo aparece para el coordinador (el visor del correo no inicia sesión)
+        document.getElementById('btn-logout').classList.toggle('hidden', !modoAprobar);
         userDisplay.innerText = "Cargando reporte...";
+        badge.innerText = "Cargando...";
         btnSubmit.disabled = true;
+        btnSubmit.innerText = "Cargando...";
+        btnSubmit.style.background = "#6b7280";
 
         if (!reporteId) {
-          userDisplay.innerText = "Enlace no válido";
-          alert("Este enlace es de una versión anterior. Pide al técnico que envíe el reporte de nuevo.");
-        } else if (!db) {
-          userDisplay.innerText = "Sin conexión";
-          alert("No se pudo conectar con la base de datos. Recarga la página.");
-        } else {
-          db.collection('reportes').doc(reporteId).get().then(function(doc) {
-            if (!doc.exists) {
-              userDisplay.innerText = "Reporte no encontrado";
-              alert("No se encontró este reporte.");
-              return;
-            }
-            datosReporte = doc.data();
-            btnSubmit.disabled = false;
-            if (modoVer || datosReporte.estado === 'aprobado') {
-              userDisplay.innerText = "Reporte firmado";
-              mostrarSoloLectura(datosReporte);
-            } else {
-              userDisplay.innerText = "Coordinador";
-              mostrarParaFirmar(datosReporte);
-            }
-          }).catch(function(e) {
-            userDisplay.innerText = "Error al cargar";
-            alert("No se pudo cargar el reporte: " + textoError(e));
-          });
+          fallaCarga("Enlace no válido", "Este enlace es de una versión anterior. Pide al técnico que envíe el reporte de nuevo.");
+          return;
         }
-      } else if (auth) {
-        // ----- Técnico (requiere login) -----
-        auth.onAuthStateChanged(function(user) {
-          if (user) {
-            loginScreen.classList.add('hidden');
-            mainScreen.classList.remove('hidden');
-            userDisplay.innerText = user.email;
-            if (!padTech && canvasTech && window.SignaturePad) {
-              padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
-              setTimeout(function() { resizeCanvas(canvasTech, padTech); }, 300);
-            }
+        leerReporte(reporteId).then(function(d) {
+          datosReporte = d;
+          btnSubmit.disabled = false;
+          if (modoVer || d.estado === 'aprobado') {
+            userDisplay.innerText = (sesion && modoAprobar) ? sesion.email : "Reporte firmado";
+            mostrarSoloLectura(d);
           } else {
-            mainScreen.classList.add('hidden');
-            loginScreen.classList.remove('hidden');
+            userDisplay.innerText = sesion ? sesion.email : "Coordinador";
+            mostrarParaFirmar(d);
           }
+        }).catch(function(e) {
+          fallaCarga("Error al cargar", "No se pudo cargar el reporte: " + textoError(e));
         });
+      }
+
+      window.alIniciarSesion = function() {
+        if (modoAprobar) cargarReporte();
+        else mostrarFormularioTecnico();
+      };
+
+      if (modoVer) {
+        // ----- Visor del correo: solo lectura, sin login -----
+        cargarReporte();
+      } else if (modoAprobar) {
+        // ----- Coordinador: debe iniciar sesión (una vez; luego sigue activa) -----
+        sesion = leerSesion();
+        if (sesion && sesion.refreshToken) cargarReporte();
+        else pedirLoginCoordinador();
+      } else {
+        // ----- Técnico: si ya inició sesión antes, entra directo -----
+        sesion = leerSesion();
+        if (sesion && sesion.refreshToken) {
+          if (sesion.rol === 'coordinador') mostrarHomeCoord("");
+          else mostrarFormularioTecnico();
+        } else mostrarLogin();
       }
 
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
@@ -402,6 +571,7 @@
       }
 
       btnSubmit.onclick = async function() {
+        if (cargaFallida) { window.location.reload(); return; }
         // ----- Reporte ya aprobado: solo descargar -----
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
@@ -409,24 +579,22 @@
           // ----- TÉCNICO: guarda el reporte y abre WhatsApp con un enlace corto -----
           if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
           if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
-          if (!db) { alert("No hay conexión con la base de datos. Recarga la página."); return; }
 
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Guardando reporte...";
           try {
             var t = ahora();
-            var ref = db.collection('reportes').doc();
-            await ref.set({
+            var id = await crearReporte({
               cliente: clientInput.value,
               detalle: workInput.value,
               fecha: t.fecha,
               hora: t.hora,
               firmaTec: firmaImagen(canvasTech, 400, 0.7),
               estado: 'pendiente',
-              tecnico: (auth && auth.currentUser) ? auth.currentUser.email : ''
+              tecnico: sesion ? sesion.email : ''
             });
 
-            var link = baseUrl + "?mode=aprobar&id=" + ref.id;
+            var link = baseUrl + "?mode=aprobar&id=" + id;
             var texto = "*REPORTE TÉCNICO*\nCliente: " + clientInput.value +
                         "\nFecha: " + t.fecha + " " + t.hora +
                         "\nEnlace de aprobación: " + link;
@@ -442,7 +610,13 @@
             var w = window.open(waUrl, "_blank");
             if (!w) window.location.href = waUrl;
           } catch (e) {
-            alert("No se pudo guardar el reporte: " + textoError(e));
+            if (e.code === 'sin-sesion' || e.status === 401) {
+              alert("Tu sesión venció. Inicia sesión otra vez (lo que escribiste no se pierde).");
+              guardarSesion(null);
+              mostrarLogin();
+            } else {
+              alert("No se pudo guardar el reporte: " + textoError(e));
+            }
             btnSubmit.innerText = "Enviar a WhatsApp";
           }
           btnSubmit.disabled = false;
@@ -454,10 +628,8 @@
           try {
             if (!aprobadoGuardado) {
               var a = ahora();
-              var firmaAdm = firmaImagen(canvasAdmin, 400, 0.7);
-              // Solo se agrega la firma del coordinador; lo del técnico no se puede cambiar
-              await db.collection('reportes').doc(reporteId).update({
-                firmaAdm: firmaAdm,
+              await firmarReporte(reporteId, {
+                firmaAdm: firmaImagen(canvasAdmin, 400, 0.7),
                 fechaApr: a.fecha,
                 horaApr: a.hora,
                 estado: 'aprobado'
@@ -481,8 +653,18 @@
             });
 
             alert("¡Reporte aprobado y enviado con éxito!");
-            window.location.href = linkReporte;
+            try { history.replaceState(null, '', baseUrl); } catch (e) {}
+            mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
+            btnSubmit.disabled = false;
           } catch (err) {
+            if (!aprobadoGuardado && (err.code === 'sin-sesion' || err.status === 401)) {
+              alert("Tu sesión venció. Inicia sesión otra vez para aprobar este reporte.");
+              guardarSesion(null);
+              pedirLoginCoordinador();
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = "Firmar y Enviar a Correo";
+              return;
+            }
             if (aprobadoGuardado) {
               alert("Tu firma quedó guardada, pero el correo no salió: " + textoError(err) +
                     "\n\nToca el botón para reintentar el envío del correo.");
@@ -496,7 +678,16 @@
         }
       };
 
-      document.getElementById('btn-logout').onclick = function() { if (auth) auth.signOut(); };
+      document.getElementById('btn-logout').onclick = function() {
+        guardarSesion(null);
+        if (modoAprobar) pedirLoginCoordinador();
+        else mostrarLogin();
+      };
+
+      document.getElementById('btn-logout-home').onclick = function() {
+        guardarSesion(null);
+        mostrarLogin();
+      };
     });
   </script>
 </body>
