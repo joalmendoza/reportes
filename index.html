@@ -120,7 +120,7 @@
       color: #1e293b;
     }
 
-    /* Línea diagonal perfecta de extremo a extremo en CSS */
+    /* Trazado diagonal perfecto de esquina a esquina */
     .diagonal-cell {
       background: linear-gradient(to top right, transparent 48%, #64748b 49%, #64748b 51%, transparent 52%);
       background-color: #f1f5f9;
@@ -129,7 +129,7 @@
       height: 32px;
     }
 
-    /* Fila fuera de rango con fondo rojo claro */
+    /* Filas fuera de rango con sombreado rojo claro y texto visible */
     .out-of-range {
       background-color: #fecdd3 !important;
     }
@@ -526,7 +526,7 @@
       "I_6FNZetkO_cSgx5A",
       "l_6FNZetkO_cSgx5A",
       "I_6FNZetk0_cSgx5A",
-      "l_6FNZetk0_cSgx5A"
+      "l_6FNZet0_cSgx5A"
     ];
     if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
 
@@ -753,9 +753,8 @@
       return "Error: " + (e.apiMessage || e.message || "desconocido");
     }
 
-    // ---------- EVALUACIÓN DE RANGOS DE OPERACIÓN ----------
+    // EVALUACIÓN DE RANGOS DE OPERACIÓN Y ALERTAS
     function evaluarRangos() {
-      // 1. Calcular diferenciales
       var v34 = parseFloat(document.getElementById('tag34').value);
       var v35 = parseFloat(document.getElementById('tag35').value);
       var diff_micro1 = (!isNaN(v34) && !isNaN(v35)) ? (v34 - v35) : NaN;
@@ -778,7 +777,6 @@
       var diff_f5 = (!isNaN(v82) && !isNaN(v83)) ? (v82 - v83) : NaN;
       document.getElementById('diff_f5').innerText = isNaN(diff_f5) ? "0.00" : diff_f5.toFixed(2);
 
-      // 2. Definición de límites por campo
       var reglas = [
         { id: 'tag34', min: 1, max: 4, label: 'TAG 34', row: 'row_tag34', unit: 'bar' },
         { id: 'tag35', min: 1, max: 4, label: 'TAG 35', row: 'row_tag35', unit: 'bar' },
@@ -858,7 +856,6 @@
         }
       });
 
-      // Actualizar automáticamente observaciones si hay desvíos
       var obsTextarea = document.getElementById('observaciones');
       if (obsTextarea) {
         if (desviaciones.length > 0) {
@@ -1126,7 +1123,7 @@
         try {
           var pdfArea = document.getElementById('pdf-area');
           
-          // Reemplazo temporal de inputs por SPANs con texto plano para renderizado óptimo en lienzo
+          // Reemplazo temporal de inputs por SPANs con texto plano para renderizado óptimo en celular
           var inputs = pdfArea.querySelectorAll('input, select, textarea');
           var reponer = [];
 
@@ -1173,7 +1170,6 @@
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
         if (!modoAprobar) {
-          // ----- ACCIÓN TÉCNICO -----
           if (!padTech || padTech.isEmpty()) { alert("Firma del técnico requerida."); return; }
 
           btnSubmit.disabled = true;
@@ -1244,7 +1240,6 @@
           }
           btnSubmit.disabled = false;
         } else {
-          // ----- ACCIÓN COORDINADOR -----
           if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma."); return; }
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Enviando...";
