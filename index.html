@@ -119,6 +119,12 @@
       font-weight: bold;
       color: #1e293b;
     }
+    .diagonal-cell {
+      text-align: center;
+      font-weight: bold;
+      color: #64748b;
+      background-color: #f1f5f9;
+    }
     .sec-title {
       background: #1e3a8a;
       color: white;
@@ -189,7 +195,7 @@
         </tr>
       </table>
 
-      <!-- CAMPOS AUTOMÁTICOS DE FECHA Y HORA -->
+      <!-- CAMPOS AUTOMÁTICOS DE FECHA (YYYY-MM-DD) Y HORA -->
       <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <div style="flex: 1;">
           <label style="font-weight: bold; font-size: 12px;">Fecha:</label>
@@ -227,7 +233,7 @@
             <td><input type="number" step="0.1" id="tag35" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
           </tr>
           <tr class="calculated-val">
-            <td>Calculado</td>
+            <td class="diagonal-cell">/</td>
             <td>Diferencial de presión filtro 1 micra (TAG34 - TAG35)</td>
             <td>Menor a 0,7 bar</td>
             <td><span id="diff_micro1">0.00</span> bar</td>
@@ -388,7 +394,7 @@
             <td><input type="number" step="0.1" id="tag80" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
           </tr>
           <tr class="calculated-val">
-            <td>Calculado</td>
+            <td class="diagonal-cell">/</td>
             <td>Diferencial presión filtro multimedia 1 (TAG52 - TAG80)</td>
             <td>Menor a 10 PSI</td>
             <td><span id="diff_m1">0.00</span> PSI</td>
@@ -400,7 +406,7 @@
             <td><input type="number" step="0.1" id="tag81" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
           </tr>
           <tr class="calculated-val">
-            <td>Calculado</td>
+            <td class="diagonal-cell">/</td>
             <td>Diferencial presión filtro multimedia 2 (TAG80 - TAG81)</td>
             <td>Menor a 10 PSI</td>
             <td><span id="diff_m2">0.00</span> PSI</td>
@@ -412,7 +418,7 @@
             <td><input type="number" step="0.1" id="tag82" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
           </tr>
           <tr class="calculated-val">
-            <td>Calculado</td>
+            <td class="diagonal-cell">/</td>
             <td>Diferencial presión filtro 10 micras (TAG81 - TAG82)</td>
             <td>Menor a 10 PSI</td>
             <td><span id="diff_f10">0.00</span> PSI</td>
@@ -424,7 +430,7 @@
             <td><input type="number" step="0.1" id="tag83" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
           </tr>
           <tr class="calculated-val">
-            <td>Calculado</td>
+            <td class="diagonal-cell">/</td>
             <td>Diferencial presión filtro 5 micras (TAG82 - TAG83)</td>
             <td>Menor a 10 PSI</td>
             <td><span id="diff_f5">0.00</span> PSI</td>
@@ -451,7 +457,7 @@
       <table style="width: 100%; font-size: 12px; margin-top: 15px;">
         <tr>
           <td style="width: 50%; padding-right: 10px; vertical-align: top;">
-            <b>Responsable:</b> <span id="tec-nombre">Técnico de Mantenimiento</span><br>
+            <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
             <b>Cargo:</b> Técnico de Mantenimiento<br><br>
             
             <!-- Bloque Firma Técnico -->
@@ -512,7 +518,7 @@
 
     // ===== INICIO BLOQUE API REST DE FIREBASE =====
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
-    var sesion = null; // { rol, email, idToken, refreshToken, expira }
+    var sesion = null;
 
     function guardarSesion(s) {
       sesion = s;
@@ -529,7 +535,6 @@
       } catch (e) { return null; }
     }
 
-    // Peticiones fetch con tiempo límite (timeout) y diagnóstico de red
     async function pedir(url, opciones, limiteMs) {
       var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
       var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, limiteMs || 20000);
@@ -663,18 +668,20 @@
 
     var padTech, padAdmin;
 
-    // Fecha, hora y estampa de tiempo en horario de Colombia
+    // FECHA EN FORMATO SOLICITADO: YYYY-MM-DD (Ej. 2026-10-01)
     function ahora() {
       var d = new Date();
+      var year = d.getFullYear();
+      var month = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      
       return {
-        fecha: d.toLocaleDateString('es-CO', { timeZone: 'America/Bogota', day: '2-digit', month: '2-digit', year: 'numeric' }),
+        fecha: year + "-" + month + "-" + day,
         hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: true }),
-        stamp: d.getFullYear().toString() +
-               (d.getMonth() + 1).toString().padStart(2, '0') +
-               d.getDate().toString().padStart(2, '0') +
-               d.getHours().toString().padStart(2, '0') +
-               d.getMinutes().toString().padStart(2, '0') +
-               d.getSeconds().toString().padStart(2, '0')
+        stamp: year.toString() + month + day +
+               String(d.getHours()).padStart(2, '0') +
+               String(d.getMinutes()).padStart(2, '0') +
+               String(d.getSeconds()).padStart(2, '0')
       };
     }
 
@@ -697,7 +704,6 @@
       return c.toDataURL('image/jpeg', calidad);
     }
 
-    // Bucle de envío con variantes de llaves públicas de EmailJS
     async function enviarCorreo(params) {
       var ultimoError = null;
       for (var i = 0; i < EMAILJS_PUBLIC_KEYS.length; i++) {
@@ -733,7 +739,6 @@
       return "Error: " + (e.apiMessage || e.message || "desconocido");
     }
 
-    // Cálculo automático de los 5 diferenciales de presión exigidos
     function calcularDiffs() {
       var v34 = parseFloat(document.getElementById('tag34').value) || 0;
       var v35 = parseFloat(document.getElementById('tag35').value) || 0;
@@ -753,7 +758,6 @@
       document.getElementById('diff_f5').innerText = (v82 - v83).toFixed(2);
     }
 
-    // Nombre estandarizado para la descarga del PDF
     function obtenerNombrePDF() {
       return ahora().stamp + "_CVSAG005-F001.pdf";
     }
@@ -827,8 +831,10 @@
         if (pad) pad.clear();
       }
 
-      // Carga y bloquea todos los campos para el coordinador (solo lectura de lo ingresado por el técnico)
       function ponerDatosTecnico(d) {
+        // Asignar nombre del técnico autenticado
+        document.getElementById('tec-nombre').innerText = d.tecnico || (sesion ? sesion.email : 'Técnico de Mantenimiento');
+
         document.getElementById('tag34').value = d.tag34 || '';
         document.getElementById('tag35').value = d.tag35 || '';
         document.getElementById('tag39a').value = d.tag39a || '';
@@ -863,7 +869,6 @@
         document.getElementById('observaciones').value = d.observaciones || '';
         calcularDiffs();
 
-        // Deshabilitar todos los controles
         var inputs = document.querySelectorAll('#pdf-area input, #pdf-area select, #pdf-area textarea');
         inputs.forEach(function(inp) { inp.disabled = true; });
 
@@ -945,6 +950,7 @@
         loginScreen.classList.add('hidden');
         mainScreen.classList.remove('hidden');
         userDisplay.innerText = sesion ? sesion.email : '';
+        document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
         iniciarPadTecnico();
       }
 
@@ -1000,6 +1006,7 @@
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
+      // GENERACIÓN DE PDF COMPLETO Y CORREGIDO SIN PÁGINAS EN BLANCO
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
@@ -1007,8 +1014,18 @@
         try {
           await new Promise(function(r) { setTimeout(r, 400); });
           var nombre = obtenerNombrePDF();
-          await html2pdf().set({ margin: 8, filename: nombre, html2canvas: { scale: 2, useCORS: true } })
-            .from(document.getElementById('pdf-area')).save();
+          
+          var element = document.getElementById('pdf-area');
+          var opt = {
+            margin: [10, 10, 10, 10],
+            filename: nombre,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+          };
+
+          await html2pdf().set(opt).from(element).save();
         } catch (e) {
           alert("No se pudo generar el PDF: " + (e.message || e));
         }
@@ -1074,7 +1091,6 @@
                         "\nEnlace de aprobación: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
 
-            // Limpiar firmas e inputs tras guardar
             padTech.clear();
             btnSubmit.innerText = "¡Enviado! Puedes hacer otro reporte";
             setTimeout(function() { btnSubmit.innerText = "Enviar a WhatsApp"; }, 4000);
