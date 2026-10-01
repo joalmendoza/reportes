@@ -3,24 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Reportes Técnicos</title>
+  <title>CVSAG005-F001 - Lista de Chequeo Planta Agua Purificada</title>
 
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; margin: 0; padding: 16px; color: #1f2937; }
-    .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
-    .hidden { display: none !important; }
-    .input-field { width: 100%; padding: 12px; margin-top: 4px; margin-bottom: 16px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-    .btn { width: 100%; background: #2563eb; color: white; font-weight: bold; padding: 14px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
-    .btn:disabled { opacity: 0.6; }
-    .canvas-container { border: 2px dashed #9ca3af; border-radius: 8px; background: #fafafa; position: relative; margin-bottom: 8px; touch-action: none; }
-    canvas { width: 100%; height: 150px; display: block; border-radius: 8px; }
-    .firma-img { width: 100%; height: auto; display: block; border-radius: 8px; }
-    .btn-clear { background: #6b7280; padding: 6px 12px; font-size: 12px; margin-bottom: 16px; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    .error-msg { color: #ef4444; font-weight: bold; margin-bottom: 12px; font-size: 14px; text-align: center; }
-    .badge { display: inline-block; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 16px;
+      color: #1f2937;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      max-width: 750px;
+      margin: 0 auto;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .input-field, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 4px;
+      margin-bottom: 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+    .btn {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+    }
+    .canvas-container {
+      border: 2px dashed #9ca3af;
+      border-radius: 8px;
+      background: #fafafa;
+      position: relative;
+      margin-bottom: 8px;
+      touch-action: none;
+    }
+    canvas {
+      width: 100%;
+      height: 150px;
+      display: block;
+      border-radius: 8px;
+    }
+    .firma-img {
+      width: 100%;
+      height: auto;
+      max-height: 140px;
+      display: block;
+      border-radius: 8px;
+    }
+    .btn-clear {
+      background: #6b7280;
+      padding: 6px 12px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .error-msg {
+      color: #ef4444;
+      font-weight: bold;
+      margin-bottom: 12px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    
+    /* Tablas de Encabezado y Parámetros del Formato CVSAG005-F001 */
+    .header-table, .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+    .header-table td, .param-table th, .param-table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    .param-table th {
+      background-color: #f1f5f9;
+      font-weight: bold;
+    }
+    .calculated-val {
+      background-color: #f8fafc;
+      font-weight: bold;
+      color: #1e293b;
+    }
+    .sec-title {
+      background: #1e3a8a;
+      color: white;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      border-radius: 4px;
+      margin: 16px 0 8px 0;
+    }
   </style>
 
-  <!-- LIBRERÍAS (ya no se usa el SDK de Firebase: se habla directo con la API, más liviano y estable) -->
+  <!-- LIBRERÍAS EXTERNAS -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -41,11 +151,11 @@
       <input type="password" id="password" class="input-field" placeholder="••••••••">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v5</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v5 | CVSAG005-F001</p>
     </div>
   </div>
 
-  <!-- PANTALLA DEL COORDINADOR (sesión activa) -->
+  <!-- PANTALLA DEL COORDINADOR (SESIÓN ACTIVA) -->
   <div id="home-coord" class="card hidden" style="text-align:center;">
     <h2 style="margin-top:0;">Sesión de coordinador</h2>
     <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
@@ -53,7 +163,7 @@
     <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
   </div>
 
-  <!-- PANTALLA 2: FORMULARIO -->
+  <!-- PANTALLA 2: FORMULARIO PRINCIPAL CVSAG005-F001 -->
   <div id="main-form-screen" class="card hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
       <span style="font-size: 12px; color: #6b7280; font-weight: bold;" id="user-display">Modo Consulta</span>
@@ -61,36 +171,318 @@
     </div>
 
     <div id="view-badge" class="badge">Modo Técnico</div>
-    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Formulario de Servicio</h2>
+    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo Planta de Agua Purificada</h2>
 
     <div id="pdf-area" style="padding: 10px; background: white;">
-      <label style="font-weight: bold; font-size: 14px;">Nombre del Cliente</label>
-      <input type="text" id="client-name" class="input-field" placeholder="Ej. Juan Pérez">
+      
+      <!-- ENCABEZADO FORMATO CARVAL -->
+      <table class="header-table">
+        <tr>
+          <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
+          <td style="width: 50%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
+          <td style="width: 30%; font-size: 10px;">
+            <b>Código:</b> CVSAG005-F001<br>
+            <b>Versión:</b> 04<br>
+            <b>Fecha emisión:</b> 2023<br>
+            <b>Estado:</b> Vigente
+          </td>
+        </tr>
+      </table>
 
-      <label style="font-weight: bold; font-size: 14px;">Descripción del Trabajo Realizado</label>
-      <textarea id="work-description" class="input-field" rows="4" placeholder="Detalle técnico..." style="resize: none; font-family: sans-serif;"></textarea>
-
-      <!-- Firma Técnico -->
-      <div id="block-tech-sig">
-        <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
-        <div class="canvas-container" id="container-canvas-tech">
-          <canvas id="signature-tech"></canvas>
-          <img id="img-tech-sig" class="hidden firma-img" alt="Firma Técnico">
+      <!-- CAMPOS AUTOMÁTICOS DE FECHA Y HORA -->
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div style="flex: 1;">
+          <label style="font-weight: bold; font-size: 12px;">Fecha:</label>
+          <input type="text" id="fecha-auto" class="input-field" readonly style="background:#f3f4f6; margin-bottom: 6px;">
         </div>
-        <div id="fecha-tec" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
-        <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
+        <div style="flex: 1;">
+          <label style="font-weight: bold; font-size: 12px;">Hora:</label>
+          <input type="text" id="hora-auto" class="input-field" readonly style="background:#f3f4f6; margin-bottom: 6px;">
+        </div>
       </div>
 
-      <!-- Firma Coordinador -->
-      <div id="block-admin-sig" class="hidden">
-        <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
-        <div class="canvas-container">
-          <canvas id="signature-admin"></canvas>
-          <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
-        </div>
-        <div id="fecha-adm" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
-        <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
-      </div>
+      <div class="sec-title">PARÁMETROS A CONTROLAR EN LA PLANTA DE AGUA PURIFICADA</div>
+
+      <!-- TABLA DE CONTROL DE PARÁMETROS -->
+      <table class="param-table">
+        <thead>
+          <tr>
+            <th style="width: 15%;">Punto Control</th>
+            <th style="width: 45%;">Descripción</th>
+            <th style="width: 25%;">Rango Operación</th>
+            <th style="width: 15%;">Indicación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>TAG 34</td>
+            <td>Presión entrada microfiltro de 1 micra</td>
+            <td>1 bar a 4 bar</td>
+            <td><input type="number" step="0.1" id="tag34" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
+          </tr>
+          <tr>
+            <td>TAG 35</td>
+            <td>Presión salida microfiltro de 1 micra</td>
+            <td>1 bar a 4 bar</td>
+            <td><input type="number" step="0.1" id="tag35" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
+          </tr>
+          <tr class="calculated-val">
+            <td>Calculado</td>
+            <td>Diferencial de presión filtro 1 micra (TAG34 - TAG35)</td>
+            <td>Menor a 0,7 bar</td>
+            <td><span id="diff_micro1">0.00</span> bar</td>
+          </tr>
+          <tr>
+            <td>TAG 39A</td>
+            <td>Presión entrada al EDIC</td>
+            <td>1 bar a 3 bar</td>
+            <td><input type="number" step="0.1" id="tag39a" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 39B</td>
+            <td>Presión entrada al EDIC</td>
+            <td>1 bar a 3 bar</td>
+            <td><input type="number" step="0.1" id="tag39b" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 27</td>
+            <td>Caudal rechazo membranas ósmosis inversa</td>
+            <td>3 L/min a 25 L/min</td>
+            <td><input type="number" step="0.1" id="tag27" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 30</td>
+            <td>Caudal rechazo del EDIC</td>
+            <td>2 L/min</td>
+            <td><input type="number" step="0.1" id="tag30" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 28</td>
+            <td>Caudal salida del EDIC</td>
+            <td>10 L/min a 25 L/min</td>
+            <td><input type="number" step="0.1" id="tag28" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 29</td>
+            <td>Presión salida del EDIC</td>
+            <td>4 PSI a 9 PSI</td>
+            <td><input type="number" step="0.1" id="tag29" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 43</td>
+            <td>Presión rechazo membranas ósmosis inversa</td>
+            <td>10 bar a 13,5 bar</td>
+            <td><input type="number" step="0.1" id="tag43" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 38</td>
+            <td>Presión de permeado</td>
+            <td>0,5 bar a 4 bar</td>
+            <td><input type="number" step="0.1" id="tag38" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 37</td>
+            <td>Presión entrada membranas ósmosis inversa</td>
+            <td>10 bar a 14 bar</td>
+            <td><input type="number" step="0.1" id="tag37" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 33</td>
+            <td>Resistividad agua EDIC</td>
+            <td>1 MΩ*cm a 19 MΩ*cm</td>
+            <td><input type="number" step="0.1" id="tag33" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 53</td>
+            <td>Tensión eléctrica en continua del EDIC</td>
+            <td>10 VDC a 95 VDC</td>
+            <td><input type="number" step="0.1" id="tag53" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 54</td>
+            <td>Intensidad eléctrica en continua del EDIC</td>
+            <td>0,5 A hasta 6 A</td>
+            <td><input type="number" step="0.1" id="tag54" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 47</td>
+            <td>Conductividad salida membranas ósmosis inversa</td>
+            <td>Máx. 10 µS/cm</td>
+            <td><input type="number" step="0.1" id="tag47" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 50</td>
+            <td>Test dureza total Ca y Mg</td>
+            <td>Verde = Sin dureza<br>Rojo = Con dureza</td>
+            <td>
+              <select id="tag50" class="input-field" style="margin:0;">
+                <option value="Verde">Verde (Sin dureza)</option>
+                <option value="Rojo">Rojo (Con dureza)</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>TAG 51</td>
+            <td>ORP (Presencia de Cl)</td>
+            <td>Menor a 400 mV</td>
+            <td><input type="number" step="0.1" id="tag51" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 71</td>
+            <td>Valor dial dosificador metabisulfito de sodio</td>
+            <td>25 a 100</td>
+            <td><input type="number" step="0.1" id="tag71_dial" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 71</td>
+            <td>Nivel solución tanque metabisulfito de sodio</td>
+            <td>10 L hasta 50 L</td>
+            <td><input type="number" step="0.1" id="tag71_nivel" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 70</td>
+            <td>Temperatura tanque agua purificada #2</td>
+            <td>Menor a 34 ºC</td>
+            <td><input type="number" step="0.1" id="tag70" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 42</td>
+            <td>pH Salida EDIC</td>
+            <td>5 a 7</td>
+            <td><input type="number" step="0.1" id="tag42" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 73</td>
+            <td>Lámpara UV Tanque agua purificada #1</td>
+            <td>365 días a 30 días</td>
+            <td><input type="number" id="tag73" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 110</td>
+            <td>Lámpara UV Tanque agua purificada #2</td>
+            <td>365 días a 30 días</td>
+            <td><input type="number" id="tag110" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 74</td>
+            <td>Lámpara UV #1 salida EDIC</td>
+            <td>365 días a 30 días</td>
+            <td><input type="number" id="tag74" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 75</td>
+            <td>Lámpara UV #2 salida EDIC</td>
+            <td>365 días a 30 días</td>
+            <td><input type="number" id="tag75" class="input-field" style="margin:0;"></td>
+          </tr>
+          <tr>
+            <td>TAG 52</td>
+            <td>Presión agua acueducto</td>
+            <td>15 PSI a 60 PSI</td>
+            <td><input type="number" step="0.1" id="tag52" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
+          </tr>
+          <tr>
+            <td>TAG 80</td>
+            <td>Presión salida agua filtro multimedia 1</td>
+            <td>20 PSI a 60 PSI</td>
+            <td><input type="number" step="0.1" id="tag80" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
+          </tr>
+          <tr class="calculated-val">
+            <td>Calculado</td>
+            <td>Diferencial presión filtro multimedia 1 (TAG52 - TAG80)</td>
+            <td>Menor a 10 PSI</td>
+            <td><span id="diff_m1">0.00</span> PSI</td>
+          </tr>
+          <tr>
+            <td>TAG 81</td>
+            <td>Presión salida agua filtro multimedia 2</td>
+            <td>20 PSI a 60 PSI</td>
+            <td><input type="number" step="0.1" id="tag81" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
+          </tr>
+          <tr class="calculated-val">
+            <td>Calculado</td>
+            <td>Diferencial presión filtro multimedia 2 (TAG80 - TAG81)</td>
+            <td>Menor a 10 PSI</td>
+            <td><span id="diff_m2">0.00</span> PSI</td>
+          </tr>
+          <tr>
+            <td>TAG 82</td>
+            <td>Presión salida filtro de 10 micras</td>
+            <td>20 PSI a 60 PSI</td>
+            <td><input type="number" step="0.1" id="tag82" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
+          </tr>
+          <tr class="calculated-val">
+            <td>Calculado</td>
+            <td>Diferencial presión filtro 10 micras (TAG81 - TAG82)</td>
+            <td>Menor a 10 PSI</td>
+            <td><span id="diff_f10">0.00</span> PSI</td>
+          </tr>
+          <tr>
+            <td>TAG 83</td>
+            <td>Presión salida filtro de 5 micras</td>
+            <td>20 PSI a 60 PSI</td>
+            <td><input type="number" step="0.1" id="tag83" class="input-field" style="margin:0;" oninput="calcularDiffs()"></td>
+          </tr>
+          <tr class="calculated-val">
+            <td>Calculado</td>
+            <td>Diferencial presión filtro 5 micras (TAG82 - TAG83)</td>
+            <td>Menor a 10 PSI</td>
+            <td><span id="diff_f5">0.00</span> PSI</td>
+          </tr>
+          <tr>
+            <td>Inspección</td>
+            <td>Presencia de fuga de agua</td>
+            <td>SI o NO</td>
+            <td>
+              <select id="fugas" class="input-field" style="margin:0;">
+                <option value="NO">NO</option>
+                <option value="SI">SI</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- SECCIÓN DE OBSERVACIONES -->
+      <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
+      <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
+
+      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
+      <table style="width: 100%; font-size: 12px; margin-top: 15px;">
+        <tr>
+          <td style="width: 50%; padding-right: 10px; vertical-align: top;">
+            <b>Responsable:</b> <span id="tec-nombre">Técnico de Mantenimiento</span><br>
+            <b>Cargo:</b> Técnico de Mantenimiento<br><br>
+            
+            <!-- Bloque Firma Técnico -->
+            <div id="block-tech-sig">
+              <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
+              <div class="canvas-container" id="container-canvas-tech">
+                <canvas id="signature-tech"></canvas>
+                <img id="img-tech-sig" class="hidden firma-img" alt="Firma Técnico">
+              </div>
+              <div id="fecha-tec" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
+              <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
+            </div>
+          </td>
+
+          <td style="width: 50%; padding-left: 10px; vertical-align: top;">
+            <b>Revisado por:</b> Jorge Alberto Mendoza Ospina<br>
+            <b>Cargo:</b> Coordinador de Mantenimiento<br><br>
+
+            <!-- Bloque Firma Coordinador -->
+            <div id="block-admin-sig" class="hidden">
+              <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
+              <div class="canvas-container">
+                <canvas id="signature-admin"></canvas>
+                <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
+              </div>
+              <div id="fecha-adm" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
+              <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
@@ -102,7 +494,7 @@
       return false;
     };
 
-    // ---------- CONFIGURACIÓN ----------
+    // ---------- CONFIGURACIÓN GENERAL ----------
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
@@ -110,8 +502,6 @@
 
     var EMAILJS_SERVICE_ID = "service_m3xvu2j";
     var EMAILJS_TEMPLATE_ID = "template_loi9vam";
-    // La primera letra puede ser "I" mayúscula o "l" minúscula, y la "O" puede ser cero.
-    // La app prueba las variantes hasta que una funcione.
     var EMAILJS_PUBLIC_KEYS = [
       "I_6FNZetkO_cSgx5A",
       "l_6FNZetkO_cSgx5A",
@@ -120,9 +510,9 @@
     ];
     if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
 
-    // ===== INICIO BLOQUE API =====
+    // ===== INICIO BLOQUE API REST DE FIREBASE =====
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
-    var sesion = null; // { email, idToken, refreshToken, expira }
+    var sesion = null; // { rol, email, idToken, refreshToken, expira }
 
     function guardarSesion(s) {
       sesion = s;
@@ -139,7 +529,7 @@
       } catch (e) { return null; }
     }
 
-    // fetch con tiempo límite y errores claros
+    // Peticiones fetch con tiempo límite (timeout) y diagnóstico de red
     async function pedir(url, opciones, limiteMs) {
       var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
       var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, limiteMs || 20000);
@@ -252,7 +642,6 @@
       return deCampos(d.fields);
     }
 
-    // Solo se pueden agregar estos 4 campos; la firma del técnico no se puede tocar
     async function firmarReporte(id, datos) {
       var token = await tokenValido();
       var mascara = ['firmaAdm', 'fechaApr', 'horaApr', 'estado']
@@ -263,7 +652,7 @@
         body: JSON.stringify({ fields: aCampos(datos) })
       });
     }
-    // ===== FIN BLOQUE API =====
+    // ===== FIN BLOQUE API REST =====
 
     var urlParams = new URLSearchParams(window.location.search);
     var modo = urlParams.get('mode');
@@ -274,12 +663,18 @@
 
     var padTech, padAdmin;
 
-    // Fecha y hora en horario de Colombia
+    // Fecha, hora y estampa de tiempo en horario de Colombia
     function ahora() {
       var d = new Date();
       return {
         fecha: d.toLocaleDateString('es-CO', { timeZone: 'America/Bogota', day: '2-digit', month: '2-digit', year: 'numeric' }),
-        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: true })
+        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: true }),
+        stamp: d.getFullYear().toString() +
+               (d.getMonth() + 1).toString().padStart(2, '0') +
+               d.getDate().toString().padStart(2, '0') +
+               d.getHours().toString().padStart(2, '0') +
+               d.getMinutes().toString().padStart(2, '0') +
+               d.getSeconds().toString().padStart(2, '0')
       };
     }
 
@@ -290,7 +685,6 @@
         aprFecha ? "<b>Visto bueno del coordinador:</b> " + aprFecha + " - " + aprHora : "";
     }
 
-    // Convierte la firma dibujada en una imagen JPEG liviana
     function firmaImagen(canvas, ancho, calidad) {
       var h = Math.round(ancho * canvas.height / canvas.width);
       var c = document.createElement('canvas');
@@ -303,7 +697,7 @@
       return c.toDataURL('image/jpeg', calidad);
     }
 
-    // Envía el correo probando las variantes de la llave de EmailJS
+    // Bucle de envío con variantes de llaves públicas de EmailJS
     async function enviarCorreo(params) {
       var ultimoError = null;
       for (var i = 0; i < EMAILJS_PUBLIC_KEYS.length; i++) {
@@ -339,7 +733,32 @@
       return "Error: " + (e.apiMessage || e.message || "desconocido");
     }
 
-    // ---------- LOGIN ----------
+    // Cálculo automático de los 5 diferenciales de presión exigidos
+    function calcularDiffs() {
+      var v34 = parseFloat(document.getElementById('tag34').value) || 0;
+      var v35 = parseFloat(document.getElementById('tag35').value) || 0;
+      document.getElementById('diff_micro1').innerText = (v34 - v35).toFixed(2);
+
+      var v52 = parseFloat(document.getElementById('tag52').value) || 0;
+      var v80 = parseFloat(document.getElementById('tag80').value) || 0;
+      document.getElementById('diff_m1').innerText = (v52 - v80).toFixed(2);
+
+      var v81 = parseFloat(document.getElementById('tag81').value) || 0;
+      document.getElementById('diff_m2').innerText = (v80 - v81).toFixed(2);
+
+      var v82 = parseFloat(document.getElementById('tag82').value) || 0;
+      document.getElementById('diff_f10').innerText = (v81 - v82).toFixed(2);
+
+      var v83 = parseFloat(document.getElementById('tag83').value) || 0;
+      document.getElementById('diff_f5').innerText = (v82 - v83).toFixed(2);
+    }
+
+    // Nombre estandarizado para la descarga del PDF
+    function obtenerNombrePDF() {
+      return ahora().stamp + "_CVSAG005-F001.pdf";
+    }
+
+    // ---------- PROCESO DE AUTENTICACIÓN ----------
     async function procesarLogin() {
       var emailValue = document.getElementById('email').value.trim().toLowerCase();
       var passwordValue = document.getElementById('password').value;
@@ -384,18 +803,20 @@
       var canvasAdmin = document.getElementById('signature-admin');
       var imgTechSig = document.getElementById('img-tech-sig');
       var imgAdminSig = document.getElementById('img-admin-sig');
-      var clientInput = document.getElementById('client-name');
-      var workInput = document.getElementById('work-description');
       var btnClearTech = document.getElementById('btn-clear-tech');
       var btnClearAdmin = document.getElementById('btn-clear-admin');
       var blockAdmin = document.getElementById('block-admin-sig');
       var homeCoord = document.getElementById('home-coord');
 
-      var datosReporte = null;      // datos cargados desde la base de datos
-      var vistaFinal = false;       // true = reporte ya aprobado (solo lectura)
-      var aprobadoGuardado = false; // true = la firma del coordinador ya quedó guardada
+      var datosReporte = null;
+      var vistaFinal = false;
+      var aprobadoGuardado = false;
       var infoAprobacion = null;
       var cargaFallida = false;
+
+      var tNow = ahora();
+      document.getElementById('fecha-auto').value = tNow.fecha;
+      document.getElementById('hora-auto').value = tNow.hora;
 
       function resizeCanvas(canvas, pad) {
         if (!canvas || canvas.classList.contains('hidden')) return;
@@ -406,14 +827,45 @@
         if (pad) pad.clear();
       }
 
-      // Muestra los datos del técnico (solo lectura: el coordinador NO puede cambiarlos)
+      // Carga y bloquea todos los campos para el coordinador (solo lectura de lo ingresado por el técnico)
       function ponerDatosTecnico(d) {
-        clientInput.value = d.cliente || '';
-        workInput.value = d.detalle || '';
-        clientInput.disabled = true;
-        workInput.disabled = true;
-        workInput.style.height = 'auto';
-        workInput.style.height = workInput.scrollHeight + 'px';
+        document.getElementById('tag34').value = d.tag34 || '';
+        document.getElementById('tag35').value = d.tag35 || '';
+        document.getElementById('tag39a').value = d.tag39a || '';
+        document.getElementById('tag39b').value = d.tag39b || '';
+        document.getElementById('tag27').value = d.tag27 || '';
+        document.getElementById('tag30').value = d.tag30 || '';
+        document.getElementById('tag28').value = d.tag28 || '';
+        document.getElementById('tag29').value = d.tag29 || '';
+        document.getElementById('tag43').value = d.tag43 || '';
+        document.getElementById('tag38').value = d.tag38 || '';
+        document.getElementById('tag37').value = d.tag37 || '';
+        document.getElementById('tag33').value = d.tag33 || '';
+        document.getElementById('tag53').value = d.tag53 || '';
+        document.getElementById('tag54').value = d.tag54 || '';
+        document.getElementById('tag47').value = d.tag47 || '';
+        document.getElementById('tag50').value = d.tag50 || 'Verde';
+        document.getElementById('tag51').value = d.tag51 || '';
+        document.getElementById('tag71_dial').value = d.tag71_dial || '';
+        document.getElementById('tag71_nivel').value = d.tag71_nivel || '';
+        document.getElementById('tag70').value = d.tag70 || '';
+        document.getElementById('tag42').value = d.tag42 || '';
+        document.getElementById('tag73').value = d.tag73 || '';
+        document.getElementById('tag110').value = d.tag110 || '';
+        document.getElementById('tag74').value = d.tag74 || '';
+        document.getElementById('tag75').value = d.tag75 || '';
+        document.getElementById('tag52').value = d.tag52 || '';
+        document.getElementById('tag80').value = d.tag80 || '';
+        document.getElementById('tag81').value = d.tag81 || '';
+        document.getElementById('tag82').value = d.tag82 || '';
+        document.getElementById('tag83').value = d.tag83 || '';
+        document.getElementById('fugas').value = d.fugas || 'NO';
+        document.getElementById('observaciones').value = d.observaciones || '';
+        calcularDiffs();
+
+        // Deshabilitar todos los controles
+        var inputs = document.querySelectorAll('#pdf-area input, #pdf-area select, #pdf-area textarea');
+        inputs.forEach(function(inp) { inp.disabled = true; });
 
         canvasTech.classList.add('hidden');
         btnClearTech.classList.add('hidden');
@@ -425,8 +877,8 @@
       function mostrarSoloLectura(d) {
         vistaFinal = true;
         ponerDatosTecnico(d);
-        badge.innerText = "Reporte aprobado";
-        titulo.innerText = "Reporte de Servicio";
+        badge.innerText = "Reporte Aprobado";
+        titulo.innerText = "Lista de Chequeo Planta de Agua Purificada";
         blockAdmin.classList.remove('hidden');
         canvasAdmin.classList.add('hidden');
         btnClearAdmin.classList.add('hidden');
@@ -459,7 +911,6 @@
         alert(detalle);
       }
 
-      // ----- Técnico: pantallas -----
       function mostrarLogin() {
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
@@ -497,12 +948,10 @@
         iniciarPadTecnico();
       }
 
-      // Carga el reporte desde la base de datos (coordinador o visor)
       function cargarReporte() {
         loginScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         mainScreen.classList.remove('hidden');
-        // El botón Salir solo aparece para el coordinador (el visor del correo no inicia sesión)
         document.getElementById('btn-logout').classList.toggle('hidden', !modoAprobar);
         userDisplay.innerText = "Cargando reporte...";
         badge.innerText = "Cargando...";
@@ -511,7 +960,7 @@
         btnSubmit.style.background = "#6b7280";
 
         if (!reporteId) {
-          fallaCarga("Enlace no válido", "Este enlace es de una versión anterior. Pide al técnico que envíe el reporte de nuevo.");
+          fallaCarga("Enlace no válido", "Este enlace no es válido. Pide al técnico que reenvíe la notificación.");
           return;
         }
         leerReporte(reporteId).then(function(d) {
@@ -535,15 +984,12 @@
       };
 
       if (modoVer) {
-        // ----- Visor del correo: solo lectura, sin login -----
         cargarReporte();
       } else if (modoAprobar) {
-        // ----- Coordinador: debe iniciar sesión (una vez; luego sigue activa) -----
         sesion = leerSesion();
         if (sesion && sesion.refreshToken) cargarReporte();
         else pedirLoginCoordinador();
       } else {
-        // ----- Técnico: si ya inició sesión antes, entra directo -----
         sesion = leerSesion();
         if (sesion && sesion.refreshToken) {
           if (sesion.rol === 'coordinador') mostrarHomeCoord("");
@@ -559,9 +1005,9 @@
         var textoOriginal = btnSubmit.innerText;
         btnSubmit.innerText = "Generando PDF...";
         try {
-          await new Promise(function(r) { setTimeout(r, 400); }); // deja cargar las firmas
-          var nombre = ((datosReporte && datosReporte.cliente) || 'servicio').replace(/[^\w\-]+/g, '_');
-          await html2pdf().set({ margin: 10, filename: 'Reporte_' + nombre + '.pdf', html2canvas: { scale: 2, useCORS: true } })
+          await new Promise(function(r) { setTimeout(r, 400); });
+          var nombre = obtenerNombrePDF();
+          await html2pdf().set({ margin: 8, filename: nombre, html2canvas: { scale: 2, useCORS: true } })
             .from(document.getElementById('pdf-area')).save();
         } catch (e) {
           alert("No se pudo generar el PDF: " + (e.message || e));
@@ -572,37 +1018,63 @@
 
       btnSubmit.onclick = async function() {
         if (cargaFallida) { window.location.reload(); return; }
-        // ----- Reporte ya aprobado: solo descargar -----
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
         if (!modoAprobar) {
-          // ----- TÉCNICO: guarda el reporte y abre WhatsApp con un enlace corto -----
-          if (!padTech || padTech.isEmpty()) { alert("Firma requerida."); return; }
-          if (!clientInput.value || !workInput.value) { alert("Complete todos los campos del reporte."); return; }
+          // ----- ACCIÓN TÉCNICO -----
+          if (!padTech || padTech.isEmpty()) { alert("Firma del técnico requerida."); return; }
 
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Guardando reporte...";
           try {
             var t = ahora();
-            var id = await crearReporte({
-              cliente: clientInput.value,
-              detalle: workInput.value,
+            var payload = {
               fecha: t.fecha,
               hora: t.hora,
               firmaTec: firmaImagen(canvasTech, 400, 0.7),
               estado: 'pendiente',
-              tecnico: sesion ? sesion.email : ''
-            });
+              tecnico: sesion ? sesion.email : '',
+              tag34: document.getElementById('tag34').value,
+              tag35: document.getElementById('tag35').value,
+              tag39a: document.getElementById('tag39a').value,
+              tag39b: document.getElementById('tag39b').value,
+              tag27: document.getElementById('tag27').value,
+              tag30: document.getElementById('tag30').value,
+              tag28: document.getElementById('tag28').value,
+              tag29: document.getElementById('tag29').value,
+              tag43: document.getElementById('tag43').value,
+              tag38: document.getElementById('tag38').value,
+              tag37: document.getElementById('tag37').value,
+              tag33: document.getElementById('tag33').value,
+              tag53: document.getElementById('tag53').value,
+              tag54: document.getElementById('tag54').value,
+              tag47: document.getElementById('tag47').value,
+              tag50: document.getElementById('tag50').value,
+              tag51: document.getElementById('tag51').value,
+              tag71_dial: document.getElementById('tag71_dial').value,
+              tag71_nivel: document.getElementById('tag71_nivel').value,
+              tag70: document.getElementById('tag70').value,
+              tag42: document.getElementById('tag42').value,
+              tag73: document.getElementById('tag73').value,
+              tag110: document.getElementById('tag110').value,
+              tag74: document.getElementById('tag74').value,
+              tag75: document.getElementById('tag75').value,
+              tag52: document.getElementById('tag52').value,
+              tag80: document.getElementById('tag80').value,
+              tag81: document.getElementById('tag81').value,
+              tag82: document.getElementById('tag82').value,
+              tag83: document.getElementById('tag83').value,
+              fugas: document.getElementById('fugas').value,
+              observaciones: document.getElementById('observaciones').value
+            };
 
+            var id = await crearReporte(payload);
             var link = baseUrl + "?mode=aprobar&id=" + id;
-            var texto = "*REPORTE TÉCNICO*\nCliente: " + clientInput.value +
-                        "\nFecha: " + t.fecha + " " + t.hora +
+            var texto = "*LISTA DE CHEQUEO PLANTA AGUA PURIFICADA*\nCódigo: CVSAG005-F001\nFecha: " + t.fecha + " " + t.hora +
                         "\nEnlace de aprobación: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
 
-            // Deja el formulario limpio para otro reporte
-            clientInput.value = "";
-            workInput.value = "";
+            // Limpiar firmas e inputs tras guardar
             padTech.clear();
             btnSubmit.innerText = "¡Enviado! Puedes hacer otro reporte";
             setTimeout(function() { btnSubmit.innerText = "Enviar a WhatsApp"; }, 4000);
@@ -611,7 +1083,7 @@
             if (!w) window.location.href = waUrl;
           } catch (e) {
             if (e.code === 'sin-sesion' || e.status === 401) {
-              alert("Tu sesión venció. Inicia sesión otra vez (lo que escribiste no se pierde).");
+              alert("Tu sesión venció. Inicia sesión otra vez.");
               guardarSesion(null);
               mostrarLogin();
             } else {
@@ -621,7 +1093,7 @@
           }
           btnSubmit.disabled = false;
         } else {
-          // ----- COORDINADOR: firma, guarda y envía el correo -----
+          // ----- ACCIÓN COORDINADOR -----
           if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma."); return; }
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Enviando...";
@@ -643,8 +1115,8 @@
             var linkReporte = baseUrl + "?mode=ver&id=" + reporteId;
             await enviarCorreo({
               to_email: CORREOS_DESTINO,
-              cliente: datosReporte.cliente,
-              detalle: datosReporte.detalle,
+              cliente: "PLANTA AGUA PURIFICADA (CVSAG005-F001)",
+              detalle: document.getElementById('observaciones').value || "Lista de Chequeo Diligenciada",
               fecha_reporte: datosReporte.fecha || '',
               hora_reporte: datosReporte.hora || '',
               fecha_aprobacion: infoAprobacion.fecha,
@@ -658,7 +1130,7 @@
             btnSubmit.disabled = false;
           } catch (err) {
             if (!aprobadoGuardado && (err.code === 'sin-sesion' || err.status === 401)) {
-              alert("Tu sesión venció. Inicia sesión otra vez para aprobar este reporte.");
+              alert("Tu sesión venció. Inicia sesión otra vez.");
               guardarSesion(null);
               pedirLoginCoordinador();
               btnSubmit.disabled = false;
