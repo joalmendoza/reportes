@@ -562,9 +562,9 @@
     ];
     if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
 
-    // ===== INICIO BLOQUE API REST DE FIREBASE (ALINEADO CON REGLAS DE FIRESTORE) =====
+    // ===== BLOQUE API REST FIREBASE =====
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
-    var COLECCION = "chequeosPAP"; // Alineado con match /chequeosPAP/{id}
+    var COLECCION = "chequeosPAP";
     var sesion = null;
 
     function guardarSesion(s) {
@@ -696,7 +696,6 @@
 
     async function firmarReporte(id, datos) {
       var token = await tokenValido();
-      // Alineado exactamente con las llaves permitidas por la regla: firmaAdm, fechaFirmaAdm, estado
       var mascara = ['firmaAdm', 'fechaFirmaAdm', 'estado']
         .map(function(k) { return "updateMask.fieldPaths=" + k; }).join("&");
       await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
@@ -705,7 +704,6 @@
         body: JSON.stringify({ fields: aCampos(datos) })
       });
     }
-    // ===== FIN BLOQUE API REST =====
 
     var urlParams = new URLSearchParams(window.location.search);
     var modo = urlParams.get('mode');
@@ -716,7 +714,6 @@
 
     var padTech, padAdmin;
 
-    // FECHA EN FORMATO: YYYY-MM-DD
     function ahora() {
       var d = new Date();
       var year = d.getFullYear();
@@ -787,7 +784,7 @@
       return "Error: " + (e.apiMessage || e.message || "desconocido");
     }
 
-    // EVALUACIÓN DE RANGOS DE OPERACIÓN Y ALERTAS
+    // EVALUACIÓN DE RANGOS DE OPERACIÓN, ALERTAS Y OBSERVACIONES
     function evaluarRangos() {
       var v34 = parseFloat(document.getElementById('tag34').value);
       var v35 = parseFloat(document.getElementById('tag35').value);
@@ -870,15 +867,15 @@
         if (typeof v === 'string') {
           if (r.exact && v !== r.exact) {
             fuera = true;
-            msgDesc = r.label + " fuera de rango (Valor: " + v + ")";
+            msgDesc = r.label + " fuera de especificación (Valor: " + v + ")";
           }
         } else if (!isNaN(v)) {
           if (r.min !== undefined && v < r.min) {
             fuera = true;
-            msgDesc = r.label + " bajo rango (Valor: " + v + " " + (r.unit||'') + " | Min: " + r.min + ")";
+            msgDesc = r.label + " bajo especificación (Valor: " + v + " " + (r.unit||'') + " | Min: " + r.min + ")";
           } else if (r.max !== undefined && v > r.max) {
             fuera = true;
-            msgDesc = r.label + " sobre rango (Valor: " + v + " " + (r.unit||'') + " | Máx: " + r.max + ")";
+            msgDesc = r.label + " sobre especificación (Valor: " + v + " " + (r.unit||'') + " | Máx: " + r.max + ")";
           }
         }
 
@@ -893,18 +890,48 @@
       var obsTextarea = document.getElementById('observaciones');
       if (obsTextarea) {
         if (desviaciones.length > 0) {
-          obsTextarea.value = "VALORES FUERA DE RANGO DETECTADOS:\n- " + desviaciones.join("\n- ");
-        } else if (obsTextarea.value.indexOf("VALORES FUERA DE RANGO DETECTADOS:") === 0) {
+          obsTextarea.value = "VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n- " + desviaciones.join("\n- ");
+        } else if (obsTextarea.value.indexOf("VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:") === 0) {
           obsTextarea.value = "";
         }
       }
+    }
+
+    // VALIDACIÓN OBLIGATORIA DE TODAS LAS CASILLAS
+    function validarFormularioCompleto() {
+      var listaIds = [
+        { id: 'tag34', nombre: 'TAG 34' }, { id: 'tag35', nombre: 'TAG 35' },
+        { id: 'tag39a', nombre: 'TAG 39A' }, { id: 'tag39b', nombre: 'TAG 39B' },
+        { id: 'tag27', nombre: 'TAG 27' }, { id: 'tag30', nombre: 'TAG 30' },
+        { id: 'tag28', nombre: 'TAG 28' }, { id: 'tag29', nombre: 'TAG 29' },
+        { id: 'tag43', nombre: 'TAG 43' }, { id: 'tag38', nombre: 'TAG 38' },
+        { id: 'tag37', nombre: 'TAG 37' }, { id: 'tag33', nombre: 'TAG 33' },
+        { id: 'tag53', nombre: 'TAG 53' }, { id: 'tag54', nombre: 'TAG 54' },
+        { id: 'tag47', nombre: 'TAG 47' }, { id: 'tag51', nombre: 'TAG 51' },
+        { id: 'tag71_dial', nombre: 'TAG 71 (Dial)' }, { id: 'tag71_nivel', nombre: 'TAG 71 (Nivel)' },
+        { id: 'tag70', nombre: 'TAG 70' }, { id: 'tag42', nombre: 'TAG 42' },
+        { id: 'tag73', nombre: 'TAG 73' }, { id: 'tag110', nombre: 'TAG 110' },
+        { id: 'tag74', nombre: 'TAG 74' }, { id: 'tag75', nombre: 'TAG 75' },
+        { id: 'tag52', nombre: 'TAG 52' }, { id: 'tag80', nombre: 'TAG 80' },
+        { id: 'tag81', nombre: 'TAG 81' }, { id: 'tag82', nombre: 'TAG 82' },
+        { id: 'tag83', nombre: 'TAG 83' }
+      ];
+
+      for (var i = 0; i < listaIds.length; i++) {
+        var el = document.getElementById(listaIds[i].id);
+        if (!el || el.value.trim() === "") {
+          alert("Por favor diligencie la casilla: " + listaIds[i].nombre);
+          if (el) el.focus();
+          return false;
+        }
+      }
+      return true;
     }
 
     function obtenerNombrePDF() {
       return ahora().stamp + "_CVSAG005-F001.pdf";
     }
 
-    // ---------- PROCESO DE AUTENTICACIÓN ----------
     async function procesarLogin() {
       var emailValue = document.getElementById('email').value.trim().toLowerCase();
       var passwordValue = document.getElementById('password').value;
@@ -1148,7 +1175,7 @@
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
-      // GENERACIÓN DE PDF ROBUSTA Y CON ENCABEZADOS POR PÁGINA
+      // GENERACIÓN DE PDF DIRECTA Y DIRECTA SOBRE LA VISTA
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
@@ -1158,54 +1185,39 @@
           var pdfArea = document.getElementById('pdf-area');
           document.body.classList.add('is-generating-pdf');
 
-          // Crear un contenedor de renderizado aislado con ancho A4 fijo (794px)
-          var cloneContainer = document.createElement('div');
-          cloneContainer.style.position = 'absolute';
-          cloneContainer.style.left = '-9999px';
-          cloneContainer.style.top = '0';
-          cloneContainer.style.width = '794px';
-          cloneContainer.style.background = '#ffffff';
-          cloneContainer.style.padding = '20px';
-          
-          var clonedArea = pdfArea.cloneNode(true);
+          // Reemplazar temporalmente los inputs por etiquetas de texto plano para renderizado óptimo
+          var inputs = pdfArea.querySelectorAll('input, select, textarea');
+          var reponer = [];
 
-          // Reemplazar inputs por spans en el clon para rendering perfecto
-          var originalInputs = pdfArea.querySelectorAll('input, select, textarea');
-          var clonedInputs = clonedArea.querySelectorAll('input, select, textarea');
-
-          for (var i = 0; i < originalInputs.length; i++) {
-            var orig = originalInputs[i];
-            var clone = clonedInputs[i];
-            var valText = (orig.tagName === 'SELECT') ? orig.options[orig.selectedIndex].text : orig.value;
-            
+          inputs.forEach(function(inp) {
+            var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
             var span = document.createElement('span');
             span.style.fontWeight = 'bold';
             span.style.color = '#000';
             span.style.fontSize = '12px';
             span.innerText = valText || ' ';
-            
-            if (clone.parentNode) {
-              clone.parentNode.insertBefore(span, clone);
-              clone.parentNode.removeChild(clone);
-            }
-          }
-
-          cloneContainer.appendChild(clonedArea);
-          document.body.appendChild(cloneContainer);
+            inp.parentNode.insertBefore(span, inp);
+            inp.style.display = 'none';
+            reponer.push({ inp: inp, span: span });
+          });
 
           var nombre = obtenerNombrePDF();
           var opt = {
             margin: [8, 8, 8, 8],
             filename: nombre,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, width: 794 },
+            html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          await html2pdf().set(opt).from(clonedArea).save();
+          await html2pdf().set(opt).from(pdfArea).save();
 
-          document.body.removeChild(cloneContainer);
+          // Restaurar vista interactiva
+          reponer.forEach(function(item) {
+            item.inp.style.display = '';
+            item.span.remove();
+          });
           document.body.classList.remove('is-generating-pdf');
 
         } catch (e) {
@@ -1222,6 +1234,8 @@
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
         if (!modoAprobar) {
+          // VALIDAR QUE TODAS LAS CASILLAS ESTÉN DILIGENCIADAS
+          if (!validarFormularioCompleto()) { return; }
           if (!padTech || padTech.isEmpty()) { alert("Firma del técnico requerida."); return; }
 
           btnSubmit.disabled = true;
@@ -1300,7 +1314,6 @@
               var a = ahora();
               var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
               
-              // Se guarda firmaAdm y fechaFirmaAdm conforme a la regla de Firestore
               await firmarReporte(reporteId, {
                 firmaAdm: firmaImagen(canvasAdmin, 400, 0.7),
                 fechaFirmaAdm: fechaFirmaAdmTexto,
