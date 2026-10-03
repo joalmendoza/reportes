@@ -59,7 +59,7 @@
     }
     canvas {
       width: 100%;
-      height: 180px; /* Recuadro más alto y espacioso para la pantalla */
+      height: 140px;
       display: block;
       border-radius: 8px;
     }
@@ -149,51 +149,13 @@
       margin: 12px 0 8px 0;
     }
 
-    /* REGLAS PARA SALTO DE PÁGINA EN PDF Y REPETICIÓN DE ENCABEZADOS */
-    .page-break {
-      page-break-before: always;
-      break-before: page;
-      margin-top: 15px;
-    }
-
-    .pdf-header-repeat {
+    /* REGLAS PARA SALTO DE PÁGINA EN PDF Y REPETICIÓN DE ENCABEZADO */
+    .pdf-only {
       display: none;
     }
 
-    .is-generating-pdf .pdf-header-repeat {
-      display: table !important;
-    }
-
-    /* ESTRUCTURA FLEXIBLE DE FIRMAS EN PANTALLA VS PDF */
-    .signatures-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-top: 15px;
-    }
-
-    /* AL GENERAR EL PDF, LAS FIRMAS SE PONEN LADO A LADO EN 2 COLUMNAS AL 50% */
-    .is-generating-pdf .signatures-grid {
-      flex-direction: row !important;
-    }
-    .is-generating-pdf .sig-col {
-      width: 50% !important;
-    }
-
-    /* PIE DE PÁGINA PARA TRAZABILIDAD DOCUMENTAL */
-    .pdf-footer {
-      display: none;
-      font-size: 10px;
-      color: #4b5563;
-      margin-top: 20px;
-      padding-top: 8px;
-      border-top: 1px solid #cbd5e1;
-    }
-
-    .is-generating-pdf .pdf-footer {
-      display: flex !important;
-      justify-content: space-between;
-      align-items: center;
+    .printing .pdf-only {
+      display: table-row !important;
     }
   </style>
 
@@ -256,7 +218,7 @@
         </tr>
       </table>
 
-      <!-- CAMPOS AUTOMÁTICOS DE FECHA Y HORA -->
+      <!-- CAMPOS AUTOMÁTICOS DE FECHA (YYYY-MM-DD) Y HORA -->
       <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <div style="flex: 1;">
           <label style="font-weight: bold; font-size: 12px;">Fecha:</label>
@@ -419,11 +381,11 @@
             <td><input type="number" step="0.1" id="tag42" class="input-field" style="margin:0;" oninput="evaluarRangos()"></td>
           </tr>
 
-          <!-- SALTO DE PÁGINA CON REPETICIÓN DE ENCABEZADOS DE DOCUMENTO Y TABLA -->
-          <tr class="page-break">
+          <!-- PUNTO DE SALTO A PÁGINA 2 CON REPETICIÓN DE ENCABEZADO -->
+          <tr class="pdf-only">
             <td colspan="4" style="border:none; padding:0;">
-              <!-- ENCABEZADO DE DOCUMENTO REPETIDO -->
-              <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
+              <div style="page-break-before: always; break-before: page; height: 1px;"></div>
+              <table class="header-table" style="margin-top: 6px;">
                 <tr>
                   <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
                   <td style="width: 50%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
@@ -434,18 +396,6 @@
                     <b>Estado:</b> Vigente
                   </td>
                 </tr>
-              </table>
-
-              <!-- ENCABEZADO DE TABLA REPETIDO -->
-              <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
-                <thead>
-                  <tr>
-                    <th style="width: 15%;">Punto Control</th>
-                    <th style="width: 45%;">Descripción</th>
-                    <th style="width: 25%;">Rango Operación</th>
-                    <th style="width: 15%;">Indicación</th>
-                  </tr>
-                </thead>
               </table>
             </td>
           </tr>
@@ -547,40 +497,39 @@
       <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
 
       <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
-      <div class="signatures-grid">
-        <!-- BLOQUE TÉCNICO -->
-        <div id="block-tech-sig" class="sig-col" style="width: 100%;">
-          <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
-          <b>Cargo:</b> Técnico de Mantenimiento<br><br>
-          <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
-          <div class="canvas-container" id="container-canvas-tech">
-            <canvas id="signature-tech"></canvas>
-            <img id="img-tech-sig" class="hidden firma-img" alt="Firma Técnico">
-          </div>
-          <div id="fecha-tec" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
-          <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
-        </div>
+      <table style="width: 100%; font-size: 12px; margin-top: 15px;">
+        <tr>
+          <td style="width: 50%; padding-right: 10px; vertical-align: top;">
+            <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
+            <b>Cargo:</b> Técnico de Mantenimiento<br><br>
+            
+            <div id="block-tech-sig">
+              <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
+              <div class="canvas-container" id="container-canvas-tech">
+                <canvas id="signature-tech"></canvas>
+                <img id="img-tech-sig" class="hidden firma-img" alt="Firma Técnico">
+              </div>
+              <div id="fecha-tec" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
+              <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
+            </div>
+          </td>
 
-        <!-- BLOQUE COORDINADOR -->
-        <div id="block-admin-sig" class="sig-col hidden" style="width: 100%;">
-          <b>Revisado por:</b> Jorge Alberto Mendoza Ospina<br>
-          <b>Cargo:</b> Coordinador de Mantenimiento<br><br>
-          <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
-          <div class="canvas-container">
-            <canvas id="signature-admin"></canvas>
-            <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
-          </div>
-          <div id="fecha-adm" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
-          <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
-        </div>
-      </div>
+          <td style="width: 50%; padding-left: 10px; vertical-align: top;">
+            <b>Revisado por:</b> Jorge Alberto Mendoza Ospina<br>
+            <b>Cargo:</b> Coordinador de Mantenimiento<br><br>
 
-      <!-- PIE DE PÁGINA PARA TRAZABILIDAD EN EL PDF -->
-      <div class="pdf-footer">
-        <span id="pdf-doc-name" style="font-weight: bold;">CVSAG005-F001.pdf</span>
-        <span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span>
-      </div>
-
+            <div id="block-admin-sig" class="hidden">
+              <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
+              <div class="canvas-container">
+                <canvas id="signature-admin"></canvas>
+                <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
+              </div>
+              <div id="fecha-adm" style="font-size:13px; color:#374151; line-height:1.6; margin:6px 0 10px;"></div>
+              <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
@@ -778,9 +727,9 @@
 
     function pintarFechas(repFecha, repHora, aprFechaTexto) {
       document.getElementById('fecha-tec').innerHTML =
-        repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " - " + repHora : "";
+        repFecha ? "<b>Fecha y hora del reporte:</b> " + repFecha + " - " + repHora : "";
       document.getElementById('fecha-adm').innerHTML =
-        aprFechaTexto ? "<b>Visto bueno:</b> " + aprFechaTexto : "";
+        aprFechaTexto ? "<b>Visto bueno del coordinador:</b> " + aprFechaTexto : "";
     }
 
     function firmaImagen(canvas, ancho, calidad) {
@@ -1024,7 +973,6 @@
       var imgAdminSig = document.getElementById('img-admin-sig');
       var btnClearTech = document.getElementById('btn-clear-tech');
       var btnClearAdmin = document.getElementById('btn-clear-admin');
-      var blockTech = document.getElementById('block-tech-sig');
       var blockAdmin = document.getElementById('block-admin-sig');
       var homeCoord = document.getElementById('home-coord');
 
@@ -1100,8 +1048,6 @@
         ponerDatosTecnico(d);
         badge.innerText = "Reporte Aprobado";
         titulo.innerText = "Lista de Chequeo Planta de Agua Purificada";
-        
-        blockTech.classList.remove('hidden');
         blockAdmin.classList.remove('hidden');
         canvasAdmin.classList.add('hidden');
         btnClearAdmin.classList.add('hidden');
@@ -1115,11 +1061,7 @@
         ponerDatosTecnico(d);
         badge.innerText = "Modo Coordinador";
         titulo.innerText = "Aprobación de Servicio";
-        
-        // El coordinador ve lo que hizo y firmó el técnico, y ve su propio bloque para firmar a pantalla completa
-        blockTech.classList.remove('hidden');
         blockAdmin.classList.remove('hidden');
-        
         btnSubmit.innerText = "Firmar y Enviar a Correo";
         btnSubmit.style.background = "#2563eb";
         if (window.SignaturePad && !padAdmin) {
@@ -1173,11 +1115,6 @@
         mainScreen.classList.remove('hidden');
         userDisplay.innerText = sesion ? sesion.email : '';
         document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
-        
-        // En modo técnico solo se muestra la firma del técnico (Aprovechando todo el espacio)
-        blockTech.classList.remove('hidden');
-        blockAdmin.classList.add('hidden');
-        
         iniciarPadTecnico();
       }
 
@@ -1233,82 +1170,66 @@
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
-      // GENERACIÓN DE PDF DIRECTA CON PIE DE PÁGINA Y NUMERACIÓN Y ENCABEZADOS REPETIDOS
+      // GENERACIÓN DE PDF DIRECTA Y DIRECTA SOBRE LA VISTA
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
         btnSubmit.innerText = "Generando PDF...";
+        window.scrollTo(0, 0);
+
+        var pdfArea = document.getElementById('pdf-area');
+        var reponer = [];
 
         try {
-          var pdfArea = document.getElementById('pdf-area');
-          document.body.classList.add('is-generating-pdf');
-
-          // Mostrar ambas firmas para el PDF
-          blockTech.classList.remove('hidden');
-          blockAdmin.classList.remove('hidden');
-
-          var nombrePdf = obtenerNombrePDF();
-          document.getElementById('pdf-doc-name').innerText = nombrePdf;
-
-          // Reemplazar inputs por texto plano para visualización en el PDF
+          // 1) Convertir controles a texto plano en el DOM real
           var inputs = pdfArea.querySelectorAll('input, select, textarea');
-          var reponer = [];
-
           inputs.forEach(function(inp) {
             var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
             var span = document.createElement('span');
             span.style.fontWeight = 'bold';
             span.style.color = '#000';
             span.style.fontSize = '12px';
+            span.style.whiteSpace = 'pre-wrap';
             span.innerText = valText || ' ';
             inp.parentNode.insertBefore(span, inp);
             inp.style.display = 'none';
             reponer.push({ inp: inp, span: span });
           });
 
+          // 2) Asegurar que las imágenes de firma estén visibles
+          [imgTechSig, imgAdminSig].forEach(function(img) {
+            if (img && img.src) img.classList.remove('hidden');
+          });
+
+          // 3) Generar PDF; onclone activa las filas/encabezados solo-PDF en el clon
           var opt = {
             margin: [8, 8, 8, 8],
-            filename: nombrePdf,
+            filename: obtenerNombrePDF(),
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: '#ffffff',
+              logging: false,
+              scrollX: 0,
+              scrollY: 0,
+              onclone: function(doc) { doc.body.classList.add('printing'); }
+            },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          // Generar el documento PDF y numerar páginas dinámicamente
-          var worker = html2pdf().set(opt).from(pdfArea).toPdf();
-          
-          await worker.get('pdf').then(function(pdfObj) {
-            var totalPages = pdfObj.internal.getNumberOfPages();
-            for (var i = 1; i <= totalPages; i++) {
-              pdfObj.setPage(i);
-              // Actualiza los marcadores de número de página dentro del pie de página HTML
-              var pageNumEls = pdfArea.querySelectorAll('.pageNumber');
-              var totalPagesEls = pdfArea.querySelectorAll('.totalPages');
-              pageNumEls.forEach(function(el) { el.innerText = i; });
-              totalPagesEls.forEach(function(el) { el.innerText = totalPages; });
-            }
-          }).save();
-
-          // Restaurar la vista interactiva
+          await html2pdf().set(opt).from(pdfArea).save();
+        } catch (e) {
+          alert("No se pudo generar el PDF: " + (e && e.message ? e.message : e));
+        } finally {
           reponer.forEach(function(item) {
             item.inp.style.display = '';
             item.span.remove();
           });
-          
-          if (!modoAprobar && !modoVer && !vistaFinal) {
-            blockAdmin.classList.add('hidden');
-          }
-
-          document.body.classList.remove('is-generating-pdf');
-
-        } catch (e) {
-          document.body.classList.remove('is-generating-pdf');
-          alert("No se pudo generar el PDF: " + (e.message || e));
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = textoOriginal;
         }
-
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = textoOriginal;
       }
 
       btnSubmit.onclick = async function() {
@@ -1316,7 +1237,7 @@
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
         if (!modoAprobar) {
-          // VALIDACIÓN DE CAMPOS
+          // VALIDAR QUE TODAS LAS CASILLAS ESTÉN DILIGENCIADAS
           if (!validarFormularioCompleto()) { return; }
           if (!padTech || padTech.isEmpty()) { alert("Firma del técnico requerida."); return; }
 
