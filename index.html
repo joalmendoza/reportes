@@ -56,17 +56,18 @@
       position: relative;
       margin-bottom: 8px;
       touch-action: none;
+      width: 100%;
     }
     canvas {
       width: 100%;
-      height: 180px;
+      height: 220px; /* CUADRO AMPLIO Y ESPACIOSO PARA FIRMAR CÓMODAMENTE */
       display: block;
       border-radius: 8px;
     }
     .firma-img {
       width: 100%;
       height: auto;
-      max-height: 120px;
+      max-height: 140px;
       display: block;
       border-radius: 8px;
     }
@@ -1208,7 +1209,7 @@
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
-      // GENERACIÓN DE PDF ROBUSTA CON PIE DE PÁGINA NATIVO (NOMBRE PDF + NUMERACIÓN NÁTIVA)
+      // GENERACIÓN DE PDF ROBUSTA CON PIE DE PÁGINA NATIVO (NOMBRE PDF + NUMERACIÓN NATIVA)
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
@@ -1240,7 +1241,7 @@
           });
 
           var opt = {
-            margin: [8, 8, 12, 8], // Margen inferior suficiente para el pie de página
+            margin: [8, 8, 12, 8],
             filename: nombrePdf,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
@@ -1259,7 +1260,7 @@
             for (var i = 1; i <= totalPages; i++) {
               pdfObj.setPage(i);
               pdfObj.setFontSize(8);
-              pdfObj.setTextColor(100, 116, 139); // Color gris slate (#64748b)
+              pdfObj.setTextColor(100, 116, 139);
 
               // 1. Nombre del archivo a la izquierda inferior
               pdfObj.text(nombrePdf, 10, pageHeight - 6);
