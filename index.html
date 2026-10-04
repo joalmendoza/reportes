@@ -108,12 +108,13 @@
     }
     .header-table td, .param-table th, .param-table td {
       border: 1px solid #cbd5e1;
-      padding: 6px 8px;
+      padding: 6px 6px;
       text-align: left;
     }
     .param-table th {
       background-color: #f1f5f9;
       font-weight: bold;
+      text-align: center; /* Encabezados centrados */
     }
     .calculated-val {
       background-color: #f8fafc;
@@ -121,15 +122,21 @@
       color: #1e293b;
     }
 
-    /* CASILLA DE INDICACIÓN CON UNIDAD DE MEDIDA INTEGRADA */
+    /* CASILLA DE INDICACIÓN CON ANCHO Y ESPACIO OPTIMIZADO PARA MÓVIL */
     .input-unit-cell {
       display: flex;
       align-items: center;
       gap: 4px;
+      width: 100%;
     }
     .input-unit-cell input {
       flex: 1;
+      width: 100%;
+      min-width: 0;
       margin: 0;
+      padding: 6px 8px;
+      font-size: 13px;
+      box-sizing: border-box;
     }
     .unit-label {
       font-size: 11px;
@@ -143,7 +150,7 @@
       background: linear-gradient(to top right, transparent 48%, #64748b 49%, #64748b 51%, transparent 52%);
       background-color: #f1f5f9;
       padding: 0 !important;
-      width: 15%;
+      width: 12%;
       height: 32px;
     }
 
@@ -165,6 +172,7 @@
       font-weight: bold;
       border-radius: 4px;
       margin: 12px 0 8px 0;
+      text-align: center; /* Título centrado */
     }
 
     /* REGLAS PARA SALTO DE PÁGINA EN PDF Y REPETICIÓN DE ENCABEZADOS */
@@ -213,10 +221,10 @@
 
     <div>
       <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
-      <input type="email" id="email" class="input-field" placeholder="correo@empresa.com" value="joalmendoza@gmail.com">
+      <input type="email" id="email" class="input-field" placeholder="Ingrese su correo electrónico" value="">
 
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
-      <input type="password" id="password" class="input-field" placeholder="••••••••">
+      <input type="password" id="password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
       <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v5 | CVSAG005-F001</p>
@@ -275,10 +283,10 @@
       <table class="param-table">
         <thead>
           <tr>
-            <th style="width: 15%;">Punto Control</th>
-            <th style="width: 40%;">Descripción</th>
-            <th style="width: 25%;">Rango Operación</th>
-            <th style="width: 20%;">Indicación</th>
+            <th style="width: 12%;">Punto de Control</th>
+            <th style="width: 38%;">Descripción</th>
+            <th style="width: 22%;">Rango de Operación</th>
+            <th style="width: 28%;">Indicación</th>
           </tr>
         </thead>
         <tbody>
@@ -441,10 +449,10 @@
               <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
                 <thead>
                   <tr>
-                    <th style="width: 15%;">Punto Control</th>
-                    <th style="width: 40%;">Descripción</th>
-                    <th style="width: 25%;">Rango Operación</th>
-                    <th style="width: 20%;">Indicación</th>
+                    <th style="width: 12%;">Punto de Control</th>
+                    <th style="width: 38%;">Descripción</th>
+                    <th style="width: 22%;">Rango de Operación</th>
+                    <th style="width: 28%;">Indicación</th>
                   </tr>
                 </thead>
               </table>
@@ -553,10 +561,10 @@
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
           <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
           <b>Cargo:</b> Técnico de Mantenimiento<br><br>
-          <label style="font-weight: bold; font-size: 14px;">Firma del Técnico</label>
+          <label style="font-weight: bold; font-size: 14px;">Firma del Responsable</label>
           <div class="canvas-container" id="container-canvas-tech">
             <canvas id="signature-tech"></canvas>
-            <img id="img-tech-sig" class="hidden firma-img" alt="Firma Técnico">
+            <img id="img-tech-sig" class="hidden firma-img" alt="Firma del Responsable">
           </div>
           <div id="fecha-tec" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
           <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
@@ -817,12 +825,14 @@
       if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
       if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
       var m = (e.apiMessage || e.message || "").toUpperCase();
-      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0 || m.indexOf("EMAIL_NOT_FOUND") >= 0)
-        return "Correo o contraseña incorrectos.";
-      if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos. Espera unos minutos.";
+      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0)
+        return "El correo electrónico o la contraseña ingresados son incorrectos.";
+      if (m.indexOf("EMAIL_NOT_FOUND") >= 0)
+        return "El correo electrónico no se encuentra registrado.";
+      if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos fallidos. Espera unos minutos.";
       if (m.indexOf("OPERATION_NOT_ALLOWED") >= 0) return "El acceso con correo y contraseña no está activado en Firebase.";
       if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
-      return "Error: " + (e.apiMessage || e.message || "desconocido");
+      return "Error de acceso: " + (e.apiMessage || e.message || "Credenciales incorrectas");
     }
 
     // EVALUACIÓN DE RANGOS DE OPERACIÓN, ALERTAS Y OBSERVACIONES
@@ -974,12 +984,17 @@
     }
 
     async function procesarLogin() {
-      var emailValue = document.getElementById('email').value.trim().toLowerCase();
-      var passwordValue = document.getElementById('password').value;
+      var emailEl = document.getElementById('email');
+      var passEl = document.getElementById('password');
+      var emailValue = emailEl.value.trim().toLowerCase();
+      var passwordValue = passEl.value;
       var errorDiv = document.getElementById('error-message');
       var btn = document.getElementById('btn-submit-login');
 
-      if (!emailValue || !passwordValue) { alert("Por favor ingrese correo y contraseña."); return; }
+      if (!emailValue || !passwordValue) {
+        errorDiv.innerText = "Ingrese correo y contraseña para continuar.";
+        return;
+      }
 
       btn.disabled = true;
       btn.innerText = "Verificando...";
@@ -987,9 +1002,12 @@
 
       try {
         await iniciarSesionApi(emailValue, passwordValue, modoAprobar ? 'coordinador' : 'tecnico');
-        document.getElementById('password').value = "";
+        passEl.value = "";
         if (window.alIniciarSesion) window.alIniciarSesion();
       } catch (e) {
+        // Borrar valores ingresados y notificar error específico al usuario
+        emailEl.value = "";
+        passEl.value = "";
         errorDiv.innerText = mensajeLogin(e);
         console.log(e);
       }
@@ -1230,7 +1248,7 @@
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
-      // GENERACIÓN DE PDF ROBUSTA CON PIE DE PÁGINA NATIVO (NOMBRE PDF + NUMERACIÓN NATIVA)
+      // GENERACIÓN DE PDF ROBUSTA CON PIE DE PÁGINA NATIVO
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
@@ -1256,7 +1274,6 @@
             span.style.color = '#000';
             span.style.fontSize = '12px';
 
-            // Si tiene etiqueta de unidad, adjuntarla para el PDF
             var unitLabel = inp.nextElementSibling;
             if (unitLabel && unitLabel.classList.contains('unit-label')) {
               valText = valText ? (valText + ' ' + unitLabel.innerText) : '';
@@ -1280,7 +1297,6 @@
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
-          // Generar el documento PDF y estampar el pie de página nativo en CADA HOJA
           var worker = html2pdf().set(opt).from(pdfArea).toPdf();
           
           await worker.get('pdf').then(function(pdfObj) {
@@ -1293,16 +1309,12 @@
               pdfObj.setFontSize(8);
               pdfObj.setTextColor(100, 116, 139);
 
-              // 1. Nombre del archivo a la izquierda inferior
               pdfObj.text(nombrePdf, 10, pageHeight - 6);
-
-              // 2. Numeración "Página X de Y" a la derecha inferior
               var textoPagina = "Página " + i + " de " + totalPages;
               pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
             }
           }).save();
 
-          // Restaurar la vista interactiva
           reponer.forEach(function(item) {
             item.inp.style.display = '';
             if (item.unitLabel) item.unitLabel.style.display = '';
@@ -1330,12 +1342,12 @@
 
         if (!modoAprobar) {
           if (!validarFormularioCompleto()) { return; }
-          if (!padTech || padTech.isEmpty()) { alert("Firma del técnico requerida."); return; }
+          if (!padTech || padTech.isEmpty()) { alert("Firma del responsable requerida."); return; }
 
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Guardando reporte...";
           try {
-            var tFin = ahora(); // Hora exacta en que termina el diligenciamiento
+            var tFin = ahora();
             var payload = {
               fechaInicio: document.getElementById('fecha-auto').value,
               horaInicio: document.getElementById('hora-auto').value,
