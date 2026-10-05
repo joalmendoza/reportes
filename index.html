@@ -3,57 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Mantenimiento Carval</title>
+  <title>Sistema de Checklists de Mantenimiento - Carval</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-    
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       background-color: #f3f4f6;
       margin: 0;
       padding: 16px;
       color: #1f2937;
     }
-
     .card {
-      background: #ffffff;
-      padding: 24px;
+      background: white;
+      padding: 20px;
       border-radius: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      max-width: 900px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      max-width: 750px;
       margin: 0 auto;
     }
-
     .hidden {
       display: none !important;
     }
-
     .input-field, select, textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 10px;
       margin-top: 4px;
       margin-bottom: 12px;
       border: 1px solid #d1d5db;
       border-radius: 8px;
       box-sizing: border-box;
       font-size: 14px;
-      background-color: #ffffff;
-      transition: border-color 0.15s ease-in-out;
     }
-
-    .input-field:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-
     .btn {
       width: 100%;
       background: #2563eb;
-      color: #ffffff;
+      color: white;
       font-weight: bold;
       padding: 14px;
       border: none;
@@ -61,57 +45,10 @@
       font-size: 16px;
       cursor: pointer;
       margin-top: 10px;
-      transition: background-color 0.2s ease;
     }
-
-    .btn:hover {
-      background: #1d4ed8;
-    }
-
     .btn:disabled {
       opacity: 0.6;
-      cursor: not-allowed;
     }
-
-    /* MENÚ PRINCIPAL Y TARJETAS DE DASHBOARD */
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-top: 24px;
-    }
-
-    .card-menu {
-      border: 2px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 20px;
-      background: #ffffff;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .card-menu:hover {
-      border-color: #2563eb;
-      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
-      transform: translateY(-2px);
-    }
-
-    .card-menu h3 {
-      margin: 8px 0;
-      color: #1e3a8a;
-      font-size: 18px;
-    }
-
-    .card-menu p {
-      margin: 0;
-      color: #4b5563;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-
     .canvas-container {
       border: 2px dashed #9ca3af;
       border-radius: 8px;
@@ -121,38 +58,29 @@
       touch-action: none;
       width: 100%;
     }
-
     canvas {
       width: 100%;
-      height: 200px;
+      height: 220px;
       display: block;
       border-radius: 8px;
     }
-
     .firma-img {
       width: 100%;
       height: auto;
       max-height: 140px;
       display: block;
       border-radius: 8px;
-      object-fit: contain;
     }
-
     .btn-clear {
       background: #6b7280;
-      padding: 8px 16px;
-      font-size: 13px;
+      padding: 6px 12px;
+      font-size: 12px;
       margin-bottom: 16px;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
     }
-
-    .btn-clear:hover {
-      background: #4b5563;
-    }
-
     .error-msg {
       color: #ef4444;
       font-weight: bold;
@@ -160,52 +88,52 @@
       font-size: 14px;
       text-align: center;
     }
-
     .badge {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 4px 8px;
       background: #e0f2fe;
       color: #0369a1;
-      border-radius: 20px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: bold;
-      margin-bottom: 8px;
-      width: fit-content;
+      margin-bottom: 12px;
     }
-
+    .selector-container {
+      margin-bottom: 16px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
     .header-table, .param-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       font-size: 12px;
     }
-
     .header-table td, .param-table th, .param-table td {
       border: 1px solid #cbd5e1;
-      padding: 8px;
+      padding: 6px 6px;
       text-align: left;
     }
-
     .param-table th {
       background-color: #f1f5f9;
       font-weight: bold;
       text-align: center;
-      color: #334155;
     }
-
     .calculated-val {
       background-color: #f8fafc;
       font-weight: bold;
-      color: #0f172a;
+      color: #1e293b;
     }
 
     .input-unit-cell {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       width: 100%;
     }
-
     .input-unit-cell input {
       flex: 1;
       width: 100%;
@@ -215,7 +143,6 @@
       font-size: 13px;
       box-sizing: border-box;
     }
-
     .unit-label {
       font-size: 11px;
       font-weight: bold;
@@ -223,18 +150,18 @@
       white-space: nowrap;
     }
 
-    .col-pc { width: 15%; }
-    .col-desc { width: 40%; }
-    .col-rango { width: 20%; }
-    .col-ind { width: 25%; }
+    .col-pc { width: 12%; }
+    .col-desc { width: 38%; }
+    .col-rango { width: 22%; }
+    .col-ind { width: 28%; }
 
     .is-generating-pdf .col-pc { width: 10% !important; }
-    .is-generating-pdf .col-desc { width: 50% !important; }
-    .is-generating-pdf .col-rango { width: 20% !important; }
-    .is-generating-pdf .col-ind { width: 20% !important; }
+    .is-generating-pdf .col-desc { width: 52% !important; }
+    .is-generating-pdf .col-rango { width: 22% !important; }
+    .is-generating-pdf .col-ind { width: 16% !important; }
 
     .diagonal-cell {
-      background: linear-gradient(to top right, transparent 48%, #94a3b8 49%, #94a3b8 51%, transparent 52%);
+      background: linear-gradient(to top right, transparent 48%, #64748b 49%, #64748b 51%, transparent 52%);
       background-color: #f1f5f9;
       padding: 0 !important;
       height: 32px;
@@ -243,7 +170,6 @@
     .out-of-range {
       background-color: #fecdd3 !important;
     }
-
     .out-of-range td {
       background-color: #fecdd3 !important;
       color: #881337 !important;
@@ -252,20 +178,19 @@
 
     .sec-title {
       background: #1e3a8a;
-      color: #ffffff;
-      padding: 10px;
+      color: white;
+      padding: 8px;
       font-size: 13px;
       font-weight: bold;
-      border-radius: 6px;
-      margin: 16px 0 12px 0;
+      border-radius: 4px;
+      margin: 12px 0 8px 0;
       text-align: center;
-      letter-spacing: 0.5px;
     }
 
     .page-break {
       page-break-before: always;
       break-before: page;
-      margin-top: 20px;
+      margin-top: 15px;
     }
 
     .pdf-header-repeat {
@@ -279,15 +204,14 @@
     .signatures-grid {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       margin-top: 24px;
-      padding-top: 12px;
+      padding-top: 8px;
     }
 
     .is-generating-pdf .signatures-grid {
       flex-direction: row !important;
     }
-
     .is-generating-pdf .sig-col {
       width: 50% !important;
     }
@@ -301,130 +225,101 @@
 
   <!-- PANTALLA 1: INICIO DE SESIÓN -->
   <div id="login-screen" class="card">
-    <h2 id="login-title" style="text-align: center; margin-bottom: 20px; color: #1e3a8a;">Sistema de Mantenimiento</h2>
-    <p id="login-nota" style="text-align: center; font-size: 14px; color: #6b7280; margin-top: -10px; margin-bottom: 20px;">
-      Ingrese sus credenciales corporativas para continuar
-    </p>
-
+    <h2 id="login-title" style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
+    <p id="login-nota" style="text-align:center; font-size:14px; color:#6b7280; margin:-10px 0 14px;"></p>
     <div id="error-message" class="error-msg"></div>
 
-    <form id="form-login" onsubmit="event.preventDefault(); procesarLogin();">
-      <div style="margin-bottom: 16px;">
-        <label style="font-weight: bold; font-size: 14px; color: #374151;">Correo Electrónico</label>
-        <input type="email" id="email" class="input-field" placeholder="ejemplo@carval.com.co" required>
-      </div>
+    <div>
+      <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
+      <input type="email" id="email" class="input-field" placeholder="Ingrese su correo electrónico" value="">
 
-      <div style="margin-bottom: 20px;">
-        <label style="font-weight: bold; font-size: 14px; color: #374151;">Contraseña</label>
-        <input type="password" id="password" class="input-field" placeholder="••••••••" required>
-      </div>
+      <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
+      <input type="password" id="password" class="input-field" placeholder="••••••••" value="">
 
-      <button type="submit" id="btn-submit-login" class="btn">Iniciar Sesión</button>
-    </form>
-    
-    <p id="diag" style="text-align: center; font-size: 11px; color: #9ca3af; margin-top: 20px;">
-      Plataforma de Control Integrado Carval v6.0
-    </p>
-  </div>
-
-  <!-- PANTALLA 2: MENÚ PRINCIPAL DE SELECCIÓN DE FORMULARIOS -->
-  <div id="menu-screen" class="card hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 16px;">
-      <div>
-        <h2 style="margin: 0; font-size: 22px; color: #111827;">Formatos Disponibles</h2>
-        <span id="user-display-menu" style="font-size: 13px; color: #6b7280; font-weight: 500;">Técnico</span>
-      </div>
-      <button id="btn-logout-menu" style="background: none; border: 1px solid #fca5a5; padding: 6px 12px; border-radius: 6px; color: #dc2626; font-size: 13px; font-weight: bold; cursor: pointer;">Cerrar Sesión</button>
-    </div>
-
-    <p style="font-size: 14px; color: #4b5563; margin-top: 16px;">
-      Seleccione el formato que desea inspeccionar o revisar:
-    </p>
-
-    <div class="menu-grid">
-      <div class="card-menu" onclick="abrirFormulario('CVSAG005-F001')">
-        <div>
-          <span class="badge">CVSAG005-F001</span>
-          <h3>Planta de Agua Purificada</h3>
-          <p>Lista de chequeo técnica para verificación de presiones, conductividad, caudal y lámparas UV.</p>
-        </div>
-        <div style="margin-top: 16px; color: #2563eb; font-weight: bold; font-size: 13px;">Diligenciar Formato →</div>
-      </div>
-
-      <div class="card-menu" onclick="abrirFormulario('CVSAI018-F001')">
-        <div>
-          <span class="badge" style="background: #dcfce7; color: #15803d;">CVSAI018-F001</span>
-          <h3>DP Ventilación y Colectores</h3>
-          <p>Diferenciales de presión en UMAS, ventiladores de inyección, extracción y colectores de polvo.</p>
-        </div>
-        <div style="margin-top: 16px; color: #16a34a; font-weight: bold; font-size: 13px;">Diligenciar Formato →</div>
-      </div>
+      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v6 | Sistema Integrado de Mantenimiento</p>
     </div>
   </div>
 
-  <!-- PANTALLA SECUNDARIA DE MODO COORDINADOR -->
-  <div id="home-coord" class="card hidden" style="text-align: center;">
-    <h2 style="margin-top: 0; color: #1e3a8a;">Panel de Coordinación</h2>
-    <p id="home-coord-msg" style="font-weight: bold; color: #16a34a; font-size: 16px;"></p>
-    <p style="font-size: 14px; color: #6b7280; max-width: 500px; margin: 0 auto 20px auto;">
-      Su sesión de revisión está activa. Para autorizar y firmar una inspección recibida, haga clic en la liga recibida vía WhatsApp.
-    </p>
-    <button type="button" id="btn-logout-home" class="btn" style="background: #ef4444; max-width: 250px; margin: 0 auto;">Cerrar Sesión</button>
+  <!-- PANTALLA DEL COORDINADOR (SESIÓN ACTIVA) -->
+  <div id="home-coord" class="card hidden" style="text-align:center;">
+    <h2 style="margin-top:0;">Sesión de coordinador</h2>
+    <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
+    <p style="font-size:14px; color:#6b7280;">Tu sesión sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
+    <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
   </div>
 
-  <!-- PANTALLA 3: VISTA DE FORMULARIO COMPLETO -->
+  <!-- PANTALLA 2: FORMULARIO PRINCIPAL Y SELECTOR DE FORMATO -->
   <div id="main-form-screen" class="card hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px;">
-      <button id="btn-back-menu" style="background: #f3f4f6; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; color: #374151;">← Volver al Menú</button>
-      <span style="font-size: 13px; color: #6b7280; font-weight: bold;" id="user-display">Modo Técnico</span>
-      <button id="btn-logout" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: bold; cursor: pointer;">Salir</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
+      <span style="font-size: 12px; color: #6b7280; font-weight: bold;" id="user-display">Modo Consulta</span>
+      <button id="btn-logout" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: bold; cursor: pointer;">Salir</button>
     </div>
 
-    <div id="view-badge" class="badge">Modo Edición</div>
-    <h2 id="view-title" style="margin-top: 4px; margin-bottom: 16px; color: #111827;">Formato de Inspección</h2>
+    <!-- SELECTOR DE FORMATO -->
+    <div id="selector-form-box" class="selector-container">
+      <label style="font-weight: bold; font-size: 13px; color: #1e3a8a;">Seleccionar Formato a Diligenciar:</label>
+      <select id="select-formato" class="input-field" style="margin-bottom:0;" onchange="cambiarFormato(this.value)">
+        <option value="PAP">CVSAG005-F001 - Lista de Chequeo Planta Agua Purificada</option>
+        <option value="MEZCLAS">CVSAG005-F002 - Lista de Chequeo Mezclas y Aditivos</option>
+      </select>
+    </div>
 
-    <div id="pdf-area" style="padding: 12px; background: #ffffff;">
+    <div id="view-badge" class="badge">Modo Técnico</div>
+    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo</h2>
+
+    <div id="pdf-area" style="padding: 10px; background: white;">
       
-      <!-- ENCABEZADO OFICIAL -->
-      <table class="header-table">
+      <!-- ENCABEZADO FORMATO 1: PLANTA DE AGUA PURIFICADA -->
+      <table id="header-pap" class="header-table">
         <tr>
-          <td style="width: 20%; text-align: center; font-weight: bold; font-size: 18px; color: #1e3a8a; vertical-align: middle;">
-            Carval
-          </td>
-          <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px; vertical-align: middle;" id="hdr-titulo-doc">
-            LISTA DE CHEQUEO
-          </td>
-          <td style="width: 22%; font-size: 10px; vertical-align: middle;" id="hdr-meta-doc">
-            <b>Código:</b> -<br>
-            <b>Versión:</b> -<br>
+          <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
+          <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
+          <td style="width: 22%; font-size: 10px;">
+            <b>Código:</b> CVSAG005-F001<br>
+            <b>Versión:</b> 04<br>
+            <b>Fecha emisión:</b> 2023<br>
             <b>Estado:</b> Vigente
           </td>
         </tr>
       </table>
 
-      <!-- METADATOS Y TIEMPO -->
-      <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+      <!-- ENCABEZADO FORMATO 2: MEZCLAS Y ADITIVOS -->
+      <table id="header-mezclas" class="header-table hidden">
+        <tr>
+          <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
+          <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO MEZCLAS Y ADITIVOS NUTRIONALES</td>
+          <td style="width: 22%; font-size: 10px;">
+            <b>Código:</b> CVSAG005-F002<br>
+            <b>Versión:</b> 02<br>
+            <b>Fecha emisión:</b> 2023<br>
+            <b>Estado:</b> Vigente
+          </td>
+        </tr>
+      </table>
+
+      <!-- CAMPOS CONGELADOS DE FECHA Y HORA DE INICIO -->
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <div style="flex: 1;">
-          <label style="font-weight: bold; font-size: 12px; color: #374151;">Fecha del Registro:</label>
-          <input type="text" id="fecha-auto" class="input-field" readonly style="background: #f9fafb; margin-bottom: 0;">
+          <label style="font-weight: bold; font-size: 12px;">Fecha:</label>
+          <input type="text" id="fecha-auto" class="input-field" readonly style="background:#f3f4f6; margin-bottom: 6px;">
         </div>
         <div style="flex: 1;">
-          <label style="font-weight: bold; font-size: 12px; color: #374151;">Hora de Registro:</label>
-          <input type="text" id="hora-auto" class="input-field" readonly style="background: #f9fafb; margin-bottom: 0;">
+          <label style="font-weight: bold; font-size: 12px;">Hora:</label>
+          <input type="text" id="hora-auto" class="input-field" readonly style="background:#f3f4f6; margin-bottom: 6px;">
         </div>
       </div>
 
-      <div class="sec-title" id="sec-title-text">PARÁMETROS A CONTROLAR</div>
-
-      <!-- FORMULARIO 1: PLANTA DE AGUA PURIFICADA (EXPLICITO COMPLETO) -->
-      <div id="form-content-CVSAG005-F001" class="form-content-block">
+      <!-- FORMATO 1: TABLA PLANTA DE AGUA PURIFICADA -->
+      <div id="form-pap-body">
+        <div class="sec-title">PARÁMETROS A CONTROLAR EN LA PLANTA DE AGUA PURIFICADA</div>
         <table class="param-table">
           <thead>
             <tr>
-              <th class="col-pc">Punto Control</th>
-              <th class="col-desc">Descripción del Parámetro</th>
-              <th class="col-rango">Rango Operación</th>
-              <th class="col-ind">Indicación / Lectura</th>
+              <th class="col-pc">Punto de Control</th>
+              <th class="col-desc">Descripción</th>
+              <th class="col-rango">Rango de Operación</th>
+              <th class="col-ind">Indicación</th>
             </tr>
           </thead>
           <tbody>
@@ -565,6 +460,7 @@
               <td class="col-rango">5 a 7</td>
               <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag42" class="input-field" oninput="evaluarRangos()"></div></td>
             </tr>
+
             <tr id="row_tag73">
               <td class="col-pc">TAG 73</td>
               <td class="col-desc">Lámpara UV Tanque agua purificada #1</td>
@@ -590,23 +486,27 @@
               <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag75" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
             </tr>
 
-            <!-- SALTO DE PÁGINA PARA DOCUMENTO IMPRESO/PDF -->
             <tr class="page-break">
               <td colspan="4" style="border:none; padding:0;">
                 <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
                   <tr>
                     <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
                     <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
-                    <td style="width: 22%; font-size: 10px;"><b>Código:</b> CVSAG005-F001<br><b>Versión:</b> 04<br><b>Estado:</b> Vigente</td>
+                    <td style="width: 22%; font-size: 10px;">
+                      <b>Código:</b> CVSAG005-F001<br>
+                      <b>Versión:</b> 04<br>
+                      <b>Fecha emisión:</b> 2023<br>
+                      <b>Estado:</b> Vigente
+                    </td>
                   </tr>
                 </table>
                 <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
                   <thead>
                     <tr>
-                      <th class="col-pc">Punto Control</th>
-                      <th class="col-desc">Descripción del Parámetro</th>
-                      <th class="col-rango">Rango Operación</th>
-                      <th class="col-ind">Indicación / Lectura</th>
+                      <th class="col-pc">Punto de Control</th>
+                      <th class="col-desc">Descripción</th>
+                      <th class="col-rango">Rango de Operación</th>
+                      <th class="col-ind">Indicación</th>
                     </tr>
                   </thead>
                 </table>
@@ -682,257 +582,74 @@
         </table>
       </div>
 
-      <!-- FORMULARIO 2: MEDICIÓN DP VENTILACIÓN (EXPLICITO COMPLETO 40 PUNTOS) -->
-      <div id="form-content-CVSAI018-F001" class="form-content-block hidden">
+      <!-- FORMATO 2: TABLA MEZCLAS Y ADITIVOS -->
+      <div id="form-mezclas-body" class="hidden">
+        <div class="sec-title">PARÁMETROS A CONTROLAR EN MEZCLAS Y ADITIVOS NUTRIONALES</div>
         <table class="param-table">
           <thead>
             <tr>
-              <th style="width: 50%;">Equipo / Sistema de Ventilación</th>
-              <th style="width: 25%;">Rango Operación</th>
-              <th style="width: 25%;">Lectura</th>
+              <th class="col-pc">Punto de Control</th>
+              <th class="col-desc">Descripción</th>
+              <th class="col-rango">Rango de Operación</th>
+              <th class="col-ind">Indicación</th>
             </tr>
           </thead>
           <tbody>
-            <tr id="row_vent_1">
-              <td>Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_1" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
+            <tr id="row_m_caudal">
+              <td class="col-pc">M-01</td>
+              <td class="col-desc">Caudal de Dosificación de Aditivos</td>
+              <td class="col-rango">5 L/min a 20 L/min</td>
+              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="m_caudal" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
             </tr>
-            <tr id="row_vent_2">
-              <td>UMA # 1 Granulación</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_2" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
+            <tr id="row_m_agitador">
+              <td class="col-pc">M-02</td>
+              <td class="col-desc">Velocidad Agitador Principal Mezclas 2</td>
+              <td class="col-rango">100 RPM a 350 RPM</td>
+              <td class="col-ind"><div class="input-unit-cell"><input type="number" id="m_agitador" class="input-field" oninput="evaluarRangos()"><span class="unit-label">RPM</span></div></td>
             </tr>
-            <tr id="row_vent_3">
-              <td>UMA # 2 Granulación</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_3" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_4">
-              <td>UMA Proceso Granulación (60% al 95% - 99,99%)</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_4" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_5">
-              <td>Colector de Polvos Proceso Granulación</td>
-              <td>0.2 inH2O a 20 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_5" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_6">
-              <td>UMA Acondicionamiento de Sólidos Solubles, Líquidos Orales, Etiquetado y Codificado</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_6" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_7">
-              <td>UMA Envase de Sólidos Solubles</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_7" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_8">
-              <td>Ventilador de Inyección Esclusa Alistamiento</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_8" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_9">
-              <td>UMA Envase Orales (30% al 95% - 99,99%)</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_9" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_10">
-              <td>Colector de Polvos Fraccionamiento</td>
-              <td>0.2 inH2O a 6 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_10" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_11">
-              <td>Colector de Polvos Envase de Sólidos Solubles</td>
-              <td>0.2 inH2O a 6 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_11" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_12">
-              <td>Colector de Polvos Granulación</td>
-              <td>0.2 inH2O a 6 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_12" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_13">
-              <td>UMA Mezclas 2</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_13" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_14">
-              <td>Ventilador de Inyección Pasillo Fraccionamiento</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_14" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_15">
-              <td>UMA Fraccionamiento</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_15" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_16">
-              <td>UMA # 1 Control de Calidad</td>
-              <td>1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_16" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_17">
-              <td>UMA # 2 Control de Calidad</td>
-              <td>1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_17" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_18">
-              <td>UMA Fabricación Orales (30% al 95% - 99,99%)</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_18" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_19">
-              <td>Colector de Polvos Mezclas 2</td>
-              <td>0.2 inH2O a 6 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_19" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-
-            <!-- SALTO DE PÁGINA IMPRESIÓN -->
-            <tr class="page-break">
-              <td colspan="3" style="border:none; padding:0;">
-                <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
-                  <tr>
-                    <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
-                    <td style="width: 58%; text-align: center; font-weight: bold; font-size: 12px;">MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN VENTILACIÓN</td>
-                    <td style="width: 22%; font-size: 10px;"><b>Código:</b> CVSAI018-F001<br><b>Versión:</b> 18<br><b>Estado:</b> Vigente</td>
-                  </tr>
-                </table>
-                <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
-                  <thead>
-                    <tr>
-                      <th style="width: 50%;">Equipo / Sistema de Ventilación</th>
-                      <th style="width: 25%;">Rango Operación</th>
-                      <th style="width: 25%;">Lectura</th>
-                    </tr>
-                  </thead>
-                </table>
+            <tr id="row_m_ducto">
+              <td class="col-pc">M-03</td>
+              <td class="col-desc">Estado Ductos de Extracción Mezclas 2</td>
+              <td class="col-rango">Limpio / Operatorio</td>
+              <td class="col-ind">
+                <select id="m_ducto" class="input-field" style="margin:0;" onchange="evaluarRangos()">
+                  <option value="Conforme">Conforme</option>
+                  <option value="Socio Limpieza Requ.">Socio Limpieza Requ.</option>
+                </select>
               </td>
             </tr>
-
-            <tr id="row_vent_20">
-              <td>Ventilador de Extracción Fabricación Envase Volúmenes Bajos 1</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_20" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
+            <tr id="row_m_ohaus">
+              <td class="col-pc">M-04</td>
+              <td class="col-desc">Cero Balanza e Indicador Ohaus</td>
+              <td class="col-rango">0.00 kg (+/- 0.02)</td>
+              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.01" id="m_ohaus" class="input-field" oninput="evaluarRangos()"><span class="unit-label">kg</span></div></td>
             </tr>
-            <tr id="row_vent_21">
-              <td>Ventilador de Extracción Fabricación Envase Desinfectantes</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_21" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_22">
-              <td>UMA Fabricación Envase Volúmenes Bajos 1</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_22" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_23">
-              <td>UMA Fabricación Envase Desinfectantes</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_23" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_24">
-              <td>Ventilador de Inyección Agua Purificada</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_24" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_25">
-              <td>Ventilador de Inyección Pasillo Volúmenes Bajos 2 y Mezclas 2</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_25" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_26">
-              <td>UMA Lavado de Equipos y Equipo Limpio</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_26" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_27">
-              <td>Ventilador de Inyección Vestieres</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_27" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_28">
-              <td>UMA Fabricación Envase Volúmenes Bajos 2 (30% al 95% - 99,99%)</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_28" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_29">
-              <td>Colector de Polvos Volúmenes Bajos 2</td>
-              <td>0.2 inH2O a 6 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_29" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_30">
-              <td>Ventilador de Inyección Bodega Materia Prima</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_30" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_31">
-              <td>Ventilador de Extracción Fraccionamiento</td>
-              <td>0.01 inH2O a 1 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_31" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_32">
-              <td>Ventilador de Extracción Alistamiento</td>
-              <td>0.01 inH2O a 1 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_32" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_33">
-              <td>Ventilador de Extracción Envase de Sólidos Solubles</td>
-              <td>0.01 inH2O a 1 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_33" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_34">
-              <td>Ventilador de Extracción Volúmenes Bajos 2</td>
-              <td>0.01 inH2O a 1 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_34" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_35">
-              <td>Ventilador de Extracción Mueble de Reactivos en Uso</td>
-              <td>1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_35" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_36">
-              <td>Ventilador de Extracción Control de Calidad</td>
-              <td>0.02 inH2O a 0.15 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_36" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_37">
-              <td>Ventilador de Extracción Mueble Almacén de Reactivos</td>
-              <td>1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_37" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_38">
-              <td>Ventilador de Extracción Mezclas 2</td>
-              <td>0.01 inH2O a 1 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_38" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
-            </tr>
-            <tr id="row_vent_39">
-              <td>UMA Granulación 2</td>
-              <td>0.1 inH2O a 2.5 inH2O</td>
-              <td><div class="input-unit-cell"><input type="number" step="0.01" id="vent_39" class="input-field" oninput="evaluarRangos()"><span class="unit-label">inH2O</span></div></td>
+            <tr id="row_m_presion_aire">
+              <td class="col-pc">M-05</td>
+              <td class="col-desc">Presión de Aire Comprimido Suministro</td>
+              <td class="col-rango">80 PSI a 100 PSI</td>
+              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="1" id="m_presion_aire" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- OBSERVACIONES -->
-      <div style="margin-top: 16px;">
-        <label style="font-weight: bold; font-size: 13px; color: #374151;">OBSERVACIONES / HALLAZGOS:</label>
-        <textarea id="observaciones" class="input-field" rows="4" placeholder="Ingrese comentarios o novedades observadas durante la inspección..."></textarea>
-      </div>
+      <!-- SECCIÓN DE OBSERVACIONES -->
+      <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
+      <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
 
-      <!-- FIRMAS DIGITALES -->
+      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
       <div class="signatures-grid">
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
           <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
           <b>Cargo:</b> Técnico de Mantenimiento<br><br>
-          <label style="font-weight: bold; font-size: 14px; color: #1e3a8a;">Firma del Responsable</label>
+          <label style="font-weight: bold; font-size: 14px;">Firma del Responsable</label>
           <div class="canvas-container" id="container-canvas-tech">
             <canvas id="signature-tech"></canvas>
-            <img id="img-tech-sig" class="hidden firma-img" alt="Firma Responsable">
+            <img id="img-tech-sig" class="hidden firma-img" alt="Firma del Responsable">
           </div>
-          <div id="fecha-tec" style="font-size: 12px; color: #374151; margin: 4px 0 8px 0;"></div>
-          <button type="button" id="btn-clear-tech" class="btn-clear">Limpiar Firma</button>
+          <div id="fecha-tec" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
+          <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
         </div>
 
         <div id="block-admin-sig" class="sig-col hidden" style="width: 100%;">
@@ -943,8 +660,8 @@
             <canvas id="signature-admin"></canvas>
             <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
           </div>
-          <div id="fecha-adm" style="font-size: 12px; color: #374151; margin: 4px 0 8px 0;"></div>
-          <button type="button" id="btn-clear-admin" class="btn-clear">Limpiar Firma</button>
+          <div id="fecha-adm" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
+          <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
         </div>
       </div>
 
@@ -954,7 +671,11 @@
   </div>
 
   <script>
-    // ---------- PARÁMETROS GLOBALES Y CONFIGURACIÓN ----------
+    window.onerror = function(message, source, lineno) {
+      alert("Error en ejecución: " + message + "\nLínea: " + lineno);
+      return false;
+    };
+
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
@@ -962,69 +683,58 @@
 
     var EMAILJS_SERVICE_ID = "service_m3xvu2j";
     var EMAILJS_TEMPLATE_ID = "template_loi9vam";
-    var EMAILJS_PUBLIC_KEYS = ["I_6FNZetkO_cSgx5A", "l_6FNZetkO_cSgx5A", "I_6FNZetk0_cSgx5A", "l_6FNZetk0_cSgx5A"];
-    
-    if (window.emailjs) {
-      emailjs.init(EMAILJS_PUBLIC_KEYS[0]);
-    }
+    var EMAILJS_PUBLIC_KEYS = [
+      "I_6FNZetkO_cSgx5A",
+      "l_6FNZetkO_cSgx5A",
+      "I_6FNZetk0_cSgx5A",
+      "l_6FNZetk0_cSgx5A"
+    ];
+    if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
 
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
-
-    var CONFIG_FORMULARIOS = {
-      "CVSAG005-F001": {
-        codigo: "CVSAG005-F001",
-        version: "04",
-        coleccion: "chequeosPAP",
-        titulo: "LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA",
-        secTitulo: "PARÁMETROS A CONTROLAR EN LA PLANTA DE AGUA PURIFICADA"
-      },
-      "CVSAI018-F001": {
-        codigo: "CVSAI018-F001",
-        version: "18",
-        coleccion: "chequeosVentilacion",
-        titulo: "Lista de Chequeo para Medición de Diferenciales de Presión en UMAS, Ventiladores de Inyección, Extracción y Colectores de Polvo",
-        secTitulo: "MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN SISTEMAS DE VENTILACIÓN"
-      }
-    };
-
-    var formActivo = "CVSAG005-F001";
+    var formatoActual = "PAP";
     var sesion = null;
+
+    function obtenerColeccion() {
+      return formatoActual === "MEZCLAS" ? "chequeosMezclas" : "chequeosPAP";
+    }
+
+    function cambiarFormato(nuevoFormato) {
+      formatoActual = nuevoFormato;
+      var isMezclas = (formatoActual === 'MEZCLAS');
+      
+      document.getElementById('header-pap').classList.toggle('hidden', isMezclas);
+      document.getElementById('header-mezclas').classList.toggle('hidden', !isMezclas);
+      document.getElementById('form-pap-body').classList.toggle('hidden', isMezclas);
+      document.getElementById('form-mezclas-body').classList.toggle('hidden', !isMezclas);
+      
+      evaluarRangos();
+    }
 
     function guardarSesion(s) {
       sesion = s;
       try {
-        if (s) {
-          localStorage.setItem('sesionTecnico', JSON.stringify(s));
-        } else {
-          localStorage.removeItem('sesionTecnico');
-        }
-      } catch (e) {
-        console.error("Error al guardar sesión local:", e);
-      }
+        if (s) localStorage.setItem('sesionTecnico', JSON.stringify(s));
+        else localStorage.removeItem('sesionTecnico');
+      } catch (e) {}
     }
 
     function leerSesion() {
       try {
         var t = localStorage.getItem('sesionTecnico');
         return t ? JSON.parse(t) : null;
-      } catch (e) {
-        return null;
-      }
+      } catch (e) { return null; }
     }
 
     async function pedir(url, opciones, limiteMs) {
       var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      var timer = setTimeout(function() {
-        if (ctrl) ctrl.abort();
-      }, limiteMs || 20000);
-
+      var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, limiteMs || 20000);
       try {
         var cfg = Object.assign({}, opciones || {});
         if (ctrl) cfg.signal = ctrl.signal;
         var r = await fetch(url, cfg);
         var data = {};
         try { data = await r.json(); } catch (e) {}
-        
         if (!r.ok) {
           var err = new Error((data.error && data.error.message) || ("HTTP " + r.status));
           err.status = r.status;
@@ -1039,7 +749,7 @@
           throw t;
         }
         if (e && e.name === 'TypeError') {
-          var n = new Error("Sin conexión a la red");
+          var n = new Error("Sin conexión");
           n.code = 'red';
           throw n;
         }
@@ -1051,9 +761,7 @@
 
     function aCampos(obj) {
       var f = {};
-      Object.keys(obj).forEach(function(k) {
-        f[k] = { stringValue: String(obj[k] == null ? '' : obj[k]) };
-      });
+      Object.keys(obj).forEach(function(k) { f[k] = { stringValue: String(obj[k] == null ? '' : obj[k]) }; });
       return f;
     }
 
@@ -1071,9 +779,7 @@
       var out = "";
       var arr = new Uint8Array(20);
       (window.crypto || window.msCrypto).getRandomValues(arr);
-      for (var i = 0; i < 20; i++) {
-        out += chars.charAt(arr[i] % chars.length);
-      }
+      for (var i = 0; i < 20; i++) out += chars.charAt(arr[i] % chars.length);
       return out;
     }
 
@@ -1083,7 +789,6 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, password: clave, returnSecureToken: true })
       });
-
       guardarSesion({
         rol: rol || 'tecnico',
         email: d.email,
@@ -1094,21 +799,19 @@
     }
 
     async function tokenValido() {
-      if (!sesion) {
-        var e0 = new Error("Sesión no válida");
-        e0.code = 'sin-sesion';
-        throw e0;
+      if (!sesion) { var e0 = new Error("Sesión cerrada"); e0.code = 'sin-sesion'; throw e0; }
+      if (Date.now() < sesion.expira) return sesion.idToken;
+      var d;
+      try {
+        d = await pedir("https://securetoken.googleapis.com/v1/token?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(sesion.refreshToken)
+        });
+      } catch (e) {
+        if (e.status === 400 || e.status === 401) { e.code = 'sin-sesion'; }
+        throw e;
       }
-      if (Date.now() < sesion.expira) {
-        return sesion.idToken;
-      }
-
-      var d = await pedir("https://securetoken.googleapis.com/v1/token?key=" + API_KEY, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(sesion.refreshToken)
-      });
-
       guardarSesion({
         rol: sesion.rol,
         email: sesion.email,
@@ -1119,10 +822,10 @@
       return sesion.idToken;
     }
 
-    async function crearReporte(coleccion, datos) {
+    async function crearReporte(datos) {
       var token = await tokenValido();
       var id = nuevoId();
-      await pedir(FS_BASE + "/" + coleccion + "?documentId=" + id + "&key=" + API_KEY, {
+      await pedir(FS_BASE + "/" + obtenerColeccion() + "?documentId=" + id + "&key=" + API_KEY, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ fields: aCampos(datos) })
@@ -1130,15 +833,16 @@
       return id;
     }
 
-    async function leerReporte(coleccion, id) {
-      var d = await pedir(FS_BASE + "/" + coleccion + "/" + encodeURIComponent(id) + "?key=" + API_KEY);
+    async function leerReporte(id) {
+      var d = await pedir(FS_BASE + "/" + obtenerColeccion() + "/" + encodeURIComponent(id) + "?key=" + API_KEY);
       return deCampos(d.fields);
     }
 
-    async function firmarReporte(coleccion, id, datos) {
+    async function firmarReporte(id, datos) {
       var token = await tokenValido();
-      var mascara = ['firmaAdm', 'fechaFirmaAdm', 'estado'].map(function(k) { return "updateMask.fieldPaths=" + k; }).join("&");
-      await pedir(FS_BASE + "/" + coleccion + "/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
+      var mascara = ['firmaAdm', 'fechaFirmaAdm', 'estado']
+        .map(function(k) { return "updateMask.fieldPaths=" + k; }).join("&");
+      await pedir(FS_BASE + "/" + obtenerColeccion() + "/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ fields: aCampos(datos) })
@@ -1148,11 +852,8 @@
     var urlParams = new URLSearchParams(window.location.search);
     var modo = urlParams.get('mode');
     var reporteId = urlParams.get('id');
-    var formParam = urlParams.get('form');
-
-    if (formParam && CONFIG_FORMULARIOS[formParam]) {
-      formActivo = formParam;
-    }
+    var paramFormato = urlParams.get('form');
+    if (paramFormato) { formatoActual = paramFormato; }
 
     var modoAprobar = (modo === 'aprobar');
     var modoVer = (modo === 'ver');
@@ -1165,15 +866,22 @@
       var year = d.getFullYear();
       var month = String(d.getMonth() + 1).padStart(2, '0');
       var day = String(d.getDate()).padStart(2, '0');
+      
       return {
         fecha: year + "-" + month + "-" + day,
-        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
+        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
+        stamp: year.toString() + month + day +
+               String(d.getHours()).padStart(2, '0') +
+               String(d.getMinutes()).padStart(2, '0') +
+               String(d.getSeconds()).padStart(2, '0')
       };
     }
 
     function pintarFechas(repFecha, repHora, aprFechaTexto) {
-      document.getElementById('fecha-tec').innerHTML = repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " - " + repHora : "";
-      document.getElementById('fecha-adm').innerHTML = aprFechaTexto ? "<b>Visto bueno:</b> " + aprFechaTexto : "";
+      document.getElementById('fecha-tec').innerHTML =
+        repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " - " + repHora : "";
+      document.getElementById('fecha-adm').innerHTML =
+        aprFechaTexto ? "<b>Visto bueno:</b> " + aprFechaTexto : "";
     }
 
     function firmaImagen(canvas, ancho, calidad) {
@@ -1204,46 +912,31 @@
 
     function textoError(e) {
       if (!e) return "desconocido";
-      if (e.code === 'timeout') return "el servidor no respondió, verifique su conexión";
+      if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
       if (e.code === 'red') return "sin conexión a internet";
-      if (e.status === 403) return "sin permisos suficientes";
-      if (e.status === 404) return "registro no encontrado";
+      if (e.status === 403) return "sin permiso en la base de datos (revisa las reglas de Firestore)";
+      if (e.status === 404) return "no se encontró en la base de datos";
       return e.text || e.apiMessage || e.message || String(e);
     }
 
     function mensajeLogin(e) {
+      if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
+      if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
       var m = (e.apiMessage || e.message || "").toUpperCase();
-      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0) {
-        return "El correo electrónico o la contraseña son incorrectos.";
-      }
-      if (m.indexOf("EMAIL_NOT_FOUND") >= 0) {
+      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0)
+        return "El correo electrónico o la contraseña ingresados son incorrectos.";
+      if (m.indexOf("EMAIL_NOT_FOUND") >= 0)
         return "El correo electrónico no se encuentra registrado.";
-      }
-      return "Error de autenticación: " + (e.apiMessage || e.message || "Credenciales inválidas");
-    }
-
-    // ---------- ALTERNANCIA DE FORMULARIOS Y CÁLCULOS EN TIEMPO REAL ----------
-    function renderizarEstructuraFormulario(codigo) {
-      formActivo = codigo;
-      var cfg = CONFIG_FORMULARIOS[codigo];
-
-      document.getElementById('hdr-titulo-doc').innerText = cfg.titulo;
-      document.getElementById('hdr-meta-doc').innerHTML = "<b>Código:</b> " + cfg.codigo + "<br><b>Versión:</b> " + cfg.version + "<br><b>Estado:</b> Vigente";
-      document.getElementById('sec-title-text').innerText = cfg.secTitulo;
-
-      var blocks = document.querySelectorAll('.form-content-block');
-      blocks.forEach(function(b) { b.classList.add('hidden'); });
-
-      var blockMostrar = document.getElementById('form-content-' + codigo);
-      if (blockMostrar) {
-        blockMostrar.classList.remove('hidden');
-      }
+      if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos fallidos. Espera unos minutos.";
+      if (m.indexOf("OPERATION_NOT_ALLOWED") >= 0) return "El acceso con correo y contraseña no está activado en Firebase.";
+      if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
+      return "Error de acceso: " + (e.apiMessage || e.message || "Credenciales incorrectas");
     }
 
     function evaluarRangos() {
       var desviaciones = [];
 
-      if (formActivo === "CVSAG005-F001") {
+      if (formatoActual === 'PAP') {
         var v34 = parseFloat(document.getElementById('tag34').value);
         var v35 = parseFloat(document.getElementById('tag35').value);
         var diff_micro1 = (!isNaN(v34) && !isNaN(v35)) ? (v34 - v35) : NaN;
@@ -1267,41 +960,41 @@
         document.getElementById('diff_f5').innerText = isNaN(diff_f5) ? "0.00" : diff_f5.toFixed(2);
 
         var reglas = [
-          { id: 'tag34', min: 1, max: 4, label: 'TAG 34', row: 'row_tag34' },
-          { id: 'tag35', min: 1, max: 4, label: 'TAG 35', row: 'row_tag35' },
-          { val: diff_micro1, max: 0.7, label: 'Diferencial Filtro 1 micra', row: 'row_diff_micro1' },
-          { id: 'tag39a', min: 1, max: 3, label: 'TAG 39A', row: 'row_tag39a' },
-          { id: 'tag39b', min: 1, max: 3, label: 'TAG 39B', row: 'row_tag39b' },
-          { id: 'tag27', min: 3, max: 25, label: 'TAG 27', row: 'row_tag27' },
-          { id: 'tag30', min: 2, max: 2, label: 'TAG 30', row: 'row_tag30' },
-          { id: 'tag28', min: 10, max: 25, label: 'TAG 28', row: 'row_tag28' },
-          { id: 'tag29', min: 4, max: 9, label: 'TAG 29', row: 'row_tag29' },
-          { id: 'tag43', min: 10, max: 13.5, label: 'TAG 43', row: 'row_tag43' },
-          { id: 'tag38', min: 0.5, max: 4, label: 'TAG 38', row: 'row_tag38' },
-          { id: 'tag37', min: 10, max: 14, label: 'TAG 37', row: 'row_tag37' },
-          { id: 'tag33', min: 1, max: 19, label: 'TAG 33', row: 'row_tag33' },
-          { id: 'tag53', min: 10, max: 95, label: 'TAG 53', row: 'row_tag53' },
-          { id: 'tag54', min: 0.5, max: 6, label: 'TAG 54', row: 'row_tag54' },
-          { id: 'tag47', max: 10, label: 'TAG 47', row: 'row_tag47' },
+          { id: 'tag34', min: 1, max: 4, label: 'TAG 34', row: 'row_tag34', unit: 'bar' },
+          { id: 'tag35', min: 1, max: 4, label: 'TAG 35', row: 'row_tag35', unit: 'bar' },
+          { val: diff_micro1, max: 0.7, label: 'Diferencial Filtro 1 micra', row: 'row_diff_micro1', unit: 'bar' },
+          { id: 'tag39a', min: 1, max: 3, label: 'TAG 39A', row: 'row_tag39a', unit: 'bar' },
+          { id: 'tag39b', min: 1, max: 3, label: 'TAG 39B', row: 'row_tag39b', unit: 'bar' },
+          { id: 'tag27', min: 3, max: 25, label: 'TAG 27', row: 'row_tag27', unit: 'L/min' },
+          { id: 'tag30', min: 2, max: 2, label: 'TAG 30', row: 'row_tag30', unit: 'L/min' },
+          { id: 'tag28', min: 10, max: 25, label: 'TAG 28', row: 'row_tag28', unit: 'L/min' },
+          { id: 'tag29', min: 4, max: 9, label: 'TAG 29', row: 'row_tag29', unit: 'PSI' },
+          { id: 'tag43', min: 10, max: 13.5, label: 'TAG 43', row: 'row_tag43', unit: 'bar' },
+          { id: 'tag38', min: 0.5, max: 4, label: 'TAG 38', row: 'row_tag38', unit: 'bar' },
+          { id: 'tag37', min: 10, max: 14, label: 'TAG 37', row: 'row_tag37', unit: 'bar' },
+          { id: 'tag33', min: 1, max: 19, label: 'TAG 33', row: 'row_tag33', unit: 'MΩ*cm' },
+          { id: 'tag53', min: 10, max: 95, label: 'TAG 53', row: 'row_tag53', unit: 'VDC' },
+          { id: 'tag54', min: 0.5, max: 6, label: 'TAG 54', row: 'row_tag54', unit: 'A' },
+          { id: 'tag47', max: 10, label: 'TAG 47', row: 'row_tag47', unit: 'µS/cm' },
           { id: 'tag50', exact: 'Verde', label: 'TAG 50', row: 'row_tag50' },
-          { id: 'tag51', max: 400, label: 'TAG 51', row: 'row_tag51' },
+          { id: 'tag51', max: 400, label: 'TAG 51', row: 'row_tag51', unit: 'mV' },
           { id: 'tag71_dial', min: 25, max: 100, label: 'TAG 71 (Dial)', row: 'row_tag71_dial' },
-          { id: 'tag71_nivel', min: 10, max: 50, label: 'TAG 71 (Nivel)', row: 'row_tag71_nivel' },
-          { id: 'tag70', max: 34, label: 'TAG 70', row: 'row_tag70' },
+          { id: 'tag71_nivel', min: 10, max: 50, label: 'TAG 71 (Nivel)', row: 'row_tag71_nivel', unit: 'L' },
+          { id: 'tag70', max: 34, label: 'TAG 70', row: 'row_tag70', unit: 'ºC' },
           { id: 'tag42', min: 5, max: 7, label: 'TAG 42', row: 'row_tag42' },
-          { id: 'tag73', min: 30, max: 365, label: 'TAG 73', row: 'row_tag73' },
-          { id: 'tag110', min: 30, max: 365, label: 'TAG 110', row: 'row_tag110' },
-          { id: 'tag74', min: 30, max: 365, label: 'TAG 74', row: 'row_tag74' },
-          { id: 'tag75', min: 30, max: 365, label: 'TAG 75', row: 'row_tag75' },
-          { id: 'tag52', min: 15, max: 60, label: 'TAG 52', row: 'row_tag52' },
-          { id: 'tag80', min: 20, max: 60, label: 'TAG 80', row: 'row_tag80' },
-          { val: diff_m1, max: 10, label: 'Diferencial Filtro Multimedia 1', row: 'row_diff_m1' },
-          { id: 'tag81', min: 20, max: 60, label: 'TAG 81', row: 'row_tag81' },
-          { val: diff_m2, max: 10, label: 'Diferencial Filtro Multimedia 2', row: 'row_diff_m2' },
-          { id: 'tag82', min: 20, max: 60, label: 'TAG 82', row: 'row_tag82' },
-          { val: diff_f10, max: 10, label: 'Diferencial Filtro 10 micras', row: 'row_diff_f10' },
-          { id: 'tag83', min: 20, max: 60, label: 'TAG 83', row: 'row_tag83' },
-          { val: diff_f5, max: 10, label: 'Diferencial Filtro 5 micras', row: 'row_diff_f5' },
+          { id: 'tag73', min: 30, max: 365, label: 'TAG 73', row: 'row_tag73', unit: 'días' },
+          { id: 'tag110', min: 30, max: 365, label: 'TAG 110', row: 'row_tag110', unit: 'días' },
+          { id: 'tag74', min: 30, max: 365, label: 'TAG 74', row: 'row_tag74', unit: 'días' },
+          { id: 'tag75', min: 30, max: 365, label: 'TAG 75', row: 'row_tag75', unit: 'días' },
+          { id: 'tag52', min: 15, max: 60, label: 'TAG 52', row: 'row_tag52', unit: 'PSI' },
+          { id: 'tag80', min: 20, max: 60, label: 'TAG 80', row: 'row_tag80', unit: 'PSI' },
+          { val: diff_m1, max: 10, label: 'Diferencial Filtro Multimedia 1', row: 'row_diff_m1', unit: 'PSI' },
+          { id: 'tag81', min: 20, max: 60, label: 'TAG 81', row: 'row_tag81', unit: 'PSI' },
+          { val: diff_m2, max: 10, label: 'Diferencial Filtro Multimedia 2', row: 'row_diff_m2', unit: 'PSI' },
+          { id: 'tag82', min: 20, max: 60, label: 'TAG 82', row: 'row_tag82', unit: 'PSI' },
+          { val: diff_f10, max: 10, label: 'Diferencial Filtro 10 micras', row: 'row_diff_f10', unit: 'PSI' },
+          { id: 'tag83', min: 20, max: 60, label: 'TAG 83', row: 'row_tag83', unit: 'PSI' },
+          { val: diff_f5, max: 10, label: 'Diferencial Filtro 5 micras', row: 'row_diff_f5', unit: 'PSI' },
           { id: 'fugas', exact: 'NO', label: 'Fugas de agua', row: 'row_fugas' }
         ];
 
@@ -1311,75 +1004,93 @@
           var v = (r.val !== undefined) ? r.val : NaN;
           if (r.id) {
             var input = document.getElementById(r.id);
-            if (input) v = (input.tagName === 'SELECT') ? input.value : parseFloat(input.value);
+            if (input) { v = (input.tagName === 'SELECT') ? input.value : parseFloat(input.value); }
           }
+          var fuera = false;
+          var msgDesc = "";
+          if (typeof v === 'string') {
+            if (r.exact && v !== r.exact) { fuera = true; msgDesc = r.label + " fuera de especificación (Valor: " + v + ")"; }
+          } else if (!isNaN(v)) {
+            if (r.min !== undefined && v < r.min) { fuera = true; msgDesc = r.label + " bajo especificación (Valor: " + v + " " + (r.unit||'') + " | Min: " + r.min + ")"; }
+            else if (r.max !== undefined && v > r.max) { fuera = true; msgDesc = r.label + " sobre especificación (Valor: " + v + " " + (r.unit||'') + " | Máx: " + r.max + ")"; }
+          }
+          if (fuera) { rowEl.classList.add('out-of-range'); desviaciones.push(msgDesc); }
+          else { rowEl.classList.remove('out-of-range'); }
+        });
+
+      } else {
+        var reglasM = [
+          { id: 'm_caudal', min: 5, max: 20, label: 'M-01 Caudal Dosificación', row: 'row_m_caudal', unit: 'L/min' },
+          { id: 'm_agitador', min: 100, max: 350, label: 'M-02 Agitador Mezclas 2', row: 'row_m_agitador', unit: 'RPM' },
+          { id: 'm_ducto', exact: 'Conforme', label: 'M-03 Ductos Extracción', row: 'row_m_ducto' },
+          { id: 'm_ohaus', min: -0.02, max: 0.02, label: 'M-04 Cero Balanza Ohaus', row: 'row_m_ohaus', unit: 'kg' },
+          { id: 'm_presion_aire', min: 80, max: 100, label: 'M-05 Presión Aire Comprimido', row: 'row_m_presion_aire', unit: 'PSI' }
+        ];
+
+        reglasM.forEach(function(r) {
+          var rowEl = document.getElementById(r.row);
+          if (!rowEl) return;
+          var input = document.getElementById(r.id);
+          var v = input ? ((input.tagName === 'SELECT') ? input.value : parseFloat(input.value)) : NaN;
           var fuera = false;
           var msgDesc = "";
 
           if (typeof v === 'string') {
-            if (r.exact && v !== r.exact) {
-              fuera = true;
-              msgDesc = r.label + " fuera de norma";
-            }
+            if (r.exact && v !== r.exact) { fuera = true; msgDesc = r.label + " fuera de rango (Valor: " + v + ")"; }
           } else if (!isNaN(v)) {
-            if (r.min !== undefined && v < r.min) {
-              fuera = true;
-              msgDesc = r.label + " bajo rango (" + v + ")";
-            } else if (r.max !== undefined && v > r.max) {
-              fuera = true;
-              msgDesc = r.label + " sobre rango (" + v + ")";
-            }
+            if (r.min !== undefined && v < r.min) { fuera = true; msgDesc = r.label + " bajo rango (Valor: " + v + " " + (r.unit||'') + ")"; }
+            else if (r.max !== undefined && v > r.max) { fuera = true; msgDesc = r.label + " sobre rango (Valor: " + v + " " + (r.unit||'') + ")"; }
           }
 
-          if (fuera) {
-            rowEl.classList.add('out-of-range');
-            desviaciones.push(msgDesc);
-          } else {
-            rowEl.classList.remove('out-of-range');
-          }
+          if (fuera) { rowEl.classList.add('out-of-range'); desviaciones.push(msgDesc); }
+          else { rowEl.classList.remove('out-of-range'); }
         });
-
-      } else if (formActivo === "CVSAI018-F001") {
-        for (var i = 1; i <= 39; i++) {
-          var inp = document.getElementById("vent_" + i);
-          var rowEl = document.getElementById("row_vent_" + i);
-          if (inp && rowEl) {
-            var v = parseFloat(inp.value);
-            var min = 0.1, max = 2.5;
-            var textRango = rowEl.cells[1].innerText;
-            var match = textRango.match(/([0-9.,]+)\s*\w+\s*a\s*([0-9.,]+)/);
-            if (match) {
-              min = parseFloat(match[1].replace(',', '.'));
-              max = parseFloat(match[2].replace(',', '.'));
-            }
-
-            if (!isNaN(v) && (v < min || v > max)) {
-              rowEl.classList.add('out-of-range');
-              var eqNombre = rowEl.cells[0].innerText;
-              desviaciones.push(eqNombre + " fuera de rango (" + v + " | Rango: " + min + " a " + max + ")");
-            } else {
-              rowEl.classList.remove('out-of-range');
-            }
-          }
-        }
       }
 
       var obsTextarea = document.getElementById('observaciones');
       if (obsTextarea) {
         if (desviaciones.length > 0) {
-          obsTextarea.value = "DESVIACIONES Y VALORES FUERA DE RANGO ENCONTRADOS:\n- " + desviaciones.join("\n- ");
-        } else if (obsTextarea.value.indexOf("DESVIACIONES Y VALORES FUERA DE RANGO ENCONTRADOS:") === 0) {
+          obsTextarea.value = "VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n- " + desviaciones.join("\n- ");
+        } else if (obsTextarea.value.indexOf("VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:") === 0) {
           obsTextarea.value = "";
         }
       }
     }
 
     function validarFormularioCompleto() {
-      var inputs = document.querySelectorAll('#form-content-' + formActivo + ' input, #form-content-' + formActivo + ' select');
-      for (var i = 0; i < inputs.length; i++) {
-        if (inputs[i].value.trim() === "") {
-          alert("Por favor diligencie todos los campos requeridos antes de guardar.");
-          inputs[i].focus();
+      var listaIds = [];
+      if (formatoActual === 'PAP') {
+        listaIds = [
+          { id: 'tag34', nombre: 'TAG 34' }, { id: 'tag35', nombre: 'TAG 35' },
+          { id: 'tag39a', nombre: 'TAG 39A' }, { id: 'tag39b', nombre: 'TAG 39B' },
+          { id: 'tag27', nombre: 'TAG 27' }, { id: 'tag30', nombre: 'TAG 30' },
+          { id: 'tag28', nombre: 'TAG 28' }, { id: 'tag29', nombre: 'TAG 29' },
+          { id: 'tag43', nombre: 'TAG 43' }, { id: 'tag38', nombre: 'TAG 38' },
+          { id: 'tag37', nombre: 'TAG 37' }, { id: 'tag33', nombre: 'TAG 33' },
+          { id: 'tag53', nombre: 'TAG 53' }, { id: 'tag54', nombre: 'TAG 54' },
+          { id: 'tag47', nombre: 'TAG 47' }, { id: 'tag51', nombre: 'TAG 51' },
+          { id: 'tag71_dial', nombre: 'TAG 71 (Dial)' }, { id: 'tag71_nivel', nombre: 'TAG 71 (Nivel)' },
+          { id: 'tag70', nombre: 'TAG 70' }, { id: 'tag42', nombre: 'TAG 42' },
+          { id: 'tag73', nombre: 'TAG 73' }, { id: 'tag110', nombre: 'TAG 110' },
+          { id: 'tag74', nombre: 'TAG 74' }, { id: 'tag75', nombre: 'TAG 75' },
+          { id: 'tag52', nombre: 'TAG 52' }, { id: 'tag80', nombre: 'TAG 80' },
+          { id: 'tag81', nombre: 'TAG 81' }, { id: 'tag82', nombre: 'TAG 82' },
+          { id: 'tag83', nombre: 'TAG 83' }
+        ];
+      } else {
+        listaIds = [
+          { id: 'm_caudal', nombre: 'Caudal de Dosificación' },
+          { id: 'm_agitador', nombre: 'Agitador Principal' },
+          { id: 'm_ohaus', nombre: 'Balanza Ohaus' },
+          { id: 'm_presion_aire', nombre: 'Presión Aire Comprimido' }
+        ];
+      }
+
+      for (var i = 0; i < listaIds.length; i++) {
+        var el = document.getElementById(listaIds[i].id);
+        if (!el || el.value.trim() === "") {
+          alert("Por favor diligencie la casilla: " + listaIds[i].nombre);
+          if (el) el.focus();
           return false;
         }
       }
@@ -1391,22 +1102,8 @@
       var hVal = document.getElementById('hora-auto').value || '';
       var numFecha = fVal.replace(/[^0-9]/g, '');
       var numHora = hVal.replace(/[^0-9]/g, '');
-      return (numFecha + numHora) + "_" + formActivo + ".pdf";
-    }
-
-    function abrirFormulario(codigo) {
-      renderizarEstructuraFormulario(codigo);
-      document.getElementById('menu-screen').classList.add('hidden');
-      document.getElementById('main-form-screen').classList.remove('hidden');
-
-      var tInicio = ahora();
-      document.getElementById('fecha-auto').value = tInicio.fecha;
-      document.getElementById('hora-auto').value = tInicio.hora;
-
-      var canvasTech = document.getElementById('signature-tech');
-      if (window.SignaturePad && canvasTech && !padTech) {
-        padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
-      }
+      var cod = (formatoActual === 'MEZCLAS') ? "CVSAG005-F002" : "CVSAG005-F001";
+      return (numFecha + numHora) + "_" + cod + ".pdf";
     }
 
     async function procesarLogin() {
@@ -1418,12 +1115,12 @@
       var btn = document.getElementById('btn-submit-login');
 
       if (!emailValue || !passwordValue) {
-        errorDiv.innerText = "Por favor ingrese su usuario y contraseña.";
+        errorDiv.innerText = "Ingrese correo y contraseña para continuar.";
         return;
       }
 
       btn.disabled = true;
-      btn.innerText = "Validando...";
+      btn.innerText = "Verificando...";
       errorDiv.innerText = "";
 
       try {
@@ -1434,18 +1131,27 @@
         emailEl.value = "";
         passEl.value = "";
         errorDiv.innerText = mensajeLogin(e);
+        console.log(e);
       }
       btn.disabled = false;
       btn.innerText = "Iniciar Sesión";
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+      var diag = document.getElementById('diag');
+      if (diag) {
+        diag.innerText = "v6 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+          " | pdf: " + (window.html2pdf ? "ok" : "NO") +
+          " | email: " + (window.emailjs ? "ok" : "NO") +
+          " | red: " + (navigator.onLine ? "ok" : "NO");
+      }
+
       var loginScreen = document.getElementById('login-screen');
-      var menuScreen = document.getElementById('menu-screen');
       var mainScreen = document.getElementById('main-form-screen');
-      var homeCoord = document.getElementById('home-coord');
-      var userDisplayMenu = document.getElementById('user-display-menu');
+      var userDisplay = document.getElementById('user-display');
       var btnSubmit = document.getElementById('btn-submit-main');
+      var badge = document.getElementById('view-badge');
+      var titulo = document.getElementById('view-title');
 
       var canvasTech = document.getElementById('signature-tech');
       var canvasAdmin = document.getElementById('signature-admin');
@@ -1455,23 +1161,84 @@
       var btnClearAdmin = document.getElementById('btn-clear-admin');
       var blockTech = document.getElementById('block-tech-sig');
       var blockAdmin = document.getElementById('block-admin-sig');
+      var homeCoord = document.getElementById('home-coord');
 
       var datosReporte = null;
       var vistaFinal = false;
+      var aprobadoGuardado = false;
+      var infoAprobacion = null;
+      var cargaFallida = false;
 
-      function ponerDatos(d) {
-        document.getElementById('tec-nombre').innerText = d.tecnico || (sesion ? sesion.email : 'Técnico');
+      var tInicio = ahora();
+      document.getElementById('fecha-auto').value = tInicio.fecha;
+      document.getElementById('hora-auto').value = tInicio.hora;
+
+      function resizeCanvas(canvas, pad) {
+        if (!canvas || canvas.classList.contains('hidden')) return;
+        var ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        if (pad) pad.clear();
+      }
+
+      function ponerDatosTecnico(d) {
+        document.getElementById('tec-nombre').innerText = d.tecnico || (sesion ? sesion.email : 'Técnico de Mantenimiento');
+
         document.getElementById('fecha-auto').value = d.fechaInicio || d.fecha;
         document.getElementById('hora-auto').value = d.horaInicio || d.hora;
+
+        if (d.formato === 'MEZCLAS' || d.m_caudal) {
+          cambiarFormato('MEZCLAS');
+          document.getElementById('select-formato').value = 'MEZCLAS';
+          document.getElementById('m_caudal').value = d.m_caudal || '';
+          document.getElementById('m_agitador').value = d.m_agitador || '';
+          document.getElementById('m_ducto').value = d.m_ducto || 'Conforme';
+          document.getElementById('m_ohaus').value = d.m_ohaus || '';
+          document.getElementById('m_presion_aire').value = d.m_presion_aire || '';
+        } else {
+          cambiarFormato('PAP');
+          document.getElementById('select-formato').value = 'PAP';
+          document.getElementById('tag34').value = d.tag34 || '';
+          document.getElementById('tag35').value = d.tag35 || '';
+          document.getElementById('tag39a').value = d.tag39a || '';
+          document.getElementById('tag39b').value = d.tag39b || '';
+          document.getElementById('tag27').value = d.tag27 || '';
+          document.getElementById('tag30').value = d.tag30 || '';
+          document.getElementById('tag28').value = d.tag28 || '';
+          document.getElementById('tag29').value = d.tag29 || '';
+          document.getElementById('tag43').value = d.tag43 || '';
+          document.getElementById('tag38').value = d.tag38 || '';
+          document.getElementById('tag37').value = d.tag37 || '';
+          document.getElementById('tag33').value = d.tag33 || '';
+          document.getElementById('tag53').value = d.tag53 || '';
+          document.getElementById('tag54').value = d.tag54 || '';
+          document.getElementById('tag47').value = d.tag47 || '';
+          document.getElementById('tag50').value = d.tag50 || 'Verde';
+          document.getElementById('tag51').value = d.tag51 || '';
+          document.getElementById('tag71_dial').value = d.tag71_dial || '';
+          document.getElementById('tag71_nivel').value = d.tag71_nivel || '';
+          document.getElementById('tag70').value = d.tag70 || '';
+          document.getElementById('tag42').value = d.tag42 || '';
+          document.getElementById('tag73').value = d.tag73 || '';
+          document.getElementById('tag110').value = d.tag110 || '';
+          document.getElementById('tag74').value = d.tag74 || '';
+          document.getElementById('tag75').value = d.tag75 || '';
+          document.getElementById('tag52').value = d.tag52 || '';
+          document.getElementById('tag80').value = d.tag80 || '';
+          document.getElementById('tag81').value = d.tag81 || '';
+          document.getElementById('tag82').value = d.tag82 || '';
+          document.getElementById('tag83').value = d.tag83 || '';
+          document.getElementById('fugas').value = d.fugas || 'NO';
+        }
+
         document.getElementById('observaciones').value = d.observaciones || '';
+        document.getElementById('selector-form-box').classList.add('hidden');
+        
+        evaluarRangos();
 
         var inputs = document.querySelectorAll('#pdf-area input, #pdf-area select, #pdf-area textarea');
-        inputs.forEach(function(inp) {
-          if (d[inp.id] !== undefined) inp.value = d[inp.id];
-          inp.disabled = true;
-        });
-
-        evaluarRangos();
+        inputs.forEach(function(inp) { inp.disabled = true; });
 
         canvasTech.classList.add('hidden');
         btnClearTech.classList.add('hidden');
@@ -1480,83 +1247,147 @@
         pintarFechas(d.fecha, d.hora, d.fechaFirmaAdm || '');
       }
 
+      function mostrarSoloLectura(d) {
+        vistaFinal = true;
+        ponerDatosTecnico(d);
+        badge.innerText = "Reporte Aprobado";
+        titulo.innerText = (formatoActual === 'MEZCLAS') ? "Chequeo Mezclas y Aditivos" : "Lista de Chequeo Planta Agua Purificada";
+        
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.remove('hidden');
+        canvasAdmin.classList.add('hidden');
+        btnClearAdmin.classList.add('hidden');
+        imgAdminSig.src = d.firmaAdm || '';
+        imgAdminSig.classList.remove('hidden');
+        btnSubmit.innerText = "Descargar PDF";
+        btnSubmit.style.background = "#2563eb";
+      }
+
+      function mostrarParaFirmar(d) {
+        ponerDatosTecnico(d);
+        badge.innerText = "Modo Coordinador";
+        titulo.innerText = "Aprobación de Servicio";
+        
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.remove('hidden');
+        
+        btnSubmit.innerText = "Firmar y Enviar a Correo";
+        btnSubmit.style.background = "#2563eb";
+        if (window.SignaturePad && !padAdmin) {
+          padAdmin = new SignaturePad(canvasAdmin, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(220, 38, 38)' });
+          setTimeout(function() { resizeCanvas(canvasAdmin, padAdmin); }, 300);
+        }
+      }
+
+      function fallaCarga(texto, detalle) {
+        cargaFallida = true;
+        userDisplay.innerText = texto;
+        badge.innerText = "Sin cargar";
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "Reintentar";
+        btnSubmit.style.background = "#6b7280";
+        alert(detalle);
+      }
+
+      function mostrarLogin() {
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        document.getElementById('login-title').innerText = "Acceso de Técnicos";
+        document.getElementById('login-nota').innerText = "";
+      }
+
+      function pedirLoginCoordinador() {
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        document.getElementById('login-title').innerText = "Acceso del Coordinador";
+        document.getElementById('login-nota').innerText = "Inicia sesión para aprobar el reporte.";
+      }
+
+      function mostrarHomeCoord(mensaje) {
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.remove('hidden');
+        document.getElementById('home-coord-msg').innerText = mensaje || "";
+      }
+
+      function iniciarPadTecnico() {
+        if (!padTech && canvasTech && window.SignaturePad) {
+          padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
+          setTimeout(function() { resizeCanvas(canvasTech, padTech); }, 300);
+        }
+      }
+
+      function mostrarFormularioTecnico() {
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        userDisplay.innerText = sesion ? sesion.email : '';
+        document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
+        
+        document.getElementById('selector-form-box').classList.remove('hidden');
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.add('hidden');
+        
+        iniciarPadTecnico();
+      }
+
       function cargarReporte() {
         loginScreen.classList.add('hidden');
-        menuScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         mainScreen.classList.remove('hidden');
+        document.getElementById('btn-logout').classList.toggle('hidden', !modoAprobar);
+        userDisplay.innerText = "Cargando reporte...";
+        badge.innerText = "Cargando...";
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Cargando...";
+        btnSubmit.style.background = "#6b7280";
 
-        renderizarEstructuraFormulario(formActivo);
-
-        var coleccion = CONFIG_FORMULARIOS[formActivo].coleccion;
-
-        leerReporte(coleccion, reporteId).then(function(d) {
+        if (!reporteId) {
+          fallaCarga("Enlace no válido", "Este enlace no es válido. Pide al técnico que reenvíe la notificación.");
+          return;
+        }
+        leerReporte(reporteId).then(function(d) {
           datosReporte = d;
-          ponerDatos(d);
+          btnSubmit.disabled = false;
           if (modoVer || d.estado === 'aprobado') {
-            blockTech.classList.remove('hidden');
-            blockAdmin.classList.remove('hidden');
-            canvasAdmin.classList.add('hidden');
-            btnClearAdmin.classList.add('hidden');
-            imgAdminSig.src = d.firmaAdm || '';
-            imgAdminSig.classList.remove('hidden');
-            btnSubmit.innerText = "Descargar PDF en Alta Resolución";
-            btnSubmit.style.background = "#2563eb";
-            vistaFinal = true;
+            userDisplay.innerText = (sesion && modoAprobar) ? sesion.email : "Reporte firmado";
+            mostrarSoloLectura(d);
           } else {
-            blockTech.classList.remove('hidden');
-            blockAdmin.classList.remove('hidden');
-            btnSubmit.innerText = "Aprobar, Firmar y Notificar por Correo";
-            btnSubmit.style.background = "#2563eb";
-            if (window.SignaturePad && !padAdmin) {
-              padAdmin = new SignaturePad(canvasAdmin, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(220, 38, 38)' });
-            }
+            userDisplay.innerText = sesion ? sesion.email : "Coordinador";
+            mostrarParaFirmar(d);
           }
         }).catch(function(e) {
-          alert("No se pudo cargar la inspección: " + textoError(e));
+          fallaCarga("Error al cargar", "No se pudo cargar el reporte: " + textoError(e));
         });
       }
 
       window.alIniciarSesion = function() {
-        if (modoAprobar) {
-          cargarReporte();
-        } else {
-          loginScreen.classList.add('hidden');
-          menuScreen.classList.remove('hidden');
-          userDisplayMenu.innerText = sesion ? sesion.email : '';
-        }
+        if (modoAprobar) cargarReporte();
+        else mostrarFormularioTecnico();
       };
 
-      if (modoVer || modoAprobar) {
+      if (modoVer) {
+        cargarReporte();
+      } else if (modoAprobar) {
         sesion = leerSesion();
-        if (sesion) cargarReporte();
-        else {
-          loginScreen.classList.remove('hidden');
-          document.getElementById('login-title').innerText = "Acceso de Coordinación";
-        }
+        if (sesion && sesion.refreshToken) cargarReporte();
+        else pedirLoginCoordinador();
       } else {
         sesion = leerSesion();
-        if (sesion) {
-          loginScreen.classList.add('hidden');
-          menuScreen.classList.remove('hidden');
-          userDisplayMenu.innerText = sesion.email;
-        } else {
-          loginScreen.classList.remove('hidden');
-        }
+        if (sesion && sesion.refreshToken) {
+          if (sesion.rol === 'coordinador') mostrarHomeCoord("");
+          else mostrarFormularioTecnico();
+        } else mostrarLogin();
       }
 
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
-      document.getElementById('btn-back-menu').onclick = function() {
-        mainScreen.classList.add('hidden');
-        menuScreen.classList.remove('hidden');
-      };
-
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
-        btnSubmit.innerText = "Procesando PDF...";
+        btnSubmit.innerText = "Generando PDF...";
 
         try {
           var pdfArea = document.getElementById('pdf-area');
@@ -1566,40 +1397,43 @@
           blockAdmin.classList.remove('hidden');
 
           var nombrePdf = obtenerNombrePDF();
+
           var inputs = pdfArea.querySelectorAll('input, select, textarea');
           var reponer = [];
 
           inputs.forEach(function(inp) {
-            if (inp.offsetWidth > 0 || inp.offsetHeight > 0) {
-              var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
-              var span = document.createElement('span');
-              span.style.fontWeight = 'bold';
-              span.style.color = '#000000';
-              span.style.fontSize = '12px';
+            if (inp.offsetParent === null) return;
+            var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
+            var span = document.createElement('span');
+            span.style.fontWeight = 'bold';
+            span.style.color = '#000';
+            span.style.fontSize = '12px';
 
-              var unitLabel = inp.nextElementSibling;
-              if (unitLabel && unitLabel.classList.contains('unit-label')) {
-                valText = valText ? (valText + ' ' + unitLabel.innerText) : '';
-              }
-
-              span.innerText = valText || ' ';
-              inp.parentNode.insertBefore(span, inp);
-              inp.style.display = 'none';
-              if (unitLabel && unitLabel.classList.contains('unit-label')) unitLabel.style.display = 'none';
-              reponer.push({ inp: inp, span: span, unitLabel: unitLabel });
+            var unitLabel = inp.nextElementSibling;
+            if (unitLabel && unitLabel.classList.contains('unit-label')) {
+              valText = valText ? (valText + ' ' + unitLabel.innerText) : '';
             }
+
+            span.innerText = valText || ' ';
+            inp.parentNode.insertBefore(span, inp);
+            inp.style.display = 'none';
+            if (unitLabel && unitLabel.classList.contains('unit-label')) {
+              unitLabel.style.display = 'none';
+            }
+            reponer.push({ inp: inp, span: span, unitLabel: unitLabel });
           });
 
           var opt = {
             margin: [8, 8, 12, 8],
             filename: nombrePdf,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
+            html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
           };
 
           var worker = html2pdf().set(opt).from(pdfArea).toPdf();
+          
           await worker.get('pdf').then(function(pdfObj) {
             var totalPages = pdfObj.internal.getNumberOfPages();
             var pageWidth = pdfObj.internal.pageSize.getWidth();
@@ -1609,8 +1443,10 @@
               pdfObj.setPage(i);
               pdfObj.setFontSize(8);
               pdfObj.setTextColor(100, 116, 139);
+
               pdfObj.text(nombrePdf, 10, pageHeight - 6);
-              pdfObj.text("Página " + i + " de " + totalPages, pageWidth - 10, pageHeight - 6, { align: 'right' });
+              var textoPagina = "Página " + i + " de " + totalPages;
+              pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
             }
           }).save();
 
@@ -1619,11 +1455,16 @@
             if (item.unitLabel) item.unitLabel.style.display = '';
             item.span.remove();
           });
+          
+          if (!modoAprobar && !modoVer && !vistaFinal) {
+            blockAdmin.classList.add('hidden');
+          }
 
           document.body.classList.remove('is-generating-pdf');
+
         } catch (e) {
           document.body.classList.remove('is-generating-pdf');
-          alert("Error durante la generación del documento PDF: " + (e.message || e));
+          alert("No se pudo generar el PDF: " + (e.message || e));
         }
 
         btnSubmit.disabled = false;
@@ -1631,20 +1472,19 @@
       }
 
       btnSubmit.onclick = async function() {
+        if (cargaFallida) { window.location.reload(); return; }
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
-        var cfg = CONFIG_FORMULARIOS[formActivo];
-
         if (!modoAprobar) {
-          if (!validarFormularioCompleto()) return;
-          if (!padTech || padTech.isEmpty()) { alert("Es requerida la firma del responsable."); return; }
+          if (!validarFormularioCompleto()) { return; }
+          if (!padTech || padTech.isEmpty()) { alert("Firma del responsable requerida."); return; }
 
           btnSubmit.disabled = true;
-          btnSubmit.innerText = "Registrando...";
-
+          btnSubmit.innerText = "Guardando reporte...";
           try {
             var tFin = ahora();
             var payload = {
+              formato: formatoActual,
               fechaInicio: document.getElementById('fecha-auto').value,
               horaInicio: document.getElementById('hora-auto').value,
               fecha: tFin.fecha,
@@ -1655,63 +1495,141 @@
               observaciones: document.getElementById('observaciones').value
             };
 
-            var inputs = document.querySelectorAll('#form-content-' + formActivo + ' input, #form-content-' + formActivo + ' select');
-            inputs.forEach(function(inp) { if (inp.id) payload[inp.id] = inp.value; });
+            if (formatoActual === 'PAP') {
+              payload.tag34 = document.getElementById('tag34').value;
+              payload.tag35 = document.getElementById('tag35').value;
+              payload.tag39a = document.getElementById('tag39a').value;
+              payload.tag39b = document.getElementById('tag39b').value;
+              payload.tag27 = document.getElementById('tag27').value;
+              payload.tag30 = document.getElementById('tag30').value;
+              payload.tag28 = document.getElementById('tag28').value;
+              payload.tag29 = document.getElementById('tag29').value;
+              payload.tag43 = document.getElementById('tag43').value;
+              payload.tag38 = document.getElementById('tag38').value;
+              payload.tag37 = document.getElementById('tag37').value;
+              payload.tag33 = document.getElementById('tag33').value;
+              payload.tag53 = document.getElementById('tag53').value;
+              payload.tag54 = document.getElementById('tag54').value;
+              payload.tag47 = document.getElementById('tag47').value;
+              payload.tag50 = document.getElementById('tag50').value;
+              payload.tag51 = document.getElementById('tag51').value;
+              payload.tag71_dial = document.getElementById('tag71_dial').value;
+              payload.tag71_nivel = document.getElementById('tag71_nivel').value;
+              payload.tag70 = document.getElementById('tag70').value;
+              payload.tag42 = document.getElementById('tag42').value;
+              payload.tag73 = document.getElementById('tag73').value;
+              payload.tag110 = document.getElementById('tag110').value;
+              payload.tag74 = document.getElementById('tag74').value;
+              payload.tag75 = document.getElementById('tag75').value;
+              payload.tag52 = document.getElementById('tag52').value;
+              payload.tag80 = document.getElementById('tag80').value;
+              payload.tag81 = document.getElementById('tag81').value;
+              payload.tag82 = document.getElementById('tag82').value;
+              payload.tag83 = document.getElementById('tag83').value;
+              payload.fugas = document.getElementById('fugas').value;
+            } else {
+              payload.m_caudal = document.getElementById('m_caudal').value;
+              payload.m_agitador = document.getElementById('m_agitador').value;
+              payload.m_ducto = document.getElementById('m_ducto').value;
+              payload.m_ohaus = document.getElementById('m_ohaus').value;
+              payload.m_presion_aire = document.getElementById('m_presion_aire').value;
+            }
 
-            var id = await crearReporte(cfg.coleccion, payload);
-            var link = baseUrl + "?mode=aprobar&form=" + cfg.codigo + "&id=" + id;
-            var texto = "*" + cfg.titulo.toUpperCase() + "*\nCódigo: " + cfg.codigo + "\nFecha: " + payload.fechaInicio + " " + payload.horaInicio + "\nPor favor revisar y aprobar en el siguiente enlace: " + link;
-
+            var id = await crearReporte(payload);
+            var link = baseUrl + "?mode=aprobar&form=" + formatoActual + "&id=" + id;
+            
+            var titWA = (formatoActual === 'MEZCLAS') ? "*SOLICITUD DE APROBACIÓN - MEZCLAS Y ADITIVOS*\nCódigo: CVSAG005-F002" : "*SOLICITUD DE APROBACIÓN - PLANTA AGUA PURIFICADA*\nCódigo: CVSAG005-F001";
+            var texto = titWA + "\nCoordinador Jorge Mendoza\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
+                        "\nEnlace de aprobación: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
-            padTech.clear();
 
-            btnSubmit.innerText = "¡Enviado exitosamente!";
+            padTech.clear();
+            btnSubmit.innerText = "¡Enviado! Puedes hacer otro reporte";
+            setTimeout(function() { btnSubmit.innerText = "Enviar a WhatsApp"; }, 4000);
+
             var w = window.open(waUrl, "_blank");
             if (!w) window.location.href = waUrl;
           } catch (e) {
-            alert("Error al registrar información: " + textoError(e));
+            if (e.code === 'sin-sesion' || e.status === 401) {
+              alert("Tu sesión venció. Inicia sesión otra vez.");
+              guardarSesion(null);
+              mostrarLogin();
+            } else {
+              alert("No se pudo guardar el reporte: " + textoError(e));
+            }
+            btnSubmit.innerText = "Enviar a WhatsApp";
           }
           btnSubmit.disabled = false;
-
         } else {
-          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta la firma de aprobación del coordinador."); return; }
+          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma."); return; }
           btnSubmit.disabled = true;
-          btnSubmit.innerText = "Guardando firma y notificando...";
-
+          btnSubmit.innerText = "Enviando...";
           try {
-            var a = ahora();
-            var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
+            if (!aprobadoGuardado) {
+              var a = ahora();
+              var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
+              
+              await firmarReporte(reporteId, {
+                firmaAdm: firmaImagen(canvasAdmin, 400, 0.7),
+                fechaFirmaAdm: fechaFirmaAdmTexto,
+                estado: 'aprobado'
+              });
+              aprobadoGuardado = true;
+              infoAprobacion = a;
+              pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
+            }
 
-            await firmarReporte(cfg.coleccion, reporteId, {
-              firmaAdm: firmaImagen(canvasAdmin, 400, 0.7),
-              fechaFirmaAdm: fechaFirmaAdmTexto,
-              estado: 'aprobado'
-            });
-
-            var linkReporte = baseUrl + "?mode=ver&form=" + cfg.codigo + "&id=" + reporteId;
+            if (!window.emailjs) throw new Error("EmailJS no cargó");
+            var linkReporte = baseUrl + "?mode=ver&form=" + formatoActual + "&id=" + reporteId;
+            var clienteNombre = (formatoActual === 'MEZCLAS') ? "MEZCLAS Y ADITIVOS (CVSAG005-F002)" : "PLANTA AGUA PURIFICADA (CVSAG005-F001)";
+            
             await enviarCorreo({
               to_email: CORREOS_DESTINO,
-              cliente: cfg.titulo + " (" + cfg.codigo + ")",
-              detalle: document.getElementById('observaciones').value || "Proceso de chequeo finalizado satisfactoriamente.",
+              cliente: clienteNombre,
+              detalle: document.getElementById('observaciones').value || "Lista de Chequeo Diligenciada",
               fecha_reporte: datosReporte.fecha || '',
               hora_reporte: datosReporte.hora || '',
-              fecha_aprobacion: a.fecha,
-              hora_aprobacion: a.hora,
+              fecha_aprobacion: infoAprobacion.fecha,
+              hora_aprobacion: infoAprobacion.hora,
               link_reporte: linkReporte
             });
 
-            alert("¡Inspección aprobada y notificaciones enviadas correctamente!");
-            window.location.href = baseUrl;
+            alert("¡Reporte aprobado y enviado con éxito!");
+            try { history.replaceState(null, '', baseUrl); } catch (e) {}
+            mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
+            btnSubmit.disabled = false;
           } catch (err) {
-            alert("Ocurrió un inconveniente durante la aprobación: " + textoError(err));
+            if (!aprobadoGuardado && (err.code === 'sin-sesion' || err.status === 401)) {
+              alert("Tu sesión venció. Inicia sesión otra vez.");
+              guardarSesion(null);
+              pedirLoginCoordinador();
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = "Firmar y Enviar a Correo";
+              return;
+            }
+            if (aprobadoGuardado) {
+              alert("Tu firma quedó guardada, pero el correo no salió: " + textoError(err) +
+                    "\n\nToca el botón para reintentar el envío del correo.");
+              btnSubmit.innerText = "Reintentar envío de correo";
+            } else {
+              alert("No se pudo guardar la firma: " + textoError(err));
+              btnSubmit.innerText = "Firmar y Enviar a Correo";
+            }
+            btnSubmit.disabled = false;
           }
-          btnSubmit.disabled = false;
         }
       };
 
-      document.getElementById('btn-logout').onclick = function() { guardarSesion(null); window.location.reload(); };
-      document.getElementById('btn-logout-menu').onclick = function() { guardarSesion(null); window.location.reload(); };
-      document.getElementById('btn-logout-home').onclick = function() { guardarSesion(null); window.location.reload(); };
+      document.getElementById('btn-logout').onclick = function() {
+        guardarSesion(null);
+        if (modoAprobar) pedirLoginCoordinador();
+        else mostrarLogin();
+      };
+
+      document.getElementById('btn-logout-home').onclick = function() {
+        guardarSesion(null);
+        mostrarLogin();
+      };
     });
   </script>
 </body>
