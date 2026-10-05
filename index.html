@@ -145,12 +145,23 @@
       white-space: nowrap;
     }
 
+    /* ANCHOS PREDETERMINADOS PARA PANTALLA (MÓVIL) */
+    .col-pc { width: 12%; }
+    .col-desc { width: 38%; }
+    .col-rango { width: 22%; }
+    .col-ind { width: 28%; }
+
+    /* REAJUSTE DE ANCHOS EXCLUSIVO EN LA GENERACIÓN DEL PDF */
+    .is-generating-pdf .col-pc { width: 10% !important; }
+    .is-generating-pdf .col-desc { width: 52% !important; } /* Columna de descripción amplia para quedar en 1 sola fila */
+    .is-generating-pdf .col-rango { width: 22% !important; }
+    .is-generating-pdf .col-ind { width: 16% !important; }
+
     /* CASILLA DIAGONAL DE EXTREMO A EXTREMO */
     .diagonal-cell {
       background: linear-gradient(to top right, transparent 48%, #64748b 49%, #64748b 51%, transparent 52%);
       background-color: #f1f5f9;
       padding: 0 !important;
-      width: 12%;
       height: 32px;
     }
 
@@ -190,12 +201,13 @@
       display: table !important;
     }
 
-    /* ESTRUCTURA FLEXIBLE DE FIRMAS EN PANTALLA VS PDF */
+    /* ESTRUCTURA FLEXIBLE DE FIRMAS EN PANTALLA VS PDF CON 3 LÍNEAS DE ESPACIO LIBRE */
     .signatures-grid {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      margin-top: 15px;
+      margin-top: 24px; /* Espacio de 3 líneas después de las observaciones */
+      padding-top: 8px;
     }
 
     .is-generating-pdf .signatures-grid {
@@ -251,12 +263,12 @@
 
     <div id="pdf-area" style="padding: 10px; background: white;">
       
-      <!-- ENCABEZADO PRINCIPAL (PÁGINA 1) -->
+      <!-- ENCABEZADO PRINCIPAL REORGANIZADO -->
       <table class="header-table">
         <tr>
           <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
-          <td style="width: 50%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
-          <td style="width: 30%; font-size: 10px;">
+          <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
+          <td style="width: 22%; font-size: 10px;">
             <b>Código:</b> CVSAG005-F001<br>
             <b>Versión:</b> 04<br>
             <b>Fecha emisión:</b> 2023<br>
@@ -283,114 +295,114 @@
       <table class="param-table">
         <thead>
           <tr>
-            <th style="width: 12%;">Punto de Control</th>
-            <th style="width: 38%;">Descripción</th>
-            <th style="width: 22%;">Rango de Operación</th>
-            <th style="width: 28%;">Indicación</th>
+            <th class="col-pc">Punto de Control</th>
+            <th class="col-desc">Descripción</th>
+            <th class="col-rango">Rango de Operación</th>
+            <th class="col-ind">Indicación</th>
           </tr>
         </thead>
         <tbody>
           <tr id="row_tag34">
-            <td>TAG 34</td>
-            <td>Presión entrada microfiltro de 1 micra</td>
-            <td>1 bar a 4 bar</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag34" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+            <td class="col-pc">TAG 34</td>
+            <td class="col-desc">Presión entrada microfiltro de 1 micra</td>
+            <td class="col-rango">1 bar a 4 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag34" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag35">
-            <td>TAG 35</td>
-            <td>Presión salida microfiltro de 1 micra</td>
-            <td>1 bar a 4 bar</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag35" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+            <td class="col-pc">TAG 35</td>
+            <td class="col-desc">Presión salida microfiltro de 1 micra</td>
+            <td class="col-rango">1 bar a 4 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag35" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_diff_micro1" class="calculated-val">
-            <td class="diagonal-cell"></td>
-            <td>Diferencial de presión filtro 1 micra (TAG34 - TAG35)</td>
-            <td>Máximo 0,7 bar</td>
-            <td><span id="diff_micro1">0.00</span> bar</td>
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial de presión filtro 1 micra (TAG34 - TAG35)</td>
+            <td class="col-rango">Máximo 0,7 bar</td>
+            <td class="col-ind"><span id="diff_micro1">0.00</span> bar</td>
           </tr>
           <tr id="row_tag39a">
-            <td>TAG 39A</td>
-            <td>Presión entrada al EDIC</td>
-            <td>1 bar a 3 bar</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag39a" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+            <td class="col-pc">TAG 39A</td>
+            <td class="col-desc">Presión entrada al EDIC</td>
+            <td class="col-rango">1 bar a 3 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39a" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag39b">
-            <td>TAG 39B</td>
-            <td>Presión entrada al EDIC</td>
-            <td>1 bar a 3 bar</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag39b" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+            <td class="col-pc">TAG 39B</td>
+            <td class="col-desc">Presión entrada al EDIC</td>
+            <td class="col-rango">1 bar a 3 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39b" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag27">
-            <td>TAG 27</td>
-            <td>Caudal rechazo membranas ósmosis inversa</td>
-            <td>3 L/min a 25 L/min</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag27" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
+            <td class="col-pc">TAG 27</td>
+            <td class="col-desc">Caudal rechazo membranas ósmosis inversa</td>
+            <td class="col-rango">3 L/min a 25 L/min</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag27" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
           </tr>
           <tr id="row_tag30">
-            <td>TAG 30</td>
-            <td>Caudal rechazo del EDIC</td>
-            <td>2 L/min</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag30" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
+            <td class="col-pc">TAG 30</td>
+            <td class="col-desc">Caudal rechazo del EDIC</td>
+            <td class="col-rango">2 L/min</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag30" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
           </tr>
           <tr id="row_tag28">
-            <td>TAG 28</td>
-            <td>Caudal salida del EDIC</td>
-            <td>10 L/min a 25 L/min</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag28" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
+            <td class="col-pc">TAG 28</td>
+            <td class="col-desc">Caudal salida del EDIC</td>
+            <td class="col-rango">10 L/min a 25 L/min</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag28" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
           </tr>
           <tr id="row_tag29">
-            <td>TAG 29</td>
-            <td>Presión salida del EDIC</td>
-            <td>4 PSI a 9 PSI</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag29" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+            <td class="col-pc">TAG 29</td>
+            <td class="col-desc">Presión salida del EDIC</td>
+            <td class="col-rango">4 PSI a 9 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag29" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_tag43">
-            <td>TAG 43</td>
-            <td>Presión rechazo membranas ósmosis inversa</td>
-            <td>10 bar a 13,5 bar</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag43" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+            <td class="col-pc">TAG 43</td>
+            <td class="col-desc">Presión rechazo membranas ósmosis inversa</td>
+            <td class="col-rango">10 bar a 13,5 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag43" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag38">
-            <td>TAG 38</td>
-            <td>Presión de permeado</td>
-            <td>0,5 bar a 4 bar</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag38" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+            <td class="col-pc">TAG 38</td>
+            <td class="col-desc">Presión de permeado</td>
+            <td class="col-rango">0,5 bar a 4 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag38" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag37">
-            <td>TAG 37</td>
-            <td>Presión entrada membranas ósmosis inversa</td>
-            <td>10 bar a 14 bar</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag37" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+            <td class="col-pc">TAG 37</td>
+            <td class="col-desc">Presión entrada membranas ósmosis inversa</td>
+            <td class="col-rango">10 bar a 14 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag37" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag33">
-            <td>TAG 33</td>
-            <td>Resistividad agua EDIC</td>
-            <td>1 MΩ*cm a 19 MΩ*cm</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag33" class="input-field" oninput="evaluarRangos()"><span class="unit-label">MΩ*cm</span></div></td>
+            <td class="col-pc">TAG 33</td>
+            <td class="col-desc">Resistividad agua EDIC</td>
+            <td class="col-rango">1 MΩ*cm a 19 MΩ*cm</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag33" class="input-field" oninput="evaluarRangos()"><span class="unit-label">MΩ*cm</span></div></td>
           </tr>
           <tr id="row_tag53">
-            <td>TAG 53</td>
-            <td>Tensión eléctrica en continua del EDIC</td>
-            <td>10 VDC a 95 VDC</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag53" class="input-field" oninput="evaluarRangos()"><span class="unit-label">VDC</span></div></td>
+            <td class="col-pc">TAG 53</td>
+            <td class="col-desc">Tensión eléctrica en continua del EDIC</td>
+            <td class="col-rango">10 VDC a 95 VDC</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag53" class="input-field" oninput="evaluarRangos()"><span class="unit-label">VDC</span></div></td>
           </tr>
           <tr id="row_tag54">
-            <td>TAG 54</td>
-            <td>Intensidad eléctrica en continua del EDIC</td>
-            <td>0,5 A hasta 6 A</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag54" class="input-field" oninput="evaluarRangos()"><span class="unit-label">A</span></div></td>
+            <td class="col-pc">TAG 54</td>
+            <td class="col-desc">Intensidad eléctrica en continua del EDIC</td>
+            <td class="col-rango">0,5 A hasta 6 A</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag54" class="input-field" oninput="evaluarRangos()"><span class="unit-label">A</span></div></td>
           </tr>
           <tr id="row_tag47">
-            <td>TAG 47</td>
-            <td>Conductividad salida membranas ósmosis inversa</td>
-            <td>Máx. 10 µS/cm</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag47" class="input-field" oninput="evaluarRangos()"><span class="unit-label">µS/cm</span></div></td>
+            <td class="col-pc">TAG 47</td>
+            <td class="col-desc">Conductividad salida membranas ósmosis inversa</td>
+            <td class="col-rango">Máx. 10 µS/cm</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag47" class="input-field" oninput="evaluarRangos()"><span class="unit-label">µS/cm</span></div></td>
           </tr>
           <tr id="row_tag50">
-            <td>TAG 50</td>
-            <td>Test dureza total Ca y Mg</td>
-            <td>Verde = Sin dureza<br>Rojo = Con dureza</td>
-            <td>
+            <td class="col-pc">TAG 50</td>
+            <td class="col-desc">Test dureza total Ca y Mg</td>
+            <td class="col-rango">Verde = Sin dureza<br>Rojo = Con dureza</td>
+            <td class="col-ind">
               <select id="tag50" class="input-field" style="margin:0;" onchange="evaluarRangos()">
                 <option value="Verde">Verde (Sin dureza)</option>
                 <option value="Rojo">Rojo (Con dureza)</option>
@@ -398,34 +410,60 @@
             </td>
           </tr>
           <tr id="row_tag51">
-            <td>TAG 51</td>
-            <td>ORP (Presencia de Cl)</td>
-            <td>Menor a 400 mV</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag51" class="input-field" oninput="evaluarRangos()"><span class="unit-label">mV</span></div></td>
+            <td class="col-pc">TAG 51</td>
+            <td class="col-desc">ORP (Presencia de Cl)</td>
+            <td class="col-rango">Menor a 400 mV</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag51" class="input-field" oninput="evaluarRangos()"><span class="unit-label">mV</span></div></td>
           </tr>
           <tr id="row_tag71_dial">
-            <td>TAG 71</td>
-            <td>Valor dial dosificador metabisulfito de sodio</td>
-            <td>25 a 100</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_dial" class="input-field" oninput="evaluarRangos()"></div></td>
+            <td class="col-pc">TAG 71</td>
+            <td class="col-desc">Valor dial dosificador metabisulfito de sodio</td>
+            <td class="col-rango">25 a 100</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_dial" class="input-field" oninput="evaluarRangos()"></div></td>
           </tr>
           <tr id="row_tag71_nivel">
-            <td>TAG 71</td>
-            <td>Nivel solución tanque metabisulfito de sodio</td>
-            <td>10 L hasta 50 L</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_nivel" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L</span></div></td>
+            <td class="col-pc">TAG 71</td>
+            <td class="col-desc">Nivel solución tanque metabisulfito de sodio</td>
+            <td class="col-rango">10 L hasta 50 L</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_nivel" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L</span></div></td>
           </tr>
           <tr id="row_tag70">
-            <td>TAG 70</td>
-            <td>Temperatura tanque agua purificada #2</td>
-            <td>Menor a 34 ºC</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag70" class="input-field" oninput="evaluarRangos()"><span class="unit-label">ºC</span></div></td>
+            <td class="col-pc">TAG 70</td>
+            <td class="col-desc">Temperatura tanque agua purificada #2</td>
+            <td class="col-rango">Menor a 34 ºC</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag70" class="input-field" oninput="evaluarRangos()"><span class="unit-label">ºC</span></div></td>
           </tr>
           <tr id="row_tag42">
-            <td>TAG 42</td>
-            <td>pH Salida EDIC</td>
-            <td>5 a 7</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag42" class="input-field" oninput="evaluarRangos()"></div></td>
+            <td class="col-pc">TAG 42</td>
+            <td class="col-desc">pH Salida EDIC</td>
+            <td class="col-rango">5 a 7</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag42" class="input-field" oninput="evaluarRangos()"></div></td>
+          </tr>
+
+          <!-- LÁMPARAS UV MOVIDAS A LA PÁGINA 1 -->
+          <tr id="row_tag73">
+            <td class="col-pc">TAG 73</td>
+            <td class="col-desc">Lámpara UV Tanque agua purificada #1</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag73" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+          </tr>
+          <tr id="row_tag110">
+            <td class="col-pc">TAG 110</td>
+            <td class="col-desc">Lámpara UV Tanque agua purificada #2</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag110" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+          </tr>
+          <tr id="row_tag74">
+            <td class="col-pc">TAG 74</td>
+            <td class="col-desc">Lámpara UV #1 salida EDIC</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag74" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+          </tr>
+          <tr id="row_tag75">
+            <td class="col-pc">TAG 75</td>
+            <td class="col-desc">Lámpara UV #2 salida EDIC</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag75" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
           </tr>
 
           <!-- SALTO DE PÁGINA CON REPETICIÓN DE ENCABEZADOS DE DOCUMENTO Y TABLA -->
@@ -435,8 +473,8 @@
               <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
                 <tr>
                   <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
-                  <td style="width: 50%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
-                  <td style="width: 30%; font-size: 10px;">
+                  <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
+                  <td style="width: 22%; font-size: 10px;">
                     <b>Código:</b> CVSAG005-F001<br>
                     <b>Versión:</b> 04<br>
                     <b>Fecha emisión:</b> 2023<br>
@@ -449,99 +487,75 @@
               <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
                 <thead>
                   <tr>
-                    <th style="width: 12%;">Punto de Control</th>
-                    <th style="width: 38%;">Descripción</th>
-                    <th style="width: 22%;">Rango de Operación</th>
-                    <th style="width: 28%;">Indicación</th>
+                    <th class="col-pc">Punto de Control</th>
+                    <th class="col-desc">Descripción</th>
+                    <th class="col-rango">Rango de Operación</th>
+                    <th class="col-ind">Indicación</th>
                   </tr>
                 </thead>
               </table>
             </td>
           </tr>
 
-          <tr id="row_tag73">
-            <td>TAG 73</td>
-            <td>Lámpara UV Tanque agua purificada #1</td>
-            <td>365 días a 30 días</td>
-            <td><div class="input-unit-cell"><input type="number" id="tag73" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-          </tr>
-          <tr id="row_tag110">
-            <td>TAG 110</td>
-            <td>Lámpara UV Tanque agua purificada #2</td>
-            <td>365 días a 30 días</td>
-            <td><div class="input-unit-cell"><input type="number" id="tag110" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-          </tr>
-          <tr id="row_tag74">
-            <td>TAG 74</td>
-            <td>Lámpara UV #1 salida EDIC</td>
-            <td>365 días a 30 días</td>
-            <td><div class="input-unit-cell"><input type="number" id="tag74" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-          </tr>
-          <tr id="row_tag75">
-            <td>TAG 75</td>
-            <td>Lámpara UV #2 salida EDIC</td>
-            <td>365 días a 30 días</td>
-            <td><div class="input-unit-cell"><input type="number" id="tag75" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-          </tr>
           <tr id="row_tag52">
-            <td>TAG 52</td>
-            <td>Presión agua acueducto</td>
-            <td>15 PSI a 60 PSI</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag52" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+            <td class="col-pc">TAG 52</td>
+            <td class="col-desc">Presión agua acueducto</td>
+            <td class="col-rango">15 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag52" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_tag80">
-            <td>TAG 80</td>
-            <td>Presión salida agua filtro multimedia 1</td>
-            <td>20 PSI a 60 PSI</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag80" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+            <td class="col-pc">TAG 80</td>
+            <td class="col-desc">Presión salida agua filtro multimedia 1</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag80" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_m1" class="calculated-val">
-            <td class="diagonal-cell"></td>
-            <td>Diferencial presión filtro multimedia 1 (TAG52 - TAG80)</td>
-            <td>Menor a 10 PSI</td>
-            <td><span id="diff_m1">0.00</span> PSI</td>
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro multimedia 1 (TAG52 - TAG80)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_m1">0.00</span> PSI</td>
           </tr>
           <tr id="row_tag81">
-            <td>TAG 81</td>
-            <td>Presión salida agua filtro multimedia 2</td>
-            <td>20 PSI a 60 PSI</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag81" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+            <td class="col-pc">TAG 81</td>
+            <td class="col-desc">Presión salida agua filtro multimedia 2</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag81" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_m2" class="calculated-val">
-            <td class="diagonal-cell"></td>
-            <td>Diferencial presión filtro multimedia 2 (TAG80 - TAG81)</td>
-            <td>Menor a 10 PSI</td>
-            <td><span id="diff_m2">0.00</span> PSI</td>
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro multimedia 2 (TAG80 - TAG81)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_m2">0.00</span> PSI</td>
           </tr>
           <tr id="row_tag82">
-            <td>TAG 82</td>
-            <td>Presión salida filtro de 10 micras</td>
-            <td>20 PSI a 60 PSI</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag82" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+            <td class="col-pc">TAG 82</td>
+            <td class="col-desc">Presión salida filtro de 10 micras</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag82" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_f10" class="calculated-val">
-            <td class="diagonal-cell"></td>
-            <td>Diferencial presión filtro 10 micras (TAG81 - TAG82)</td>
-            <td>Menor a 10 PSI</td>
-            <td><span id="diff_f10">0.00</span> PSI</td>
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro 10 micras (TAG81 - TAG82)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_f10">0.00</span> PSI</td>
           </tr>
           <tr id="row_tag83">
-            <td>TAG 83</td>
-            <td>Presión salida filtro de 5 micras</td>
-            <td>20 PSI a 60 PSI</td>
-            <td><div class="input-unit-cell"><input type="number" step="0.1" id="tag83" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+            <td class="col-pc">TAG 83</td>
+            <td class="col-desc">Presión salida filtro de 5 micras</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag83" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_f5" class="calculated-val">
-            <td class="diagonal-cell"></td>
-            <td>Diferencial presión filtro 5 micras (TAG82 - TAG83)</td>
-            <td>Menor a 10 PSI</td>
-            <td><span id="diff_f5">0.00</span> PSI</td>
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro 5 micras (TAG82 - TAG83)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_f5">0.00</span> PSI</td>
           </tr>
           <tr id="row_fugas">
-            <td>Inspección</td>
-            <td>Presencia de fuga de agua</td>
-            <td>SI o NO</td>
-            <td>
+            <td class="col-pc">Inspección</td>
+            <td class="col-desc">Presencia de fuga de agua</td>
+            <td class="col-rango">SI o NO</td>
+            <td class="col-ind">
               <select id="fugas" class="input-field" style="margin:0;" onchange="evaluarRangos()">
                 <option value="NO">NO</option>
                 <option value="SI">SI</option>
@@ -555,7 +569,7 @@
       <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
       <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
 
-      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
+      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES (CON 3 LÍNEAS DE ESPACIO DE SEPARACIÓN) -->
       <div class="signatures-grid">
         <!-- BLOQUE TÉCNICO -->
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
@@ -1352,7 +1366,7 @@
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Guardando reporte...";
           try {
-            var tFin = ahora(); // Captura de hora final del reporte con segundos
+            var tFin = ahora();
             var payload = {
               fechaInicio: document.getElementById('fecha-auto').value,
               horaInicio: document.getElementById('hora-auto').value,
@@ -1424,7 +1438,7 @@
           btnSubmit.innerText = "Enviando...";
           try {
             if (!aprobadoGuardado) {
-              var a = ahora(); // Captura de fecha/hora de visto bueno con segundos
+              var a = ahora();
               var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
               
               await firmarReporte(reporteId, {
