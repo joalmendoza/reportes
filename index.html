@@ -114,7 +114,7 @@
     .param-table th {
       background-color: #f1f5f9;
       font-weight: bold;
-      text-align: center; /* Encabezados centrados */
+      text-align: center;
     }
     .calculated-val {
       background-color: #f8fafc;
@@ -172,7 +172,7 @@
       font-weight: bold;
       border-radius: 4px;
       margin: 12px 0 8px 0;
-      text-align: center; /* Título centrado */
+      text-align: center;
     }
 
     /* REGLAS PARA SALTO DE PÁGINA EN PDF Y REPETICIÓN DE ENCABEZADOS */
@@ -763,6 +763,7 @@
 
     var padTech, padAdmin;
 
+    // CAPTURA DE FECHA Y HORA CON SEGUNDOS INCLUIDOS (hh:mm:ss a. m. / p. m.)
     function ahora() {
       var d = new Date();
       var year = d.getFullYear();
@@ -771,7 +772,7 @@
       
       return {
         fecha: year + "-" + month + "-" + day,
-        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: true }),
+        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
         stamp: year.toString() + month + day +
                String(d.getHours()).padStart(2, '0') +
                String(d.getMinutes()).padStart(2, '0') +
@@ -979,8 +980,13 @@
       return true;
     }
 
+    // EL NOMBRE Y TIMESTAMP DEL PDF CONSTRUÍDO RIGUROSAMENTE CON LA FECHA Y HORA INICIAL CONGELADA DEL REPORTE
     function obtenerNombrePDF() {
-      return (document.getElementById('fecha-auto').value.replace(/-/g, '') + "_" + document.getElementById('hora-auto').value.replace(/[^0-9]/g, '')) + "_CVSAG005-F001.pdf";
+      var fVal = document.getElementById('fecha-auto').value || '';
+      var hVal = document.getElementById('hora-auto').value || '';
+      var numFecha = fVal.replace(/[^0-9]/g, '');
+      var numHora = hVal.replace(/[^0-9]/g, '');
+      return (numFecha + numHora) + "_CVSAG005-F001.pdf";
     }
 
     async function procesarLogin() {
@@ -1005,7 +1011,6 @@
         passEl.value = "";
         if (window.alIniciarSesion) window.alIniciarSesion();
       } catch (e) {
-        // Borrar valores ingresados y notificar error específico al usuario
         emailEl.value = "";
         passEl.value = "";
         errorDiv.innerText = mensajeLogin(e);
@@ -1047,7 +1052,7 @@
       var infoAprobacion = null;
       var cargaFallida = false;
 
-      // HORA Y FECHA CONGELADAS AL ABRIR
+      // FECHA Y HORA INICIALES CONGELADAS AL ABRIR EL FORMULARIO (CON SEGUNDOS)
       var tInicio = ahora();
       document.getElementById('fecha-auto').value = tInicio.fecha;
       document.getElementById('hora-auto').value = tInicio.hora;
@@ -1248,7 +1253,7 @@
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
-      // GENERACIÓN DE PDF ROBUSTA CON PIE DE PÁGINA NATIVO
+      // GENERACIÓN DE PDF ROBUSTA CON NOMBRE BASADO EN EL INICIO DEL REPORTE Y PIE DE PÁGINA NATIVO
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
@@ -1347,7 +1352,7 @@
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Guardando reporte...";
           try {
-            var tFin = ahora();
+            var tFin = ahora(); // Captura de hora final del reporte con segundos
             var payload = {
               fechaInicio: document.getElementById('fecha-auto').value,
               horaInicio: document.getElementById('hora-auto').value,
@@ -1419,7 +1424,7 @@
           btnSubmit.innerText = "Enviando...";
           try {
             if (!aprobadoGuardado) {
-              var a = ahora();
+              var a = ahora(); // Captura de fecha/hora de visto bueno con segundos
               var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
               
               await firmarReporte(reporteId, {
