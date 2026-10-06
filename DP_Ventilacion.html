@@ -1,454 +1,1155 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lista de Chequeo DP Ventilación - Carval</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-</head>
-<body class="bg-gray-100 min-h-screen p-2 sm:p-6">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVSAI018-F001 - Lista de Chequeo DP Ventilación</title>
 
-  <!-- Navegación Superior -->
-  <div id="noPrintHeader" class="max-w-4xl mx-auto mb-4 flex justify-between items-center bg-white p-3 rounded-lg shadow text-sm font-bold text-gray-700">
-    <a href="index.html" class="text-blue-600 hover:underline">← Volver al Formulario Principal</a>
-    <span id="badgeModo" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Modo Técnico</span>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 16px;
+      color: #1f2937;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .input-field, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .btn {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+    }
+    .canvas-container {
+      border: 2px dashed #9ca3af;
+      border-radius: 8px;
+      background: #fafafa;
+      position: relative;
+      margin-bottom: 8px;
+      touch-action: none;
+      width: 100%;
+    }
+    canvas {
+      width: 100%;
+      height: 220px;
+      display: block;
+      border-radius: 8px;
+    }
+    .firma-img {
+      width: 100%;
+      height: auto;
+      max-height: 140px;
+      display: block;
+      border-radius: 8px;
+    }
+    .btn-clear {
+      background: #6b7280;
+      padding: 6px 12px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .error-msg {
+      color: #ef4444;
+      font-weight: bold;
+      margin-bottom: 12px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    
+    .header-table, .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 11px;
+    }
+    .header-table td, .param-table th, .param-table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 6px;
+      text-align: left;
+    }
+    .param-table th {
+      background-color: #f1f5f9;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .input-unit-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+    }
+    .input-unit-cell input {
+      flex: 1;
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+      padding: 5px 6px;
+      font-size: 12px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .unit-label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #4b5563;
+      white-space: nowrap;
+    }
+
+    .col-desc { width: 55%; }
+    .col-rango { width: 25%; }
+    .col-ind { width: 20%; }
+
+    .out-of-range {
+      background-color: #fecdd3 !important;
+    }
+    .out-of-range td {
+      background-color: #fecdd3 !important;
+      color: #881337 !important;
+      font-weight: bold;
+    }
+
+    .sec-title {
+      background: #1e3a8a;
+      color: white;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 4px;
+      margin: 12px 0 8px 0;
+      text-align: center;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+      margin-top: 15px;
+    }
+
+    .pdf-header-repeat {
+      display: none;
+    }
+
+    .is-generating-pdf .pdf-header-repeat {
+      display: table !important;
+    }
+
+    .signatures-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 8px;
+    }
+
+    .is-generating-pdf .signatures-grid {
+      flex-direction: row !important;
+    }
+    .is-generating-pdf .sig-col {
+      width: 50% !important;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+
+  <!-- PANTALLA 1: INICIO DE SESIÓN -->
+  <div id="login-screen" class="card">
+    <h2 id="login-title" style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
+    <p id="login-nota" style="text-align:center; font-size:14px; color:#6b7280; margin:-10px 0 14px;"></p>
+    <div id="error-message" class="error-msg"></div>
+
+    <div>
+      <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
+      <input type="email" id="email" class="input-field" placeholder="Ingrese su correo electrónico" value="">
+
+      <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
+      <input type="password" id="password" class="input-field" placeholder="••••••••" value="">
+
+      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v18 | CVSAI018-F001</p>
+    </div>
   </div>
 
-  <!-- Contenedor del Reporte Imprimible -->
-  <div id="pdfContainer" class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-    
-    <!-- Encabezado Oficial Carval -->
-    <div class="border border-gray-400 p-4 mb-4 grid grid-cols-1 md:grid-cols-3 items-center gap-2 text-center md:text-left">
-      <div>
-        <h1 class="text-2xl font-extrabold text-blue-900">Carval</h1>
-      </div>
-      <div class="text-sm font-semibold text-gray-800 text-center">
-        Lista de Chequeo para Medición de Diferenciales de Presión en UMAS, Ventiladores de Inyección, Extracción y Colectores de Polvo
-      </div>
-      <div class="text-xs text-gray-600 border-t md:border-t-0 md:border-l border-gray-300 pt-2 md:pt-0 md:pl-2">
-        <p><strong>Código:</strong> CVSAI018-F001</p>
-        <p><strong>Versión:</strong> 18</p>
-        <p><strong>Estado:</strong> Vigente</p>
-      </div>
+  <!-- PANTALLA DEL COORDINADOR (SESIÓN ACTIVA) -->
+  <div id="home-coord" class="card hidden" style="text-align:center;">
+    <h2 style="margin-top:0;">Sesión de coordinador</h2>
+    <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
+    <p style="font-size:14px; color:#6b7280;">Tu sesión sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
+    <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
+  </div>
+
+  <!-- PANTALLA 2: FORMULARIO PRINCIPAL CVSAI018-F001 -->
+  <div id="main-form-screen" class="card hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
+      <span style="font-size: 12px; color: #6b7280; font-weight: bold;" id="user-display">Modo Consulta</span>
+      <button id="btn-logout" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: bold; cursor: pointer;">Salir</button>
     </div>
 
-    <form id="formDPVentilacion" class="space-y-4">
+    <div id="view-badge" class="badge">Modo Técnico</div>
+    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo DP Ventilación</h2>
+
+    <div id="pdf-area" style="padding: 10px; background: white;">
       
-      <!-- Datos de Encabezado -->
-      <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded border">
-        <div>
-          <label class="block text-xs font-bold text-gray-700">Fecha:</label>
-          <input type="date" id="fechaReporte" required class="w-full p-1 border rounded text-sm bg-white" />
+      <!-- ENCABEZADO REORGANIZADO -->
+      <table class="header-table">
+        <tr>
+          <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
+          <td style="width: 58%; text-align: center; font-weight: bold; font-size: 11px;">
+            LISTA DE CHEQUEO PARA MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN UMAS, VENTILADORES DE INYECCIÓN, EXTRACCIÓN Y COLECTORES DE POLVO
+          </td>
+          <td style="width: 22%; font-size: 10px;">
+            <b>Código:</b> CVSAI018-F001<br>
+            <b>Versión:</b> 18<br>
+            <b>Fecha emisión:</b> 2026<br>
+            <b>Estado:</b> Vigente
+          </td>
+        </tr>
+      </table>
+
+      <!-- CAMPOS FECHA Y HORA -->
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div style="flex: 1;">
+          <label style="font-weight: bold; font-size: 12px;">Fecha:</label>
+          <input type="text" id="fecha-auto" class="input-field" readonly style="background:#f3f4f6; margin-bottom: 6px;">
         </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700">Hora:</label>
-          <input type="text" id="horaReporte" required class="w-full p-1 border rounded text-sm bg-white" placeholder="ej. 09:30 p. m." />
+        <div style="flex: 1;">
+          <label style="font-weight: bold; font-size: 12px;">Hora:</label>
+          <input type="text" id="hora-auto" class="input-field" readonly style="background:#f3f4f6; margin-bottom: 6px;">
         </div>
       </div>
 
-      <!-- Tabla de Equipos e Indicaciones -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-xs border-collapse border border-gray-300">
-          <thead>
-            <tr class="bg-gray-200 text-gray-800 font-bold">
-              <th class="border border-gray-300 p-2 text-left">Equipo</th>
-              <th class="border border-gray-300 p-2 text-center w-48">Rango de Operación</th>
-              <th class="border border-gray-300 p-2 text-center w-36">Indicación (inH2O)</th>
-            </tr>
-          </thead>
-          <tbody id="tablaEquipos">
-            <!-- Filas generadas dinámicamente -->
-          </tbody>
-        </table>
-      </div>
+      <div class="sec-title">MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN EQUIPOS</div>
 
-      <!-- Sección de Observaciones Automáticas -->
-      <div class="mt-4">
-        <label class="block text-xs font-bold text-gray-700 mb-1">OBSERVACIONES (Equipos fuera de rango de operación):</label>
-        <textarea id="observacionesAuto" readonly rows="3" class="w-full p-2 border rounded text-xs bg-yellow-50 text-red-700 font-medium"></textarea>
-      </div>
+      <!-- TABLA DE CONTROL DE PARÁMETROS -->
+      <table class="param-table">
+        <thead>
+          <tr>
+            <th class="col-desc">Equipo</th>
+            <th class="col-rango">Rango de Operación</th>
+            <th class="col-ind">Indicación</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-equipos-body">
+          <!-- Creado dinámicamente -->
+        </tbody>
+      </table>
 
-      <!-- Sección de Firmas y Aprobaciones -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-6">
-        <!-- Técnico / Responsable -->
-        <div class="space-y-2">
-          <p class="text-xs font-bold text-gray-700">Responsable: <span class="font-normal">Técnico de Mantenimiento</span></p>
-          <p class="text-xs font-bold text-gray-700">Cargo: <span class="font-normal">Técnico de Mantenimiento</span></p>
-          
-          <label class="block text-xs font-bold text-gray-700 mt-2">Firma del Responsable:</label>
-          <div id="containerFirmaTec" class="border rounded bg-gray-50 min-h-[112px] flex items-center justify-center">
-            <canvas id="canvasFirmaTec" class="w-full h-28"></canvas>
-            <img id="imgFirmaTec" class="hidden max-h-28 object-contain" alt="Firma Técnico" />
+      <!-- SECCIÓN DE OBSERVACIONES -->
+      <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES (Equipos fuera de rango de operación):</label>
+      <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
+
+      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
+      <div class="signatures-grid">
+        <!-- BLOQUE TÉCNICO -->
+        <div id="block-tech-sig" class="sig-col" style="width: 100%;">
+          <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
+          <b>Cargo:</b> Técnico de Mantenimiento<br><br>
+          <label style="font-weight: bold; font-size: 14px;">Firma del Responsable</label>
+          <div class="canvas-container" id="container-canvas-tech">
+            <canvas id="signature-tech"></canvas>
+            <img id="img-tech-sig" class="hidden firma-img" alt="Firma del Responsable">
           </div>
-          <button type="button" id="btnClearFirmaTec" class="text-xs text-red-600 underline">Limpiar firma</button>
+          <div id="fecha-tec" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
+          <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
         </div>
 
-        <!-- Aprobación Coordinador -->
-        <div class="space-y-2 bg-gray-50 p-3 rounded border">
-          <p class="text-xs font-bold text-gray-700">Aprobado por: <span class="font-normal">Jorge Alberto Mendoza Ospina</span></p>
-          <p class="text-xs font-bold text-gray-700">Cargo: <span class="font-normal">Coordinador de Mantenimiento</span></p>
-          
-          <div id="secFirmaCoord" class="hidden">
-            <label class="block text-xs font-bold text-gray-700 mt-2">Firma de Aprobación Coordinador:</label>
-            <div id="containerFirmaCoord" class="border rounded bg-white min-h-[112px] flex items-center justify-center">
-              <canvas id="canvasFirmaCoord" class="w-full h-28"></canvas>
-              <img id="imgFirmaCoord" class="hidden max-h-28 object-contain" alt="Firma Coordinador" />
-            </div>
-            <button type="button" id="btnClearFirmaCoord" class="text-xs text-red-600 underline mt-1">Limpiar firma</button>
+        <!-- BLOQUE COORDINADOR -->
+        <div id="block-admin-sig" class="sig-col hidden" style="width: 100%;">
+          <b>Aprobado por:</b> Jorge Alberto Mendoza Ospina<br>
+          <b>Cargo:</b> Coordinador de Mantenimiento<br><br>
+          <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
+          <div class="canvas-container">
+            <canvas id="signature-admin"></canvas>
+            <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
           </div>
-          <p id="statusFirmaCoord" class="text-xs text-yellow-700 font-semibold mt-4">Estado: <span class="bg-yellow-200 px-1 py-0.5 rounded">Pendiente Firma Coordinador</span></p>
+          <div id="fecha-adm" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
+          <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
         </div>
       </div>
 
-      <!-- Botones de Acción -->
-      <div id="actionButtons" class="mt-6">
-        <!-- 1. Botón Técnico -->
-        <button 
-          type="button" 
-          id="btnEnviarWhatsApp" 
-          onclick="enviarAWhatsAppYGuardar()" 
-          class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow flex items-center justify-center gap-2 text-base transition-colors">
-          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.842-1.001z"/>
-          </svg>
-          Enviar a WhatsApp al Coordinador
-        </button>
+    </div>
 
-        <!-- 2. Botón Coordinador -->
-        <button 
-          type="button" 
-          id="btnAprobarYNotificar" 
-          onclick="aprobarYNotificarCoordinador()" 
-          class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow text-base transition-colors">
-          Firmar, Aprobar y Enviar Correo con Enlace
-        </button>
-
-        <!-- 3. Botón Descargar PDF -->
-        <button 
-          type="button" 
-          id="btnDescargarPDF" 
-          onclick="descargarPDFDirecto()" 
-          class="hidden w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-4 rounded-lg shadow text-base transition-colors">
-          Descargar Reporte PDF
-        </button>
-      </div>
-
-    </form>
+    <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
   </div>
 
-  <!-- Firebase SDK & Lógica de Negocio -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, addDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    // ⚠️ REEMPLAZAR CON TUS CREDENCIALES REALES DE FIREBASE (Tomadas de index.html)
-    const firebaseConfig = {
-      apiKey: "TU_API_KEY_REAL",
-      authDomain: "appformatosmtto.firebaseapp.com",
-      projectId: "appformatosmtto",
-      storageBucket: "appformatosmtto.firebasestorage.app",
-      messagingSenderId: "729388358915",
-      appId: "TU_APP_ID_REAL"
+  <script>
+    window.onerror = function(message, source, lineno) {
+      alert("Error en ejecución: " + message + "\nLínea: " + lineno);
+      return false;
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    // ---------- CONFIGURACIÓN GENERAL ----------
+    var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
+    var PROYECTO = "appformatosmtto";
+    var WHATSAPP_COORDINADOR = "573105398897";
+    var CORREOS_DESTINO = "jorge.mendoza@carval.com.co, formatosmtto.carval@gmail.com";
 
-    signInAnonymously(auth).catch(console.error);
+    var EMAILJS_SERVICE_ID = "service_m3xvu2j";
+    var EMAILJS_TEMPLATE_ID = "template_loi9vam";
+    var EMAILJS_PUBLIC_KEYS = [
+      "I_6FNZetkO_cSgx5A",
+      "l_6FNZetkO_cSgx5A",
+      "I_6FNZetk0_cSgx5A",
+      "l_6FNZetk0_cSgx5A"
+    ];
+    if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
 
-    // ⚠️ REEMPLAZAR CON TU CLAVE PÚBLICA DE EMAILJS
-    emailjs.init("TU_EMAILJS_PUBLIC_KEY");
+    // ===== BLOQUE API REST FIREBASE =====
+    var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
+    var COLECCION = "chequeosDPVentilacion";
+    var sesion = null;
 
-    // Listado Oficial CVSAI018-F001 v18
-    const listaEquipos = [
-      { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5 },
-      { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5 },
-      { id: "e3", nombre: "UMA # 2 Granulación", min: 0.1, max: 2.5 },
-      { id: "e4", nombre: "UMA Proceso Granulación (60% al 95% / 99.99%)", min: 0.1, max: 2.5 },
-      { id: "e5", nombre: "Colector de Polvos Proceso Granulación", min: 0.2, max: 20.0 },
-      { id: "e6", nombre: "UMA Acondicionamiento de Solidos Solubles, Líquidos Orales, Etiquetado y Envase Granulación", min: 0.1, max: 2.5 },
-      { id: "e7", nombre: "UMA Envase de Sólidos Solubles", min: 0.1, max: 2.5 },
-      { id: "e8", nombre: "Ventilador de Inyección Esclusa Alistamiento", min: 0.1, max: 2.5 },
-      { id: "e9", nombre: "UMA Envase Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5 },
-      { id: "e10", nombre: "Colector de Polvos Fraccionamiento", min: 0.2, max: 6.0 },
-      { id: "e11", nombre: "Colector de Polvos Envase de Sólidos Solubles", min: 0.2, max: 6.0 },
-      { id: "e12", nombre: "Colector de Polvos Granulación", min: 0.2, max: 6.0 },
-      { id: "e13", nombre: "UMA Mezclas 2", min: 0.1, max: 2.5 },
-      { id: "e14", nombre: "Ventilador de Inyección Pasillo Fraccionamiento", min: 0.1, max: 2.5 },
-      { id: "e15", nombre: "UMA Fraccionamiento", min: 0.1, max: 2.5 },
-      { id: "e16", nombre: "UMA # 1 Control de Calidad", min: 1.0, max: 2.5 },
-      { id: "e17", nombre: "UMA # 2 Control de Calidad", min: 1.0, max: 2.5 },
-      { id: "e18", nombre: "UMA Fabricación Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5 },
-      { id: "e19", nombre: "Colector de Polvos Mezclas 2", min: 0.2, max: 6.0 },
-      { id: "e20", nombre: "Ventilador de Extracción Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5 },
-      { id: "e21", nombre: "Ventilador de Extracción Fabricación Envase Desinfectantes", min: 0.1, max: 2.5 },
-      { id: "e22", nombre: "UMA Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5 },
-      { id: "e23", nombre: "UMA Fabricación Envase Desinfectantes", min: 0.1, max: 2.5 },
-      { id: "e24", nombre: "Ventilador de Inyección Agua Purificada", min: 0.1, max: 2.5 },
-      { id: "e25", nombre: "Ventilador de Inyección Pasillo Volúmenes Bajos 2 y Mezclas 2", min: 0.1, max: 2.5 },
-      { id: "e26", nombre: "UMA Lavado de Equipos y Equipo Limpio", min: 0.1, max: 2.5 },
-      { id: "e27", nombre: "Ventilador de Inyección Vestieres", min: 0.1, max: 2.5 },
-      { id: "e28", nombre: "UMA Fabricación Envase Volúmenes Bajos 2 (30% al 95% / 99.99%)", min: 0.1, max: 2.5 },
-      { id: "e29", nombre: "Colector de Polvos Volúmenes Bajos 2", min: 0.2, max: 6.0 },
-      { id: "e30", nombre: "Ventilador de Inyección Bodega Materia Prima", min: 0.1, max: 2.5 },
-      { id: "e31", nombre: "Ventilador de Extracción Fraccionamiento", min: 0.01, max: 1.0 },
-      { id: "e32", nombre: "Ventilador de Extracción Alistamiento", min: 0.01, max: 1.0 },
-      { id: "e33", nombre: "Ventilador de Extracción Envase de Sólidos Solubles", min: 0.01, max: 1.0 },
-      { id: "e34", nombre: "Ventilador de Extracción Volúmenes Bajos 2", min: 0.01, max: 1.0 },
-      { id: "e35", nombre: "Ventilador de Extracción Mueble de Reactivos en Uso", min: 1.0, max: 2.5 },
-      { id: "e36", nombre: "Ventilador de Extracción Control de Calidad", min: 0.02, max: 0.15 },
-      { id: "e37", nombre: "Ventilador de Extracción Mueble Almacén de Reactivos", min: 1.0, max: 2.5 },
-      { id: "e38", nombre: "Ventilador de Extracción Mezclas 2", min: 0.01, max: 1.0 },
-      { id: "e39", nombre: "UMA Granulación 2", min: 0.1, max: 2.5 }
+    // LISTADO DE EQUIPOS OFICIAL CVSAI018-F001
+    var listaEquipos = [
+      { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e3", nombre: "UMA # 2 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e4", nombre: "UMA Proceso Granulación (60% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e5", nombre: "Colector de Polvos Proceso Granulación", min: 0.2, max: 20.0, unit: "inH2O" },
+      { id: "e6", nombre: "UMA Acondicionamiento de Solidos Solubles, Líquidos Orales, Etiquetado y Envase Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e7", nombre: "UMA Envase de Sólidos Solubles", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e8", nombre: "Ventilador de Inyección Esclusa Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e9", nombre: "UMA Envase Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e10", nombre: "Colector de Polvos Fraccionamiento", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e11", nombre: "Colector de Polvos Envase de Sólidos Solubles", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e12", nombre: "Colector de Polvos Granulación", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e13", nombre: "UMA Mezclas 2", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e14", nombre: "Ventilador de Inyección Pasillo Fraccionamiento", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e15", nombre: "UMA Fraccionamiento", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e16", nombre: "UMA # 1 Control de Calidad", min: 1.0, max: 2.5, unit: "inH2O" },
+      { id: "e17", nombre: "UMA # 2 Control de Calidad", min: 1.0, max: 2.5, unit: "inH2O" },
+      { id: "e18", nombre: "UMA Fabricación Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e19", nombre: "Colector de Polvos Mezclas 2", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e20", nombre: "Ventilador de Extracción Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e21", nombre: "Ventilador de Extracción Fabricación Envase Desinfectantes", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e22", nombre: "UMA Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e23", nombre: "UMA Fabricación Envase Desinfectantes", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e24", nombre: "Ventilador de Inyección Agua Purificada", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e25", nombre: "Ventilador de Inyección Pasillo Volúmenes Bajos 2 y Mezclas 2", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e26", nombre: "UMA Lavado de Equipos y Equipo Limpio", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e27", nombre: "Ventilador de Inyección Vestieres", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e28", nombre: "UMA Fabricación Envase Volúmenes Bajos 2 (30% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e29", nombre: "Colector de Polvos Volúmenes Bajos 2", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e30", nombre: "Ventilador de Inyección Bodega Materia Prima", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e31", nombre: "Ventilador de Extracción Fraccionamiento", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e32", nombre: "Ventilador de Extracción Alistamiento", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e33", nombre: "Ventilador de Extracción Envase de Sólidos Solubles", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e34", nombre: "Ventilador de Extracción Volúmenes Bajos 2", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e35", nombre: "Ventilador de Extracción Mueble de Reactivos en Uso", min: 1.0, max: 2.5, unit: "inH2O" },
+      { id: "e36", nombre: "Ventilador de Extracción Control de Calidad", min: 0.02, max: 0.15, unit: "inH2O" },
+      { id: "e37", nombre: "Ventilador de Extracción Mueble Almacén de Reactivos", min: 1.0, max: 2.5, unit: "inH2O" },
+      { id: "e38", nombre: "Ventilador de Extracción Mezclas 2", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e39", nombre: "UMA Granulación 2", min: 0.1, max: 2.5, unit: "inH2O" }
     ];
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const docIdParam = urlParams.get('id');
-
-    // Cargar tabla
-    const tbody = document.getElementById('tablaEquipos');
-    listaEquipos.forEach(eq => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="border border-gray-300 p-1.5">${eq.nombre}</td>
-        <td class="border border-gray-300 p-1.5 text-center text-gray-600 font-mono">${eq.min} inH2O a ${eq.max} inH2O</td>
-        <td class="border border-gray-300 p-1">
-          <input type="number" step="0.01" id="input_${eq.id}" data-min="${eq.min}" data-max="${eq.max}" data-nombre="${eq.nombre}"
-            class="input-val w-full p-1 text-center border rounded font-bold" placeholder="0.00" />
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    const padTec = new SignaturePad(document.getElementById('canvasFirmaTec'));
-    const padCoord = new SignaturePad(document.getElementById('canvasFirmaCoord'));
-    document.getElementById('btnClearFirmaTec').addEventListener('click', () => padTec.clear());
-    document.getElementById('btnClearFirmaCoord').addEventListener('click', () => padCoord.clear());
-
-    if (!docIdParam) {
-      document.getElementById('fechaReporte').value = new Date().toISOString().split('T')[0];
-      document.getElementById('horaReporte').value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-
-      document.querySelectorAll('.input-val').forEach(input => {
-        input.addEventListener('input', evaluarRangos);
-      });
-    } else {
-      cargarDatosFirebase(docIdParam);
+    function guardarSesion(s) {
+      sesion = s;
+      try {
+        if (s) localStorage.setItem('sesionTecnico', JSON.stringify(s));
+        else localStorage.removeItem('sesionTecnico');
+      } catch (e) {}
     }
 
+    function leerSesion() {
+      try {
+        var t = localStorage.getItem('sesionTecnico');
+        return t ? JSON.parse(t) : null;
+      } catch (e) { return null; }
+    }
+
+    async function pedir(url, opciones, limiteMs) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, limiteMs || 20000);
+      try {
+        var cfg = Object.assign({}, opciones || {});
+        if (ctrl) cfg.signal = ctrl.signal;
+        var r = await fetch(url, cfg);
+        var data = {};
+        try { data = await r.json(); } catch (e) {}
+        if (!r.ok) {
+          var err = new Error((data.error && data.error.message) || ("HTTP " + r.status));
+          err.status = r.status;
+          err.apiMessage = (data.error && data.error.message) || "";
+          throw err;
+        }
+        return data;
+      } catch (e) {
+        if (e && e.name === 'AbortError') {
+          var t = new Error("Sin respuesta del servidor");
+          t.code = 'timeout';
+          throw t;
+        }
+        if (e && e.name === 'TypeError') {
+          var n = new Error("Sin conexión");
+          n.code = 'red';
+          throw n;
+        }
+        throw e;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function aCampos(obj) {
+      var f = {};
+      Object.keys(obj).forEach(function(k) { f[k] = { stringValue: String(obj[k] == null ? '' : obj[k]) }; });
+      return f;
+    }
+
+    function deCampos(fields) {
+      var o = {};
+      Object.keys(fields || {}).forEach(function(k) {
+        var v = fields[k];
+        o[k] = (v && v.stringValue !== undefined) ? v.stringValue : '';
+      });
+      return o;
+    }
+
+    function nuevoId() {
+      var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      var out = "";
+      var arr = new Uint8Array(20);
+      (window.crypto || window.msCrypto).getRandomValues(arr);
+      for (var i = 0; i < 20; i++) out += chars.charAt(arr[i] % chars.length);
+      return out;
+    }
+
+    async function iniciarSesionApi(email, clave, rol) {
+      var d = await pedir("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: clave, returnSecureToken: true })
+      });
+      guardarSesion({
+        rol: rol || 'tecnico',
+        email: d.email,
+        idToken: d.idToken,
+        refreshToken: d.refreshToken,
+        expira: Date.now() + (parseInt(d.expiresIn, 10) - 120) * 1000
+      });
+    }
+
+    async function tokenValido() {
+      if (!sesion) { var e0 = new Error("Sesión cerrada"); e0.code = 'sin-sesion'; throw e0; }
+      if (Date.now() < sesion.expira) return sesion.idToken;
+      var d;
+      try {
+        d = await pedir("https://securetoken.googleapis.com/v1/token?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(sesion.refreshToken)
+        });
+      } catch (e) {
+        if (e.status === 400 || e.status === 401) { e.code = 'sin-sesion'; }
+        throw e;
+      }
+      guardarSesion({
+        rol: sesion.rol,
+        email: sesion.email,
+        idToken: d.id_token,
+        refreshToken: d.refresh_token,
+        expira: Date.now() + (parseInt(d.expires_in, 10) - 120) * 1000
+      });
+      return sesion.idToken;
+    }
+
+    async function crearReporte(datos) {
+      var token = await tokenValido();
+      var id = nuevoId();
+      await pedir(FS_BASE + "/" + COLECCION + "?documentId=" + id + "&key=" + API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ fields: aCampos(datos) })
+      });
+      return id;
+    }
+
+    async function leerReporte(id) {
+      var d = await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?key=" + API_KEY);
+      return deCampos(d.fields);
+    }
+
+    async function firmarReporte(id, datos) {
+      var token = await tokenValido();
+      var mascara = ['firmaAdm', 'fechaFirmaAdm', 'estado']
+        .map(function(k) { return "updateMask.fieldPaths=" + k; }).join("&");
+      await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ fields: aCampos(datos) })
+      });
+    }
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var modo = urlParams.get('mode');
+    var reporteId = urlParams.get('id');
+    var modoAprobar = (modo === 'aprobar');
+    var modoVer = (modo === 'ver');
+    var baseUrl = window.location.origin + window.location.pathname;
+
+    var padTech, padAdmin;
+
+    function ahora() {
+      var d = new Date();
+      var year = d.getFullYear();
+      var month = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      
+      return {
+        fecha: year + "-" + month + "-" + day,
+        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
+        stamp: year.toString() + month + day +
+               String(d.getHours()).padStart(2, '0') +
+               String(d.getMinutes()).padStart(2, '0') +
+               String(d.getSeconds()).padStart(2, '0')
+      };
+    }
+
+    function pintarFechas(repFecha, repHora, aprFechaTexto) {
+      document.getElementById('fecha-tec').innerHTML =
+        repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " - " + repHora : "";
+      document.getElementById('fecha-adm').innerHTML =
+        aprFechaTexto ? "<b>Visto bueno:</b> " + aprFechaTexto : "";
+    }
+
+    function firmaImagen(canvas, ancho, calidad) {
+      var h = Math.round(ancho * canvas.height / canvas.width);
+      var c = document.createElement('canvas');
+      c.width = ancho;
+      c.height = h;
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, ancho, h);
+      ctx.drawImage(canvas, 0, 0, ancho, h);
+      return c.toDataURL('image/jpeg', calidad);
+    }
+
+    async function enviarCorreo(params) {
+      var ultimoError = null;
+      for (var i = 0; i < EMAILJS_PUBLIC_KEYS.length; i++) {
+        try {
+          return await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params, EMAILJS_PUBLIC_KEYS[i]);
+        } catch (e) {
+          ultimoError = e;
+          var msg = ((e && e.text) || "").toLowerCase();
+          if (msg.indexOf("account not found") === -1) break;
+        }
+      }
+      throw ultimoError;
+    }
+
+    function textoError(e) {
+      if (!e) return "desconocido";
+      if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
+      if (e.code === 'red') return "sin conexión a internet";
+      if (e.status === 403) return "sin permiso en la base de datos (revisa las reglas de Firestore)";
+      if (e.status === 404) return "no se encontró en la base de datos";
+      return e.text || e.apiMessage || e.message || String(e);
+    }
+
+    function mensajeLogin(e) {
+      if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
+      if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
+      var m = (e.apiMessage || e.message || "").toUpperCase();
+      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0)
+        return "El correo electrónico o la contraseña ingresados son incorrectos.";
+      if (m.indexOf("EMAIL_NOT_FOUND") >= 0)
+        return "El correo electrónico no se encuentra registrado.";
+      if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos fallidos. Espera unos minutos.";
+      if (m.indexOf("OPERATION_NOT_ALLOWED") >= 0) return "El acceso con correo y contraseña no está activado en Firebase.";
+      if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
+      return "Error de acceso: " + (e.apiMessage || e.message || "Credenciales incorrectas");
+    }
+
+    // EVALUACIÓN DE RANGOS DE OPERACIÓN
     function evaluarRangos() {
-      let fuera = [];
-      document.querySelectorAll('.input-val').forEach(inp => {
-        const val = parseFloat(inp.value);
-        if (!isNaN(val)) {
-          if (val < parseFloat(inp.dataset.min) || val > parseFloat(inp.dataset.max)) {
-            inp.classList.add('bg-red-100', 'text-red-700');
-            fuera.push(`• ${inp.dataset.nombre}: ${val} inH2O`);
-          } else {
-            inp.classList.remove('bg-red-100', 'text-red-700');
+      var desviaciones = [];
+
+      listaEquipos.forEach(function(eq) {
+        var rowEl = document.getElementById("row_" + eq.id);
+        var input = document.getElementById(eq.id);
+        if (!rowEl || !input) return;
+
+        var v = parseFloat(input.value);
+        var fuera = false;
+        var msgDesc = "";
+
+        if (!isNaN(v)) {
+          if (v < eq.min) {
+            fuera = true;
+            msgDesc = eq.nombre + " bajo especificación (Valor: " + v + " " + eq.unit + " | Mín: " + eq.min + ")";
+          } else if (v > eq.max) {
+            fuera = true;
+            msgDesc = eq.nombre + " sobre especificación (Valor: " + v + " " + eq.unit + " | Máx: " + eq.max + ")";
           }
         }
+
+        if (fuera) {
+          rowEl.classList.add('out-of-range');
+          desviaciones.push(msgDesc);
+        } else {
+          rowEl.classList.remove('out-of-range');
+        }
       });
-      document.getElementById('observacionesAuto').value = fuera.length > 0 ? fuera.join('\n') : "Todos los equipos dentro del rango normal.";
+
+      var obsTextarea = document.getElementById('observaciones');
+      if (obsTextarea) {
+        if (desviaciones.length > 0) {
+          obsTextarea.value = "VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n- " + desviaciones.join("\n- ");
+        } else if (obsTextarea.value.indexOf("VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:") === 0) {
+          obsTextarea.value = "";
+        }
+      }
     }
 
-    async function cargarDatosFirebase(id) {
-      try {
-        const docSnap = await getDoc(doc(db, "chequeosDPVentilacion", id));
-        if (!docSnap.exists()) return alert("El registro solicitado no existe.");
-
-        const data = docSnap.data();
-        document.getElementById('fechaReporte').value = data.fecha;
-        document.getElementById('horaReporte').value = data.hora;
-        document.getElementById('observacionesAuto').value = data.observaciones;
-
-        document.getElementById('fechaReporte').disabled = true;
-        document.getElementById('horaReporte').disabled = true;
-
-        if (data.lecturas) {
-          listaEquipos.forEach(eq => {
-            const el = document.getElementById(`input_${eq.id}`);
-            if (data.lecturas[eq.id] !== undefined) el.value = data.lecturas[eq.id];
-            el.disabled = true;
-          });
+    function validarFormularioCompleto() {
+      for (var i = 0; i < listaEquipos.length; i++) {
+        var el = document.getElementById(listaEquipos[i].id);
+        if (!el || el.value.trim() === "") {
+          alert("Por favor diligencie la casilla: " + listaEquipos[i].nombre);
+          if (el) el.focus();
+          return false;
         }
+      }
+      return true;
+    }
+
+    function obtenerNombrePDF() {
+      var fVal = document.getElementById('fecha-auto').value || '';
+      var hVal = document.getElementById('hora-auto').value || '';
+      var numFecha = fVal.replace(/[^0-9]/g, '');
+      var numHora = hVal.replace(/[^0-9]/g, '');
+      return (numFecha + numHora) + "_CVSAI018-F001.pdf";
+    }
+
+    async function procesarLogin() {
+      var emailEl = document.getElementById('email');
+      var passEl = document.getElementById('password');
+      var emailValue = emailEl.value.trim().toLowerCase();
+      var passwordValue = passEl.value;
+      var errorDiv = document.getElementById('error-message');
+      var btn = document.getElementById('btn-submit-login');
+
+      if (!emailValue || !passwordValue) {
+        errorDiv.innerText = "Ingrese correo y contraseña para continuar.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Verificando...";
+      errorDiv.innerText = "";
+
+      try {
+        await iniciarSesionApi(emailValue, passwordValue, modoAprobar ? 'coordinador' : 'tecnico');
+        passEl.value = "";
+        if (window.alIniciarSesion) window.alIniciarSesion();
+      } catch (e) {
+        emailEl.value = "";
+        passEl.value = "";
+        errorDiv.innerText = mensajeLogin(e);
+      }
+      btn.disabled = false;
+      btn.innerText = "Iniciar Sesión";
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      // Renderizar filas de equipos en la tabla HTML
+      var tbody = document.getElementById('tabla-equipos-body');
+      listaEquipos.forEach(function(eq, index) {
+        var tr = document.createElement('tr');
+        tr.id = "row_" + eq.id;
+        tr.innerHTML = `
+          <td class="col-desc">${eq.nombre}</td>
+          <td class="col-rango text-center" style="text-align:center;">${eq.min} ${eq.unit} a ${eq.max} ${eq.unit}</td>
+          <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.01" id="${eq.id}" class="input-field" oninput="evaluarRangos()"><span class="unit-label">${eq.unit}</span></div></td>
+        `;
+        tbody.appendChild(tr);
+
+        // Salto de página estético en el PDF en el ítem 20
+        if (index === 19) {
+          var trPageBreak = document.createElement('tr');
+          trPageBreak.className = 'page-break';
+          trPageBreak.innerHTML = `
+            <td colspan="3" style="border:none; padding:0;">
+              <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
+                <tr>
+                  <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
+                  <td style="width: 58%; text-align: center; font-weight: bold; font-size: 11px;">LISTA DE CHEQUEO PARA MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN UMAS, VENTILADORES DE INYECCIÓN, EXTRACCIÓN Y COLECTORES DE POLVO</td>
+                  <td style="width: 22%; font-size: 10px;"><b>Código:</b> CVSAI018-F001<br><b>Versión:</b> 18<br><b>Fecha emisión:</b> 2026<br><b>Estado:</b> Vigente</td>
+                </tr>
+              </table>
+              <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
+                <thead>
+                  <tr>
+                    <th class="col-desc">Equipo</th>
+                    <th class="col-rango">Rango de Operación</th>
+                    <th class="col-ind">Indicación</th>
+                  </tr>
+                </thead>
+              </table>
+            </td>
+          `;
+          tbody.appendChild(trPageBreak);
+        }
+      });
+
+      var diag = document.getElementById('diag');
+      if (diag) {
+        diag.innerText = "v18 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+          " | pdf: " + (window.html2pdf ? "ok" : "NO") +
+          " | email: " + (window.emailjs ? "ok" : "NO") +
+          " | red: " + (navigator.onLine ? "ok" : "NO");
+      }
+
+      var loginScreen = document.getElementById('login-screen');
+      var mainScreen = document.getElementById('main-form-screen');
+      var userDisplay = document.getElementById('user-display');
+      var btnSubmit = document.getElementById('btn-submit-main');
+      var badge = document.getElementById('view-badge');
+      var titulo = document.getElementById('view-title');
+
+      var canvasTech = document.getElementById('signature-tech');
+      var canvasAdmin = document.getElementById('signature-admin');
+      var imgTechSig = document.getElementById('img-tech-sig');
+      var imgAdminSig = document.getElementById('img-admin-sig');
+      var btnClearTech = document.getElementById('btn-clear-tech');
+      var btnClearAdmin = document.getElementById('btn-clear-admin');
+      var blockTech = document.getElementById('block-tech-sig');
+      var blockAdmin = document.getElementById('block-admin-sig');
+      var homeCoord = document.getElementById('home-coord');
+
+      var datosReporte = null;
+      var vistaFinal = false;
+      var aprobadoGuardado = false;
+      var infoAprobacion = null;
+      var cargaFallida = false;
+
+      var tInicio = ahora();
+      document.getElementById('fecha-auto').value = tInicio.fecha;
+      document.getElementById('hora-auto').value = tInicio.hora;
+
+      function resizeCanvas(canvas, pad) {
+        if (!canvas || canvas.classList.contains('hidden')) return;
+        var ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        if (pad) pad.clear();
+      }
+
+      function ponerDatosTecnico(d) {
+        document.getElementById('tec-nombre').innerText = d.tecnico || (sesion ? sesion.email : 'Técnico de Mantenimiento');
+
+        document.getElementById('fecha-auto').value = d.fechaInicio || d.fecha;
+        document.getElementById('hora-auto').value = d.horaInicio || d.hora;
+
+        listaEquipos.forEach(function(eq) {
+          var el = document.getElementById(eq.id);
+          if (el) el.value = d[eq.id] || '';
+        });
+
+        document.getElementById('observaciones').value = d.observaciones || '';
+        
         evaluarRangos();
 
-        if (data.firmaTec) {
-          document.getElementById('canvasFirmaTec').classList.add('hidden');
-          document.getElementById('btnClearFirmaTec').classList.add('hidden');
-          const img = document.getElementById('imgFirmaTec');
-          img.src = data.firmaTec;
-          img.classList.remove('hidden');
+        var inputs = document.querySelectorAll('#pdf-area input, #pdf-area select, #pdf-area textarea');
+        inputs.forEach(function(inp) { inp.disabled = true; });
+
+        canvasTech.classList.add('hidden');
+        btnClearTech.classList.add('hidden');
+        imgTechSig.src = d.firmaTec || '';
+        imgTechSig.classList.remove('hidden');
+        pintarFechas(d.fecha, d.hora, d.fechaFirmaAdm || '');
+      }
+
+      function mostrarSoloLectura(d) {
+        vistaFinal = true;
+        ponerDatosTecnico(d);
+        badge.innerText = "Reporte Aprobado";
+        titulo.innerText = "Lista de Chequeo DP Ventilación";
+        
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.remove('hidden');
+        canvasAdmin.classList.add('hidden');
+        btnClearAdmin.classList.add('hidden');
+        imgAdminSig.src = d.firmaAdm || '';
+        imgAdminSig.classList.remove('hidden');
+        btnSubmit.innerText = "Descargar PDF";
+        btnSubmit.style.background = "#2563eb";
+      }
+
+      function mostrarParaFirmar(d) {
+        ponerDatosTecnico(d);
+        badge.innerText = "Modo Coordinador";
+        titulo.innerText = "Aprobación de Servicio";
+        
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.remove('hidden');
+        
+        btnSubmit.innerText = "Firmar y Enviar a Correo";
+        btnSubmit.style.background = "#2563eb";
+        if (window.SignaturePad && !padAdmin) {
+          padAdmin = new SignaturePad(canvasAdmin, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(220, 38, 38)' });
+          setTimeout(function() { resizeCanvas(canvasAdmin, padAdmin); }, 300);
         }
+      }
 
-        if (data.estado === 'pendiente') {
-          document.getElementById('badgeModo').innerText = "Modo Coordinador (Aprobación)";
-          document.getElementById('btnEnviarWhatsApp').classList.add('hidden');
-          document.getElementById('btnAprobarYNotificar').classList.remove('hidden');
-          document.getElementById('secFirmaCoord').classList.remove('hidden');
-        } else if (data.estado === 'aprobado') {
-          document.getElementById('badgeModo').innerText = "Reporte Aprobado (Vista Final)";
-          document.getElementById('badgeModo').className = "text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-bold";
+      function fallaCarga(texto, detalle) {
+        cargaFallida = true;
+        userDisplay.innerText = texto;
+        badge.innerText = "Sin cargar";
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "Reintentar";
+        btnSubmit.style.background = "#6b7280";
+        alert(detalle);
+      }
 
-          document.getElementById('btnEnviarWhatsApp').classList.add('hidden');
-          document.getElementById('btnAprobarYNotificar').classList.add('hidden');
-          document.getElementById('btnDescargarPDF').classList.remove('hidden');
+      function mostrarLogin() {
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        document.getElementById('login-title').innerText = "Acceso de Técnicos";
+        document.getElementById('login-nota').innerText = "";
+      }
 
-          document.getElementById('secFirmaCoord').classList.remove('hidden');
-          document.getElementById('canvasFirmaCoord').classList.add('hidden');
-          document.getElementById('btnClearFirmaCoord').classList.add('hidden');
-          
-          if (data.firmaCoord) {
-            const imgC = document.getElementById('imgFirmaCoord');
-            imgC.src = data.firmaCoord;
-            imgC.classList.remove('hidden');
+      function pedirLoginCoordinador() {
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        document.getElementById('login-title').innerText = "Acceso del Coordinador";
+        document.getElementById('login-nota').innerText = "Inicia sesión para aprobar el reporte.";
+      }
+
+      function mostrarHomeCoord(mensaje) {
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.add('hidden');
+        homeCoord.classList.remove('hidden');
+        document.getElementById('home-coord-msg').innerText = mensaje || "";
+      }
+
+      function iniciarPadTecnico() {
+        if (!padTech && canvasTech && window.SignaturePad) {
+          padTech = new SignaturePad(canvasTech, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(0, 0, 128)' });
+          setTimeout(function() { resizeCanvas(canvasTech, padTech); }, 300);
+        }
+      }
+
+      function mostrarFormularioTecnico() {
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        userDisplay.innerText = sesion ? sesion.email : '';
+        document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
+        
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.add('hidden');
+        
+        iniciarPadTecnico();
+      }
+
+      function cargarReporte() {
+        loginScreen.classList.add('hidden');
+        homeCoord.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        document.getElementById('btn-logout').classList.toggle('hidden', !modoAprobar);
+        userDisplay.innerText = "Cargando reporte...";
+        badge.innerText = "Cargando...";
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Cargando...";
+        btnSubmit.style.background = "#6b7280";
+
+        if (!reporteId) {
+          fallaCarga("Enlace no válido", "Este enlace no es válido. Pide al técnico que reenvíe la notificación.");
+          return;
+        }
+        leerReporte(reporteId).then(function(d) {
+          datosReporte = d;
+          btnSubmit.disabled = false;
+          if (modoVer || d.estado === 'aprobado') {
+            userDisplay.innerText = (sesion && modoAprobar) ? sesion.email : "Reporte firmado";
+            mostrarSoloLectura(d);
+          } else {
+            userDisplay.innerText = sesion ? sesion.email : "Coordinador";
+            mostrarParaFirmar(d);
           }
-
-          document.getElementById('statusFirmaCoord').innerHTML = `Estado: <span class="bg-green-200 text-green-800 px-2 py-0.5 rounded font-bold">Aprobado</span>`;
-        }
-      } catch (err) {
-        alert("Error cargando reporte: " + err.message);
+        }).catch(function(e) {
+          fallaCarga("Error al cargar", "No se pudo cargar el reporte: " + textoError(e));
+        });
       }
-    }
 
-    // ACCIÓN TÉCNICO: GUARDAR Y ENVIAR A WHATSAPP
-    window.enviarAWhatsAppYGuardar = async function() {
-      if (padTec.isEmpty()) return alert("Por favor ingresa la firma del responsable.");
-
-      const btn = document.getElementById('btnEnviarWhatsApp');
-      btn.disabled = true;
-      btn.innerText = "Guardando en Firebase...";
-
-      try {
-        const lecturas = {};
-        listaEquipos.forEach(eq => {
-          const val = document.getElementById(`input_${eq.id}`).value;
-          lecturas[eq.id] = val !== "" ? val : "N/A";
-        });
-
-        // Promesa con Timeout
-        const guardarPromise = addDoc(collection(db, "chequeosDPVentilacion"), {
-          estado: "pendiente",
-          tipoFormulario: "DP_Ventilacion",
-          codigoDocumento: "CVSAI018-F001",
-          fecha: document.getElementById('fechaReporte').value,
-          hora: document.getElementById('horaReporte').value,
-          observaciones: document.getElementById('observacionesAuto').value,
-          lecturas: lecturas,
-          firmaTec: padTec.toDataURL(),
-          creadoEn: new Date().toISOString()
-        });
-
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Tiempo de espera agotado al conectar con Firebase. Verifica tus credenciales.")), 6000)
-        );
-
-        const docRef = await Promise.race([guardarPromise, timeoutPromise]);
-
-        const linkAprobacion = `${window.location.origin}${window.location.pathname}?id=${docRef.id}`;
-        const telCoord = "573105398897";
-        const msg = encodeURIComponent(
-          `*REPORTE DE VENTILACIÓN (CVSAI018-F001)*\n` +
-          `📅 *Fecha:* ${document.getElementById('fechaReporte').value}\n` +
-          `📌 *Estado:* Pendiente Firma Coordinador\n\n` +
-          `*Enlace de Aprobación:*\n${linkAprobacion}`
-        );
-
-        window.open(`https://wa.me/${telCoord}?text=${msg}`, '_blank');
-      } catch (err) {
-        alert("Atención: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `
-          <svg class="w-6 h-6 fill-current inline mr-2" viewBox="0 0 24 24">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.842-1.001z"/>
-          </svg>
-          Enviar a WhatsApp al Coordinador`;
-      }
-    };
-
-    // ACCIÓN COORDINADOR: FIRMAR Y ENVIAR CORREO CON ENLACE WEB
-    window.aprobarYNotificarCoordinador = async function() {
-      if (padCoord.isEmpty()) return alert("Por favor ingresa tu firma de aprobación.");
-
-      const btn = document.getElementById('btnAprobarYNotificar');
-      btn.disabled = true;
-      btn.innerText = "Aprobando y enviando correo...";
-
-      try {
-        await updateDoc(doc(doc(db, "chequeosDPVentilacion", docIdParam)), {
-          estado: "aprobado",
-          firmaCoord: padCoord.toDataURL(),
-          fechaAprobacion: new Date().toISOString()
-        });
-
-        const linkReporteFinal = `${window.location.origin}${window.location.pathname}?id=${docIdParam}`;
-
-        await emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-          to_email: "jorge.mendoza@carval.com.co",
-          doc_id: docIdParam,
-          fecha: document.getElementById('fechaReporte').value,
-          link_reporte: linkReporteFinal
-        });
-
-        alert("¡Reporte aprobado y correo enviado exitosamente!");
-        window.location.reload();
-
-      } catch (err) {
-        alert("Error en aprobación: " + err.message);
-        btn.disabled = false;
-        btn.innerText = "Firmar, Aprobar y Enviar Correo con Enlace";
-      }
-    };
-
-    // GENERACIÓN Y DESCARGA DE PDF DE 2 PÁGINAS CON PIE OFICIAL
-    window.descargarPDFDirecto = function() {
-      const element = document.getElementById('pdfContainer');
-      const actionBtns = document.getElementById('actionButtons');
-      const noPrintHeader = document.getElementById('noPrintHeader');
-
-      if (actionBtns) actionBtns.style.display = 'none';
-      if (noPrintHeader) noPrintHeader.style.display = 'none';
-
-      const fechaVal = document.getElementById('fechaReporte').value || new Date().toISOString().split('T')[0];
-      const nombreArchivo = `Reporte_CVSAI018-F001_DP_Ventilacion_${fechaVal}.pdf`;
-
-      const opt = {
-        margin:       [0.4, 0.4, 0.6, 0.4],
-        filename:     nombreArchivo,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: false },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      window.alIniciarSesion = function() {
+        if (modoAprobar) cargarReporte();
+        else mostrarFormularioTecnico();
       };
 
-      html2pdf().set(opt).from(element).toPdf().get('jspdf').then(function(pdf) {
-        const totalPages = pdf.internal.getNumberOfPages();
+      if (modoVer) {
+        cargarReporte();
+      } else if (modoAprobar) {
+        sesion = leerSesion();
+        if (sesion && sesion.refreshToken) cargarReporte();
+        else pedirLoginCoordinador();
+      } else {
+        sesion = leerSesion();
+        if (sesion && sesion.refreshToken) {
+          if (sesion.rol === 'coordinador') mostrarHomeCoord("");
+          else mostrarFormularioTecnico();
+        } else mostrarLogin();
+      }
 
-        for (let i = 1; i <= totalPages; i++) {
-          pdf.setPage(i);
-          pdf.setFontSize(8);
-          pdf.setTextColor(100);
+      btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
+      btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
-          // Línea divisoria de pie de página
-          pdf.setDrawColor(200, 200, 200);
-          pdf.line(0.4, 10.3, 8.1, 10.3);
+      async function descargarPDF() {
+        btnSubmit.disabled = true;
+        var textoOriginal = btnSubmit.innerText;
+        btnSubmit.innerText = "Generando PDF...";
 
-          // Pie de página oficial Carval
-          pdf.text("Carval de Colombia S.A.S. | Código: CVSAI018-F001", 0.4, 10.5);
-          pdf.text(`Página ${i} de ${totalPages}`, 7.5, 10.5, { align: 'right' });
+        try {
+          var pdfArea = document.getElementById('pdf-area');
+          document.body.classList.add('is-generating-pdf');
+
+          blockTech.classList.remove('hidden');
+          blockAdmin.classList.remove('hidden');
+
+          var nombrePdf = obtenerNombrePDF();
+
+          var inputs = pdfArea.querySelectorAll('input, select, textarea');
+          var reponer = [];
+
+          inputs.forEach(function(inp) {
+            var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
+            var span = document.createElement('span');
+            span.style.fontWeight = 'bold';
+            span.style.color = '#000';
+            span.style.fontSize = '12px';
+
+            var unitLabel = inp.nextElementSibling;
+            if (unitLabel && unitLabel.classList.contains('unit-label')) {
+              valText = valText ? (valText + ' ' + unitLabel.innerText) : '';
+            }
+
+            span.innerText = valText || ' ';
+            inp.parentNode.insertBefore(span, inp);
+            inp.style.display = 'none';
+            if (unitLabel && unitLabel.classList.contains('unit-label')) {
+              unitLabel.style.display = 'none';
+            }
+            reponer.push({ inp: inp, span: span, unitLabel: unitLabel });
+          });
+
+          var opt = {
+            margin: [8, 8, 12, 8],
+            filename: nombrePdf,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+
+          var worker = html2pdf().set(opt).from(pdfArea).toPdf();
+          
+          await worker.get('pdf').then(function(pdfObj) {
+            var totalPages = pdfObj.internal.getNumberOfPages();
+            var pageWidth = pdfObj.internal.pageSize.getWidth();
+            var pageHeight = pdfObj.internal.pageSize.getHeight();
+
+            for (var i = 1; i <= totalPages; i++) {
+              pdfObj.setPage(i);
+              pdfObj.setFontSize(8);
+              pdfObj.setTextColor(100, 116, 139);
+
+              pdfObj.text(nombrePdf, 10, pageHeight - 6);
+              var textoPagina = "Página " + i + " de " + totalPages;
+              pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
+            }
+          }).save();
+
+          reponer.forEach(function(item) {
+            item.inp.style.display = '';
+            if (item.unitLabel) item.unitLabel.style.display = '';
+            item.span.remove();
+          });
+          
+          if (!modoAprobar && !modoVer && !vistaFinal) {
+            blockAdmin.classList.add('hidden');
+          }
+
+          document.body.classList.remove('is-generating-pdf');
+
+        } catch (e) {
+          document.body.classList.remove('is-generating-pdf');
+          alert("No se pudo generar el PDF: " + (e.message || e));
         }
-      }).save().then(() => {
-        if (actionBtns) actionBtns.style.display = 'block';
-        if (noPrintHeader) noPrintHeader.style.display = 'flex';
-      });
-    };
+
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = textoOriginal;
+      }
+
+      btnSubmit.onclick = async function() {
+        if (cargaFallida) { window.location.reload(); return; }
+        if (modoVer || vistaFinal) { descargarPDF(); return; }
+
+        if (!modoAprobar) {
+          if (!validarFormularioCompleto()) { return; }
+          if (!padTech || padTech.isEmpty()) { alert("Firma del responsable requerida."); return; }
+
+          btnSubmit.disabled = true;
+          btnSubmit.innerText = "Guardando reporte...";
+          try {
+            var tFin = ahora();
+            var payload = {
+              fechaInicio: document.getElementById('fecha-auto').value,
+              horaInicio: document.getElementById('hora-auto').value,
+              fecha: tFin.fecha,
+              hora: tFin.hora,
+              firmaTec: firmaImagen(canvasTech, 400, 0.7),
+              estado: 'pendiente',
+              tecnico: sesion ? sesion.email : '',
+              observaciones: document.getElementById('observaciones').value
+            };
+
+            listaEquipos.forEach(function(eq) {
+              payload[eq.id] = document.getElementById(eq.id).value;
+            });
+
+            var id = await crearReporte(payload);
+            var link = baseUrl + "?mode=aprobar&id=" + id;
+            var texto = "*LISTA DE CHEQUEO DP VENTILACIÓN*\nCódigo: CVSAI018-F001\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
+                        "\nEnlace de aprobación: " + link;
+            var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
+
+            padTech.clear();
+            btnSubmit.innerText = "¡Enviado! Puedes hacer otro reporte";
+            setTimeout(function() { btnSubmit.innerText = "Enviar a WhatsApp"; }, 4000);
+
+            var w = window.open(waUrl, "_blank");
+            if (!w) window.location.href = waUrl;
+          } catch (e) {
+            if (e.code === 'sin-sesion' || e.status === 401) {
+              alert("Tu sesión venció. Inicia sesión otra vez.");
+              guardarSesion(null);
+              mostrarLogin();
+            } else {
+              alert("No se pudo guardar el reporte: " + textoError(e));
+            }
+            btnSubmit.innerText = "Enviar a WhatsApp";
+          }
+          btnSubmit.disabled = false;
+        } else {
+          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma."); return; }
+          btnSubmit.disabled = true;
+          btnSubmit.innerText = "Enviando...";
+          try {
+            if (!aprobadoGuardado) {
+              var a = ahora();
+              var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
+              
+              await firmarReporte(reporteId, {
+                firmaAdm: firmaImagen(canvasAdmin, 400, 0.7),
+                fechaFirmaAdm: fechaFirmaAdmTexto,
+                estado: 'aprobado'
+              });
+              aprobadoGuardado = true;
+              infoAprobacion = a;
+              pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
+            }
+
+            if (!window.emailjs) throw new Error("EmailJS no cargó");
+            var linkReporte = baseUrl + "?mode=ver&id=" + reporteId;
+            await enviarCorreo({
+              to_email: CORREOS_DESTINO,
+              cliente: "CHEQUEO DP VENTILACIÓN (CVSAI018-F001)",
+              detalle: document.getElementById('observaciones').value || "Lista de Chequeo Diligenciada",
+              fecha_reporte: datosReporte.fecha || '',
+              hora_reporte: datosReporte.hora || '',
+              fecha_aprobacion: infoAprobacion.fecha,
+              hora_aprobacion: infoAprobacion.hora,
+              link_reporte: linkReporte
+            });
+
+            alert("¡Reporte aprobado y enviado con éxito!");
+            try { history.replaceState(null, '', baseUrl); } catch (e) {}
+            mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
+            btnSubmit.disabled = false;
+          } catch (err) {
+            if (!aprobadoGuardado && (err.code === 'sin-sesion' || err.status === 401)) {
+              alert("Tu sesión venció. Inicia sesión otra vez.");
+              guardarSesion(null);
+              pedirLoginCoordinador();
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = "Firmar y Enviar a Correo";
+              return;
+            }
+            if (aprobadoGuardado) {
+              alert("Tu firma quedó guardada, pero el correo no salió: " + textoError(err) +
+                    "\n\nToca el botón para reintentar el envío del correo.");
+              btnSubmit.innerText = "Reintentar envío de correo";
+            } else {
+              alert("No se pudo guardar la firma: " + textoError(err));
+              btnSubmit.innerText = "Firmar y Enviar a Correo";
+            }
+            btnSubmit.disabled = false;
+          }
+        }
+      };
+
+      document.getElementById('btn-logout').onclick = function() {
+        guardarSesion(null);
+        if (modoAprobar) pedirLoginCoordinador();
+        else mostrarLogin();
+      };
+
+      document.getElementById('btn-logout-home').onclick = function() {
+        guardarSesion(null);
+        mostrarLogin();
+      };
+    });
   </script>
 </body>
 </html>
