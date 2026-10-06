@@ -104,7 +104,7 @@
         </div>
       </div>
 
-      <!-- Botones de Acción según el Estado -->
+      <!-- Botones de Acción -->
       <div id="actionButtons" class="mt-6">
         <!-- 1. Botón Técnico -->
         <button 
@@ -146,14 +146,14 @@
     import { getFirestore, doc, getDoc, addDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuración Firebase
+    // ⚠️ REEMPLAZAR CON TUS CREDENCIALES REALES DE FIREBASE (Tomadas de index.html)
     const firebaseConfig = {
-      apiKey: "TU_API_KEY",
-      authDomain: "TU_PROJECT_ID.firebaseapp.com",
-      projectId: "TU_PROJECT_ID",
-      storageBucket: "TU_PROJECT_ID.appspot.com",
-      messagingSenderId: "TU_SENDER_ID",
-      appId: "TU_APP_ID"
+      apiKey: "TU_API_KEY_REAL",
+      authDomain: "appformatosmtto.firebaseapp.com",
+      projectId: "appformatosmtto",
+      storageBucket: "appformatosmtto.firebasestorage.app",
+      messagingSenderId: "729388358915",
+      appId: "TU_APP_ID_REAL"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -162,7 +162,7 @@
 
     signInAnonymously(auth).catch(console.error);
 
-    // Inicializar EmailJS con tu clave pública habitual
+    // ⚠️ REEMPLAZAR CON TU CLAVE PÚBLICA DE EMAILJS
     emailjs.init("TU_EMAILJS_PUBLIC_KEY");
 
     // Listado Oficial CVSAI018-F001 v18
@@ -328,9 +328,13 @@
 
       try {
         const lecturas = {};
-        listaEquipos.forEach(eq => lecturas[eq.id] = document.getElementById(`input_${eq.id}`).value);
+        listaEquipos.forEach(eq => {
+          const val = document.getElementById(`input_${eq.id}`).value;
+          lecturas[eq.id] = val !== "" ? val : "N/A";
+        });
 
-        const docRef = await addDoc(collection(db, "chequeosDPVentilacion"), {
+        // Promesa con Timeout
+        const guardarPromise = addDoc(collection(db, "chequeosDPVentilacion"), {
           estado: "pendiente",
           tipoFormulario: "DP_Ventilacion",
           codigoDocumento: "CVSAI018-F001",
@@ -342,8 +346,14 @@
           creadoEn: new Date().toISOString()
         });
 
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Tiempo de espera agotado al conectar con Firebase. Verifica tus credenciales.")), 6000)
+        );
+
+        const docRef = await Promise.race([guardarPromise, timeoutPromise]);
+
         const linkAprobacion = `${window.location.origin}${window.location.pathname}?id=${docRef.id}`;
-        const telCoord = "573105398897"; // Teléfono de Jorge Mendoza
+        const telCoord = "573105398897";
         const msg = encodeURIComponent(
           `*REPORTE DE VENTILACIÓN (CVSAI018-F001)*\n` +
           `📅 *Fecha:* ${document.getElementById('fechaReporte').value}\n` +
@@ -353,7 +363,7 @@
 
         window.open(`https://wa.me/${telCoord}?text=${msg}`, '_blank');
       } catch (err) {
-        alert("Error: " + err.message);
+        alert("Atención: " + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `
@@ -373,7 +383,7 @@
       btn.innerText = "Aprobando y enviando correo...";
 
       try {
-        await updateDoc(doc(db, "chequeosDPVentilacion", docIdParam), {
+        await updateDoc(doc(doc(db, "chequeosDPVentilacion", docIdParam)), {
           estado: "aprobado",
           firmaCoord: padCoord.toDataURL(),
           fechaAprobacion: new Date().toISOString()
