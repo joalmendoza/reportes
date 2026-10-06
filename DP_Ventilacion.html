@@ -121,7 +121,6 @@
       text-align: center;
     }
 
-    /* AJUSTE COMPACTO Y EXACTO PARA 3 DÍGITOS EN LA INDICACIÓN */
     .input-unit-cell {
       display: flex;
       align-items: center;
@@ -131,11 +130,11 @@
     }
     .input-unit-cell input {
       flex: 0 1 auto;
-      width: 68px; /* Tamaño ideal y compacto para 3 dígitos */
+      width: 68px;
       min-width: 68px;
       margin: 0;
       padding: 4px 2px;
-      font-size: 15px; /* Negrita fácil de leer */
+      font-size: 15px;
       font-weight: bold;
       color: #0f172a;
       box-sizing: border-box;
@@ -155,10 +154,9 @@
       white-space: nowrap;
     }
 
-    /* DISTRIBUCIÓN REPORCIONADA DE COLUMNAS */
-    .col-desc { width: 56%; } /* Más espacio para el nombre del equipo */
+    .col-desc { width: 56%; }
     .col-rango { width: 24%; }
-    .col-ind { width: 20%; }  /* Reducido para evitar desproporción */
+    .col-ind { width: 20%; }
 
     .out-of-range {
       background-color: #fecdd3 !important;
@@ -298,8 +296,8 @@
         </tbody>
       </table>
 
-      <!-- SECCIÓN DE OBSERVACIONES -->
-      <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES (Equipos fuera de rango de operación):</label>
+      <!-- SECCIÓN DE OBSERVACIONES SIN TEXTO ENTRE PARÉNTESIS -->
+      <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
       <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
 
       <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
