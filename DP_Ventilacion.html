@@ -18,7 +18,7 @@
       padding: 20px;
       border-radius: 16px;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      max-width: 800px;
+      max-width: 850px;
       margin: 0 auto;
     }
     .hidden {
@@ -102,12 +102,12 @@
     .header-table, .param-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       font-size: 11px;
     }
     .header-table td, .param-table th, .param-table td {
       border: 1px solid #cbd5e1;
-      padding: 6px 6px;
+      padding: 5px 6px;
       text-align: left;
     }
     .param-table th {
@@ -116,10 +116,11 @@
       text-align: center;
     }
 
+    /* MEJORA DE ANCHO Y COMODIDAD DE ENTRADA DE DATOS */
     .input-unit-cell {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       width: 100%;
     }
     .input-unit-cell input {
@@ -127,21 +128,30 @@
       width: 100%;
       min-width: 0;
       margin: 0;
-      padding: 5px 6px;
-      font-size: 12px;
+      padding: 8px 10px;
+      font-size: 15px;
+      font-weight: bold;
+      color: #0f172a;
       box-sizing: border-box;
       text-align: center;
+      border: 1.5px solid #94a3b8;
+      border-radius: 6px;
+      background-color: #ffffff;
+    }
+    .input-unit-cell input:focus {
+      border-color: #2563eb;
+      outline: 2px solid #bfdbfe;
     }
     .unit-label {
       font-size: 11px;
       font-weight: bold;
-      color: #4b5563;
+      color: #334155;
       white-space: nowrap;
     }
 
-    .col-desc { width: 55%; }
+    .col-desc { width: 50%; }
     .col-rango { width: 25%; }
-    .col-ind { width: 20%; }
+    .col-ind { width: 25%; }
 
     .out-of-range {
       background-color: #fecdd3 !important;
@@ -155,18 +165,18 @@
     .sec-title {
       background: #1e3a8a;
       color: white;
-      padding: 8px;
+      padding: 6px;
       font-size: 12px;
       font-weight: bold;
       border-radius: 4px;
-      margin: 12px 0 8px 0;
+      margin: 10px 0 6px 0;
       text-align: center;
     }
 
     .page-break {
       page-break-before: always;
       break-before: page;
-      margin-top: 15px;
+      margin-top: 10px;
     }
 
     .pdf-header-repeat {
@@ -181,7 +191,7 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      margin-top: 24px;
+      margin-top: 20px;
       padding-top: 8px;
     }
 
@@ -217,7 +227,7 @@
     </div>
   </div>
 
-  <!-- PANTALLA DEL COORDINADOR (SESIÓN ACTIVA) -->
+  <!-- PANTALLA DEL COORDINADOR -->
   <div id="home-coord" class="card hidden" style="text-align:center;">
     <h2 style="margin-top:0;">Sesión de coordinador</h2>
     <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
@@ -237,7 +247,7 @@
 
     <div id="pdf-area" style="padding: 10px; background: white;">
       
-      <!-- ENCABEZADO REORGANIZADO -->
+      <!-- ENCABEZADO -->
       <table class="header-table">
         <tr>
           <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
@@ -254,7 +264,7 @@
       </table>
 
       <!-- CAMPOS FECHA Y HORA -->
-      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 8px;">
         <div style="flex: 1;">
           <label style="font-weight: bold; font-size: 12px;">Fecha:</label>
           <input type="text" id="fecha-auto" class="input-field" readonly style="background:#f3f4f6; margin-bottom: 6px;">
@@ -277,7 +287,7 @@
           </tr>
         </thead>
         <tbody id="tabla-equipos-body">
-          <!-- Creado dinámicamente -->
+          <!-- Generado dinámicamente -->
         </tbody>
       </table>
 
@@ -325,7 +335,6 @@
       return false;
     };
 
-    // ---------- CONFIGURACIÓN GENERAL ----------
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
@@ -341,12 +350,10 @@
     ];
     if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
 
-    // ===== BLOQUE API REST FIREBASE =====
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
     var COLECCION = "chequeosDPVentilacion";
     var sesion = null;
 
-    // LISTADO DE EQUIPOS OFICIAL CVSAI018-F001
     var listaEquipos = [
       { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
@@ -608,7 +615,6 @@
       return "Error de acceso: " + (e.apiMessage || e.message || "Credenciales incorrectas");
     }
 
-    // EVALUACIÓN DE RANGOS DE OPERACIÓN
     function evaluarRangos() {
       var desviaciones = [];
 
@@ -700,7 +706,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-      // Renderizar filas de equipos en la tabla HTML
       var tbody = document.getElementById('tabla-equipos-body');
       listaEquipos.forEach(function(eq, index) {
         var tr = document.createElement('tr');
@@ -712,8 +717,8 @@
         `;
         tbody.appendChild(tr);
 
-        // Salto de página estético en el PDF en el ítem 20
-        if (index === 19) {
+        // SALTO DE PÁGINA MOVIDO AL ÍTEM 28 (ÍNDICE 27) PARA PASAR 8 FILAS A LA PRIMERA PÁGINA
+        if (index === 27) {
           var trPageBreak = document.createElement('tr');
           trPageBreak.className = 'page-break';
           trPageBreak.innerHTML = `
