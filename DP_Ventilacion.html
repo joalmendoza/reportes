@@ -111,31 +111,30 @@
       text-align: left;
     }
 
-    /* ENCABEZADO DE TABLA MÁS GRANDE Y DESTACADO */
     .param-table th {
       border: 1px solid #cbd5e1;
       background-color: #e2e8f0;
       color: #0f172a;
       font-weight: bold;
-      font-size: 13px; /* Aumentado de tamaño */
+      font-size: 13px;
       padding: 8px 6px;
       text-align: center;
     }
 
-    /* CASILLA DE INDICACIÓN EQUILIBRADA */
+    /* AMPLIA Y CÓMODA PARA 3 DÍGITOS + UNIDAD */
     .input-unit-cell {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       width: 100%;
     }
     .input-unit-cell input {
       flex: 1;
       width: 100%;
-      min-width: 0;
+      min-width: 110px; /* Ancho mínimo suficiente para 3 dígitos */
       margin: 0;
-      padding: 6px 6px;
-      font-size: 15px; /* Negrita cómoda para 3 dígitos */
+      padding: 6px 8px;
+      font-size: 16px; /* Tipografía clara en negrita */
       font-weight: bold;
       color: #0f172a;
       box-sizing: border-box;
@@ -155,10 +154,10 @@
       white-space: nowrap;
     }
 
-    /* PROPORCIÓN ARMONIOSA DE COLUMNAS */
-    .col-desc { width: 52%; }
-    .col-rango { width: 26%; }
-    .col-ind { width: 22%; }
+    /* DISTRIBUCIÓN REAJUSTADA */
+    .col-desc { width: 48%; }
+    .col-rango { width: 24%; }
+    .col-ind { width: 28%; } /* Ampliado para acomodar caja y texto libremente */
 
     .out-of-range {
       background-color: #fecdd3 !important;
@@ -722,7 +721,6 @@
         var tr = document.createElement('tr');
         tr.id = "row_" + eq.id;
         
-        // FORMATO DE 2 DECIMALES PARA EL RANGO DE OPERACIÓN
         var minFormat = eq.min.toFixed(2);
         var maxFormat = eq.max.toFixed(2);
 
@@ -733,7 +731,6 @@
         `;
         tbody.appendChild(tr);
 
-        // SALTO DE PÁGINA REPROGRAMADO AL ÍTEM 30 PARA EXACTAMENTE 2 PÁGINAS UNIFORMES
         if (index === 29) {
           var trPageBreak = document.createElement('tr');
           trPageBreak.className = 'page-break';
