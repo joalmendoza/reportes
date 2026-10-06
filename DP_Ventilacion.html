@@ -121,20 +121,21 @@
       text-align: center;
     }
 
-    /* AMPLIA Y CÓMODA PARA 3 DÍGITOS + UNIDAD */
+    /* AJUSTE COMPACTO Y EXACTO PARA 3 DÍGITOS EN LA INDICACIÓN */
     .input-unit-cell {
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 4px;
       width: 100%;
     }
     .input-unit-cell input {
-      flex: 1;
-      width: 100%;
-      min-width: 110px; /* Ancho mínimo suficiente para 3 dígitos */
+      flex: 0 1 auto;
+      width: 68px; /* Tamaño ideal y compacto para 3 dígitos */
+      min-width: 68px;
       margin: 0;
-      padding: 6px 8px;
-      font-size: 16px; /* Tipografía clara en negrita */
+      padding: 4px 2px;
+      font-size: 15px; /* Negrita fácil de leer */
       font-weight: bold;
       color: #0f172a;
       box-sizing: border-box;
@@ -154,10 +155,10 @@
       white-space: nowrap;
     }
 
-    /* DISTRIBUCIÓN REAJUSTADA */
-    .col-desc { width: 48%; }
+    /* DISTRIBUCIÓN REPORCIONADA DE COLUMNAS */
+    .col-desc { width: 56%; } /* Más espacio para el nombre del equipo */
     .col-rango { width: 24%; }
-    .col-ind { width: 28%; } /* Ampliado para acomodar caja y texto libremente */
+    .col-ind { width: 20%; }  /* Reducido para evitar desproporción */
 
     .out-of-range {
       background-color: #fecdd3 !important;
