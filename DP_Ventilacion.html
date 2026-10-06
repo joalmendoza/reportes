@@ -116,7 +116,7 @@
       text-align: center;
     }
 
-    /* MEJORA DE ANCHO Y COMODIDAD DE ENTRADA DE DATOS */
+    /* CASILLA DE INDICACIÓN OPTIMIZADA (MÁS ANCHA Y CÓMODA) */
     .input-unit-cell {
       display: flex;
       align-items: center;
@@ -126,10 +126,10 @@
     .input-unit-cell input {
       flex: 1;
       width: 100%;
-      min-width: 0;
+      min-width: 90px; /* Ancho mínimo garantizado */
       margin: 0;
       padding: 8px 10px;
-      font-size: 15px;
+      font-size: 16px; /* Tipografía más clara y visible */
       font-weight: bold;
       color: #0f172a;
       box-sizing: border-box;
@@ -149,9 +149,10 @@
       white-space: nowrap;
     }
 
-    .col-desc { width: 50%; }
-    .col-rango { width: 25%; }
-    .col-ind { width: 25%; }
+    /* DISTRIBUCIÓN DE ANCHOS DE COLUMNAS */
+    .col-desc { width: 48%; }
+    .col-rango { width: 22%; }
+    .col-ind { width: 30%; } /* Ampliada al 30% para máxima comodidad */
 
     .out-of-range {
       background-color: #fecdd3 !important;
@@ -354,16 +355,19 @@
     var COLECCION = "chequeosDPVentilacion";
     var sesion = null;
 
+    // LISTADO ACTUALIZADO CON DESGLOSE SOLICITADO
     var listaEquipos = [
       { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e3", nombre: "UMA # 2 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e4", nombre: "UMA Proceso Granulación (60% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e4", nombre: "UMA Proceso Granulación 60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e4_b", nombre: "UMA Proceso Granulación 99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e5", nombre: "Colector de Polvos Proceso Granulación", min: 0.2, max: 20.0, unit: "inH2O" },
       { id: "e6", nombre: "UMA Acondicionamiento de Solidos Solubles, Líquidos Orales, Etiquetado y Envase Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e7", nombre: "UMA Envase de Sólidos Solubles", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e8", nombre: "Ventilador de Inyección Esclusa Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e9", nombre: "UMA Envase Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e9", nombre: "UMA Envase Orales 60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e9_b", nombre: "UMA Envase Orales 99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e10", nombre: "Colector de Polvos Fraccionamiento", min: 0.2, max: 6.0, unit: "inH2O" },
       { id: "e11", nombre: "Colector de Polvos Envase de Sólidos Solubles", min: 0.2, max: 6.0, unit: "inH2O" },
       { id: "e12", nombre: "Colector de Polvos Granulación", min: 0.2, max: 6.0, unit: "inH2O" },
@@ -372,7 +376,8 @@
       { id: "e15", nombre: "UMA Fraccionamiento", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e16", nombre: "UMA # 1 Control de Calidad", min: 1.0, max: 2.5, unit: "inH2O" },
       { id: "e17", nombre: "UMA # 2 Control de Calidad", min: 1.0, max: 2.5, unit: "inH2O" },
-      { id: "e18", nombre: "UMA Fabricación Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e18", nombre: "UMA Fabricación Orales 60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e18_b", nombre: "UMA Fabricación Orales 99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e19", nombre: "Colector de Polvos Mezclas 2", min: 0.2, max: 6.0, unit: "inH2O" },
       { id: "e20", nombre: "Ventilador de Extracción Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e21", nombre: "Ventilador de Extracción Fabricación Envase Desinfectantes", min: 0.1, max: 2.5, unit: "inH2O" },
@@ -382,7 +387,8 @@
       { id: "e25", nombre: "Ventilador de Inyección Pasillo Volúmenes Bajos 2 y Mezclas 2", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e26", nombre: "UMA Lavado de Equipos y Equipo Limpio", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e27", nombre: "Ventilador de Inyección Vestieres", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e28", nombre: "UMA Fabricación Envase Volúmenes Bajos 2 (30% al 95% / 99.99%)", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e28", nombre: "UMA Fabricación Envase Volúmenes Bajos 2 60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e28_b", nombre: "UMA Fabricación Envase Volúmenes Bajos 2 99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e29", nombre: "Colector de Polvos Volúmenes Bajos 2", min: 0.2, max: 6.0, unit: "inH2O" },
       { id: "e30", nombre: "Ventilador de Inyección Bodega Materia Prima", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e31", nombre: "Ventilador de Extracción Fraccionamiento", min: 0.01, max: 1.0, unit: "inH2O" },
@@ -717,8 +723,8 @@
         `;
         tbody.appendChild(tr);
 
-        // SALTO DE PÁGINA MOVIDO AL ÍTEM 28 (ÍNDICE 27) PARA PASAR 8 FILAS A LA PRIMERA PÁGINA
-        if (index === 27) {
+        // SALTO DE PÁGINA REPROGRAMADO AL ÍTEM 30 PARA CONSERVAR EXACTAMENTE 2 PÁGINAS UNIFORMES
+        if (index === 29) {
           var trPageBreak = document.createElement('tr');
           trPageBreak.className = 'page-break';
           trPageBreak.innerHTML = `
