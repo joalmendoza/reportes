@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Checklists de Mantenimiento - Carval</title>
+  <title>CVSAG005-F001 - Lista de Chequeo Planta Agua Purificada</title>
 
   <style>
     body {
@@ -98,14 +98,8 @@
       font-weight: bold;
       margin-bottom: 12px;
     }
-    .selector-container {
-      margin-bottom: 16px;
-      background: #f8fafc;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-    }
     
+    /* TABLAS DE ENCABEZADO Y PARÁMETROS */
     .header-table, .param-table {
       width: 100%;
       border-collapse: collapse;
@@ -128,6 +122,7 @@
       color: #1e293b;
     }
 
+    /* CASILLA DE INDICACIÓN CON ANCHO Y ESPACIO OPTIMIZADO PARA MÓVIL */
     .input-unit-cell {
       display: flex;
       align-items: center;
@@ -150,16 +145,19 @@
       white-space: nowrap;
     }
 
+    /* ANCHOS PREDETERMINADOS PARA PANTALLA (MÓVIL) */
     .col-pc { width: 12%; }
     .col-desc { width: 38%; }
     .col-rango { width: 22%; }
     .col-ind { width: 28%; }
 
+    /* REAJUSTE DE ANCHOS EXCLUSIVO EN LA GENERACIÓN DEL PDF */
     .is-generating-pdf .col-pc { width: 10% !important; }
-    .is-generating-pdf .col-desc { width: 52% !important; }
+    .is-generating-pdf .col-desc { width: 52% !important; } /* Columna de descripción amplia para quedar en 1 sola fila */
     .is-generating-pdf .col-rango { width: 22% !important; }
     .is-generating-pdf .col-ind { width: 16% !important; }
 
+    /* CASILLA DIAGONAL DE EXTREMO A EXTREMO */
     .diagonal-cell {
       background: linear-gradient(to top right, transparent 48%, #64748b 49%, #64748b 51%, transparent 52%);
       background-color: #f1f5f9;
@@ -167,6 +165,7 @@
       height: 32px;
     }
 
+    /* FILA DESVIADA CON SOMBREADO ROJO CLARO */
     .out-of-range {
       background-color: #fecdd3 !important;
     }
@@ -187,6 +186,7 @@
       text-align: center;
     }
 
+    /* REGLAS PARA SALTO DE PÁGINA EN PDF Y REPETICIÓN DE ENCABEZADOS */
     .page-break {
       page-break-before: always;
       break-before: page;
@@ -201,11 +201,12 @@
       display: table !important;
     }
 
+    /* ESTRUCTURA FLEXIBLE DE FIRMAS EN PANTALLA VS PDF CON 3 LÍNEAS DE ESPACIO LIBRE */
     .signatures-grid {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      margin-top: 24px;
+      margin-top: 24px; /* Espacio de 3 líneas después de las observaciones */
       padding-top: 8px;
     }
 
@@ -217,15 +218,12 @@
     }
   </style>
 
+  <!-- LIBRERÍAS EXTERNAS -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
-  <!-- 1. AQUÍ PEGAS EL BOTÓN DE NAVEGACIÓN -->
-  <div class="flex justify-end p-2 bg-gray-100 border-b">
-    <a href="DP_Ventilacion.html">Ir al Formulario DP Ventilación →</a>
-  </div>
 
   <!-- PANTALLA 1: INICIO DE SESIÓN -->
   <div id="login-screen" class="card">
@@ -241,7 +239,7 @@
       <input type="password" id="password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v6 | Sistema Integrado de Mantenimiento</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v5 | CVSAG005-F001</p>
     </div>
   </div>
 
@@ -253,29 +251,20 @@
     <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
   </div>
 
-  <!-- PANTALLA 2: FORMULARIO PRINCIPAL Y SELECTOR DE FORMATO -->
+  <!-- PANTALLA 2: FORMULARIO PRINCIPAL CVSAG005-F001 -->
   <div id="main-form-screen" class="card hidden">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
       <span style="font-size: 12px; color: #6b7280; font-weight: bold;" id="user-display">Modo Consulta</span>
       <button id="btn-logout" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: bold; cursor: pointer;">Salir</button>
     </div>
 
-    <!-- SELECTOR DE FORMATO -->
-    <div id="selector-form-box" class="selector-container">
-      <label style="font-weight: bold; font-size: 13px; color: #1e3a8a;">Seleccionar Formato a Diligenciar:</label>
-      <select id="select-formato" class="input-field" style="margin-bottom:0;" onchange="cambiarFormato(this.value)">
-        <option value="PAP">CVSAG005-F001 - Lista de Chequeo Planta Agua Purificada</option>
-        <option value="MEZCLAS">CVSAG005-F002 - Lista de Chequeo Mezclas y Aditivos</option>
-      </select>
-    </div>
-
     <div id="view-badge" class="badge">Modo Técnico</div>
-    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo</h2>
+    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo Planta de Agua Purificada</h2>
 
     <div id="pdf-area" style="padding: 10px; background: white;">
       
-      <!-- ENCABEZADO FORMATO 1: PLANTA DE AGUA PURIFICADA -->
-      <table id="header-pap" class="header-table">
+      <!-- ENCABEZADO PRINCIPAL REORGANIZADO -->
+      <table class="header-table">
         <tr>
           <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
           <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
@@ -288,21 +277,7 @@
         </tr>
       </table>
 
-      <!-- ENCABEZADO FORMATO 2: MEZCLAS Y ADITIVOS -->
-      <table id="header-mezclas" class="header-table hidden">
-        <tr>
-          <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
-          <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO MEZCLAS Y ADITIVOS NUTRIONALES</td>
-          <td style="width: 22%; font-size: 10px;">
-            <b>Código:</b> CVSAG005-F002<br>
-            <b>Versión:</b> 02<br>
-            <b>Fecha emisión:</b> 2023<br>
-            <b>Estado:</b> Vigente
-          </td>
-        </tr>
-      </table>
-
-      <!-- CAMPOS CONGELADOS DE FECHA Y HORA DE INICIO -->
+      <!-- CAMPOS CONGELADOS DE FECHA Y HORA DE INICIO DE DILIGENCIAMIENTO -->
       <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <div style="flex: 1;">
           <label style="font-weight: bold; font-size: 12px;">Fecha:</label>
@@ -314,336 +289,289 @@
         </div>
       </div>
 
-      <!-- FORMATO 1: TABLA PLANTA DE AGUA PURIFICADA -->
-      <div id="form-pap-body">
-        <div class="sec-title">PARÁMETROS A CONTROLAR EN LA PLANTA DE AGUA PURIFICADA</div>
-        <table class="param-table">
-          <thead>
-            <tr>
-              <th class="col-pc">Punto de Control</th>
-              <th class="col-desc">Descripción</th>
-              <th class="col-rango">Rango de Operación</th>
-              <th class="col-ind">Indicación</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr id="row_tag34">
-              <td class="col-pc">TAG 34</td>
-              <td class="col-desc">Presión entrada microfiltro de 1 micra</td>
-              <td class="col-rango">1 bar a 4 bar</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag34" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
-            </tr>
-            <tr id="row_tag35">
-              <td class="col-pc">TAG 35</td>
-              <td class="col-desc">Presión salida microfiltro de 1 micra</td>
-              <td class="col-rango">1 bar a 4 bar</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag35" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
-            </tr>
-            <tr id="row_diff_micro1" class="calculated-val">
-              <td class="diagonal-cell col-pc"></td>
-              <td class="col-desc">Diferencial de presión filtro 1 micra (TAG34 - TAG35)</td>
-              <td class="col-rango">Máximo 0,7 bar</td>
-              <td class="col-ind"><span id="diff_micro1">0.00</span> bar</td>
-            </tr>
-            <tr id="row_tag39a">
-              <td class="col-pc">TAG 39A</td>
-              <td class="col-desc">Presión entrada al EDIC</td>
-              <td class="col-rango">1 bar a 3 bar</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39a" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
-            </tr>
-            <tr id="row_tag39b">
-              <td class="col-pc">TAG 39B</td>
-              <td class="col-desc">Presión entrada al EDIC</td>
-              <td class="col-rango">1 bar a 3 bar</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39b" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
-            </tr>
-            <tr id="row_tag27">
-              <td class="col-pc">TAG 27</td>
-              <td class="col-desc">Caudal rechazo membranas ósmosis inversa</td>
-              <td class="col-rango">3 L/min a 25 L/min</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag27" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
-            </tr>
-            <tr id="row_tag30">
-              <td class="col-pc">TAG 30</td>
-              <td class="col-desc">Caudal rechazo del EDIC</td>
-              <td class="col-rango">2 L/min</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag30" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
-            </tr>
-            <tr id="row_tag28">
-              <td class="col-pc">TAG 28</td>
-              <td class="col-desc">Caudal salida del EDIC</td>
-              <td class="col-rango">10 L/min a 25 L/min</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag28" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
-            </tr>
-            <tr id="row_tag29">
-              <td class="col-pc">TAG 29</td>
-              <td class="col-desc">Presión salida del EDIC</td>
-              <td class="col-rango">4 PSI a 9 PSI</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag29" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
-            </tr>
-            <tr id="row_tag43">
-              <td class="col-pc">TAG 43</td>
-              <td class="col-desc">Presión rechazo membranas ósmosis inversa</td>
-              <td class="col-rango">10 bar a 13,5 bar</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag43" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
-            </tr>
-            <tr id="row_tag38">
-              <td class="col-pc">TAG 38</td>
-              <td class="col-desc">Presión de permeado</td>
-              <td class="col-rango">0,5 bar a 4 bar</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag38" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
-            </tr>
-            <tr id="row_tag37">
-              <td class="col-pc">TAG 37</td>
-              <td class="col-desc">Presión entrada membranas ósmosis inversa</td>
-              <td class="col-rango">10 bar a 14 bar</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag37" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
-            </tr>
-            <tr id="row_tag33">
-              <td class="col-pc">TAG 33</td>
-              <td class="col-desc">Resistividad agua EDIC</td>
-              <td class="col-rango">1 MΩ*cm a 19 MΩ*cm</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag33" class="input-field" oninput="evaluarRangos()"><span class="unit-label">MΩ*cm</span></div></td>
-            </tr>
-            <tr id="row_tag53">
-              <td class="col-pc">TAG 53</td>
-              <td class="col-desc">Tensión eléctrica en continua del EDIC</td>
-              <td class="col-rango">10 VDC a 95 VDC</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag53" class="input-field" oninput="evaluarRangos()"><span class="unit-label">VDC</span></div></td>
-            </tr>
-            <tr id="row_tag54">
-              <td class="col-pc">TAG 54</td>
-              <td class="col-desc">Intensidad eléctrica en continua del EDIC</td>
-              <td class="col-rango">0,5 A hasta 6 A</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag54" class="input-field" oninput="evaluarRangos()"><span class="unit-label">A</span></div></td>
-            </tr>
-            <tr id="row_tag47">
-              <td class="col-pc">TAG 47</td>
-              <td class="col-desc">Conductividad salida membranas ósmosis inversa</td>
-              <td class="col-rango">Máx. 10 µS/cm</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag47" class="input-field" oninput="evaluarRangos()"><span class="unit-label">µS/cm</span></div></td>
-            </tr>
-            <tr id="row_tag50">
-              <td class="col-pc">TAG 50</td>
-              <td class="col-desc">Test dureza total Ca y Mg</td>
-              <td class="col-rango">Verde = Sin dureza<br>Rojo = Con dureza</td>
-              <td class="col-ind">
-                <select id="tag50" class="input-field" style="margin:0;" onchange="evaluarRangos()">
-                  <option value="Verde">Verde (Sin dureza)</option>
-                  <option value="Rojo">Rojo (Con dureza)</option>
-                </select>
-              </td>
-            </tr>
-            <tr id="row_tag51">
-              <td class="col-pc">TAG 51</td>
-              <td class="col-desc">ORP (Presencia de Cl)</td>
-              <td class="col-rango">Menor a 400 mV</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag51" class="input-field" oninput="evaluarRangos()"><span class="unit-label">mV</span></div></td>
-            </tr>
-            <tr id="row_tag71_dial">
-              <td class="col-pc">TAG 71</td>
-              <td class="col-desc">Valor dial dosificador metabisulfito de sodio</td>
-              <td class="col-rango">25 a 100</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_dial" class="input-field" oninput="evaluarRangos()"></div></td>
-            </tr>
-            <tr id="row_tag71_nivel">
-              <td class="col-pc">TAG 71</td>
-              <td class="col-desc">Nivel solución tanque metabisulfito de sodio</td>
-              <td class="col-rango">10 L hasta 50 L</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_nivel" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L</span></div></td>
-            </tr>
-            <tr id="row_tag70">
-              <td class="col-pc">TAG 70</td>
-              <td class="col-desc">Temperatura tanque agua purificada #2</td>
-              <td class="col-rango">Menor a 34 ºC</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag70" class="input-field" oninput="evaluarRangos()"><span class="unit-label">ºC</span></div></td>
-            </tr>
-            <tr id="row_tag42">
-              <td class="col-pc">TAG 42</td>
-              <td class="col-desc">pH Salida EDIC</td>
-              <td class="col-rango">5 a 7</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag42" class="input-field" oninput="evaluarRangos()"></div></td>
-            </tr>
+      <div class="sec-title">PARÁMETROS A CONTROLAR EN LA PLANTA DE AGUA PURIFICADA</div>
 
-            <tr id="row_tag73">
-              <td class="col-pc">TAG 73</td>
-              <td class="col-desc">Lámpara UV Tanque agua purificada #1</td>
-              <td class="col-rango">365 días a 30 días</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag73" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-            </tr>
-            <tr id="row_tag110">
-              <td class="col-pc">TAG 110</td>
-              <td class="col-desc">Lámpara UV Tanque agua purificada #2</td>
-              <td class="col-rango">365 días a 30 días</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag110" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-            </tr>
-            <tr id="row_tag74">
-              <td class="col-pc">TAG 74</td>
-              <td class="col-desc">Lámpara UV #1 salida EDIC</td>
-              <td class="col-rango">365 días a 30 días</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag74" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-            </tr>
-            <tr id="row_tag75">
-              <td class="col-pc">TAG 75</td>
-              <td class="col-desc">Lámpara UV #2 salida EDIC</td>
-              <td class="col-rango">365 días a 30 días</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag75" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
-            </tr>
+      <!-- TABLA DE CONTROL DE PARÁMETROS -->
+      <table class="param-table">
+        <thead>
+          <tr>
+            <th class="col-pc">Punto de Control</th>
+            <th class="col-desc">Descripción</th>
+            <th class="col-rango">Rango de Operación</th>
+            <th class="col-ind">Indicación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="row_tag34">
+            <td class="col-pc">TAG 34</td>
+            <td class="col-desc">Presión entrada microfiltro de 1 micra</td>
+            <td class="col-rango">1 bar a 4 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag34" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+          </tr>
+          <tr id="row_tag35">
+            <td class="col-pc">TAG 35</td>
+            <td class="col-desc">Presión salida microfiltro de 1 micra</td>
+            <td class="col-rango">1 bar a 4 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag35" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+          </tr>
+          <tr id="row_diff_micro1" class="calculated-val">
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial de presión filtro 1 micra (TAG34 - TAG35)</td>
+            <td class="col-rango">Máximo 0,7 bar</td>
+            <td class="col-ind"><span id="diff_micro1">0.00</span> bar</td>
+          </tr>
+          <tr id="row_tag39a">
+            <td class="col-pc">TAG 39A</td>
+            <td class="col-desc">Presión entrada al EDIC</td>
+            <td class="col-rango">1 bar a 3 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39a" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+          </tr>
+          <tr id="row_tag39b">
+            <td class="col-pc">TAG 39B</td>
+            <td class="col-desc">Presión entrada al EDIC</td>
+            <td class="col-rango">1 bar a 3 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39b" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+          </tr>
+          <tr id="row_tag27">
+            <td class="col-pc">TAG 27</td>
+            <td class="col-desc">Caudal rechazo membranas ósmosis inversa</td>
+            <td class="col-rango">3 L/min a 25 L/min</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag27" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
+          </tr>
+          <tr id="row_tag30">
+            <td class="col-pc">TAG 30</td>
+            <td class="col-desc">Caudal rechazo del EDIC</td>
+            <td class="col-rango">2 L/min</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag30" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
+          </tr>
+          <tr id="row_tag28">
+            <td class="col-pc">TAG 28</td>
+            <td class="col-desc">Caudal salida del EDIC</td>
+            <td class="col-rango">10 L/min a 25 L/min</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag28" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
+          </tr>
+          <tr id="row_tag29">
+            <td class="col-pc">TAG 29</td>
+            <td class="col-desc">Presión salida del EDIC</td>
+            <td class="col-rango">4 PSI a 9 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag29" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+          </tr>
+          <tr id="row_tag43">
+            <td class="col-pc">TAG 43</td>
+            <td class="col-desc">Presión rechazo membranas ósmosis inversa</td>
+            <td class="col-rango">10 bar a 13,5 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag43" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+          </tr>
+          <tr id="row_tag38">
+            <td class="col-pc">TAG 38</td>
+            <td class="col-desc">Presión de permeado</td>
+            <td class="col-rango">0,5 bar a 4 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag38" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+          </tr>
+          <tr id="row_tag37">
+            <td class="col-pc">TAG 37</td>
+            <td class="col-desc">Presión entrada membranas ósmosis inversa</td>
+            <td class="col-rango">10 bar a 14 bar</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag37" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
+          </tr>
+          <tr id="row_tag33">
+            <td class="col-pc">TAG 33</td>
+            <td class="col-desc">Resistividad agua EDIC</td>
+            <td class="col-rango">1 MΩ*cm a 19 MΩ*cm</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag33" class="input-field" oninput="evaluarRangos()"><span class="unit-label">MΩ*cm</span></div></td>
+          </tr>
+          <tr id="row_tag53">
+            <td class="col-pc">TAG 53</td>
+            <td class="col-desc">Tensión eléctrica en continua del EDIC</td>
+            <td class="col-rango">10 VDC a 95 VDC</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag53" class="input-field" oninput="evaluarRangos()"><span class="unit-label">VDC</span></div></td>
+          </tr>
+          <tr id="row_tag54">
+            <td class="col-pc">TAG 54</td>
+            <td class="col-desc">Intensidad eléctrica en continua del EDIC</td>
+            <td class="col-rango">0,5 A hasta 6 A</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag54" class="input-field" oninput="evaluarRangos()"><span class="unit-label">A</span></div></td>
+          </tr>
+          <tr id="row_tag47">
+            <td class="col-pc">TAG 47</td>
+            <td class="col-desc">Conductividad salida membranas ósmosis inversa</td>
+            <td class="col-rango">Máx. 10 µS/cm</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag47" class="input-field" oninput="evaluarRangos()"><span class="unit-label">µS/cm</span></div></td>
+          </tr>
+          <tr id="row_tag50">
+            <td class="col-pc">TAG 50</td>
+            <td class="col-desc">Test dureza total Ca y Mg</td>
+            <td class="col-rango">Verde = Sin dureza<br>Rojo = Con dureza</td>
+            <td class="col-ind">
+              <select id="tag50" class="input-field" style="margin:0;" onchange="evaluarRangos()">
+                <option value="Verde">Verde (Sin dureza)</option>
+                <option value="Rojo">Rojo (Con dureza)</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="row_tag51">
+            <td class="col-pc">TAG 51</td>
+            <td class="col-desc">ORP (Presencia de Cl)</td>
+            <td class="col-rango">Menor a 400 mV</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag51" class="input-field" oninput="evaluarRangos()"><span class="unit-label">mV</span></div></td>
+          </tr>
+          <tr id="row_tag71_dial">
+            <td class="col-pc">TAG 71</td>
+            <td class="col-desc">Valor dial dosificador metabisulfito de sodio</td>
+            <td class="col-rango">25 a 100</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_dial" class="input-field" oninput="evaluarRangos()"></div></td>
+          </tr>
+          <tr id="row_tag71_nivel">
+            <td class="col-pc">TAG 71</td>
+            <td class="col-desc">Nivel solución tanque metabisulfito de sodio</td>
+            <td class="col-rango">10 L hasta 50 L</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_nivel" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L</span></div></td>
+          </tr>
+          <tr id="row_tag70">
+            <td class="col-pc">TAG 70</td>
+            <td class="col-desc">Temperatura tanque agua purificada #2</td>
+            <td class="col-rango">Menor a 34 ºC</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag70" class="input-field" oninput="evaluarRangos()"><span class="unit-label">ºC</span></div></td>
+          </tr>
+          <tr id="row_tag42">
+            <td class="col-pc">TAG 42</td>
+            <td class="col-desc">pH Salida EDIC</td>
+            <td class="col-rango">5 a 7</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag42" class="input-field" oninput="evaluarRangos()"></div></td>
+          </tr>
 
-            <tr class="page-break">
-              <td colspan="4" style="border:none; padding:0;">
-                <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
+          <!-- LÁMPARAS UV MOVIDAS A LA PÁGINA 1 -->
+          <tr id="row_tag73">
+            <td class="col-pc">TAG 73</td>
+            <td class="col-desc">Lámpara UV Tanque agua purificada #1</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag73" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+          </tr>
+          <tr id="row_tag110">
+            <td class="col-pc">TAG 110</td>
+            <td class="col-desc">Lámpara UV Tanque agua purificada #2</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag110" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+          </tr>
+          <tr id="row_tag74">
+            <td class="col-pc">TAG 74</td>
+            <td class="col-desc">Lámpara UV #1 salida EDIC</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag74" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+          </tr>
+          <tr id="row_tag75">
+            <td class="col-pc">TAG 75</td>
+            <td class="col-desc">Lámpara UV #2 salida EDIC</td>
+            <td class="col-rango">365 días a 30 días</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag75" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+          </tr>
+
+          <!-- SALTO DE PÁGINA CON REPETICIÓN DE ENCABEZADOS DE DOCUMENTO Y TABLA -->
+          <tr class="page-break">
+            <td colspan="4" style="border:none; padding:0;">
+              <!-- ENCABEZADO DE DOCUMENTO REPETIDO -->
+              <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
+                <tr>
+                  <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
+                  <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
+                  <td style="width: 22%; font-size: 10px;">
+                    <b>Código:</b> CVSAG005-F001<br>
+                    <b>Versión:</b> 04<br>
+                    <b>Fecha emisión:</b> 2023<br>
+                    <b>Estado:</b> Vigente
+                  </td>
+                </tr>
+              </table>
+
+              <!-- ENCABEZADO DE TABLA REPETIDO -->
+              <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
+                <thead>
                   <tr>
-                    <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
-                    <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
-                    <td style="width: 22%; font-size: 10px;">
-                      <b>Código:</b> CVSAG005-F001<br>
-                      <b>Versión:</b> 04<br>
-                      <b>Fecha emisión:</b> 2023<br>
-                      <b>Estado:</b> Vigente
-                    </td>
+                    <th class="col-pc">Punto de Control</th>
+                    <th class="col-desc">Descripción</th>
+                    <th class="col-rango">Rango de Operación</th>
+                    <th class="col-ind">Indicación</th>
                   </tr>
-                </table>
-                <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
-                  <thead>
-                    <tr>
-                      <th class="col-pc">Punto de Control</th>
-                      <th class="col-desc">Descripción</th>
-                      <th class="col-rango">Rango de Operación</th>
-                      <th class="col-ind">Indicación</th>
-                    </tr>
-                  </thead>
-                </table>
-              </td>
-            </tr>
+                </thead>
+              </table>
+            </td>
+          </tr>
 
-            <tr id="row_tag52">
-              <td class="col-pc">TAG 52</td>
-              <td class="col-desc">Presión agua acueducto</td>
-              <td class="col-rango">15 PSI a 60 PSI</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag52" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
-            </tr>
-            <tr id="row_tag80">
-              <td class="col-pc">TAG 80</td>
-              <td class="col-desc">Presión salida agua filtro multimedia 1</td>
-              <td class="col-rango">20 PSI a 60 PSI</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag80" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
-            </tr>
-            <tr id="row_diff_m1" class="calculated-val">
-              <td class="diagonal-cell col-pc"></td>
-              <td class="col-desc">Diferencial presión filtro multimedia 1 (TAG52 - TAG80)</td>
-              <td class="col-rango">Menor a 10 PSI</td>
-              <td class="col-ind"><span id="diff_m1">0.00</span> PSI</td>
-            </tr>
-            <tr id="row_tag81">
-              <td class="col-pc">TAG 81</td>
-              <td class="col-desc">Presión salida agua filtro multimedia 2</td>
-              <td class="col-rango">20 PSI a 60 PSI</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag81" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
-            </tr>
-            <tr id="row_diff_m2" class="calculated-val">
-              <td class="diagonal-cell col-pc"></td>
-              <td class="col-desc">Diferencial presión filtro multimedia 2 (TAG80 - TAG81)</td>
-              <td class="col-rango">Menor a 10 PSI</td>
-              <td class="col-ind"><span id="diff_m2">0.00</span> PSI</td>
-            </tr>
-            <tr id="row_tag82">
-              <td class="col-pc">TAG 82</td>
-              <td class="col-desc">Presión salida filtro de 10 micras</td>
-              <td class="col-rango">20 PSI a 60 PSI</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag82" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
-            </tr>
-            <tr id="row_diff_f10" class="calculated-val">
-              <td class="diagonal-cell col-pc"></td>
-              <td class="col-desc">Diferencial presión filtro 10 micras (TAG81 - TAG82)</td>
-              <td class="col-rango">Menor a 10 PSI</td>
-              <td class="col-ind"><span id="diff_f10">0.00</span> PSI</td>
-            </tr>
-            <tr id="row_tag83">
-              <td class="col-pc">TAG 83</td>
-              <td class="col-desc">Presión salida filtro de 5 micras</td>
-              <td class="col-rango">20 PSI a 60 PSI</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag83" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
-            </tr>
-            <tr id="row_diff_f5" class="calculated-val">
-              <td class="diagonal-cell col-pc"></td>
-              <td class="col-desc">Diferencial presión filtro 5 micras (TAG82 - TAG83)</td>
-              <td class="col-rango">Menor a 10 PSI</td>
-              <td class="col-ind"><span id="diff_f5">0.00</span> PSI</td>
-            </tr>
-            <tr id="row_fugas">
-              <td class="col-pc">Inspección</td>
-              <td class="col-desc">Presencia de fuga de agua</td>
-              <td class="col-rango">SI o NO</td>
-              <td class="col-ind">
-                <select id="fugas" class="input-field" style="margin:0;" onchange="evaluarRangos()">
-                  <option value="NO">NO</option>
-                  <option value="SI">SI</option>
-                </select>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- FORMATO 2: TABLA MEZCLAS Y ADITIVOS -->
-      <div id="form-mezclas-body" class="hidden">
-        <div class="sec-title">PARÁMETROS A CONTROLAR EN MEZCLAS Y ADITIVOS NUTRIONALES</div>
-        <table class="param-table">
-          <thead>
-            <tr>
-              <th class="col-pc">Punto de Control</th>
-              <th class="col-desc">Descripción</th>
-              <th class="col-rango">Rango de Operación</th>
-              <th class="col-ind">Indicación</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr id="row_m_caudal">
-              <td class="col-pc">M-01</td>
-              <td class="col-desc">Caudal de Dosificación de Aditivos</td>
-              <td class="col-rango">5 L/min a 20 L/min</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="m_caudal" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
-            </tr>
-            <tr id="row_m_agitador">
-              <td class="col-pc">M-02</td>
-              <td class="col-desc">Velocidad Agitador Principal Mezclas 2</td>
-              <td class="col-rango">100 RPM a 350 RPM</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" id="m_agitador" class="input-field" oninput="evaluarRangos()"><span class="unit-label">RPM</span></div></td>
-            </tr>
-            <tr id="row_m_ducto">
-              <td class="col-pc">M-03</td>
-              <td class="col-desc">Estado Ductos de Extracción Mezclas 2</td>
-              <td class="col-rango">Limpio / Operatorio</td>
-              <td class="col-ind">
-                <select id="m_ducto" class="input-field" style="margin:0;" onchange="evaluarRangos()">
-                  <option value="Conforme">Conforme</option>
-                  <option value="Socio Limpieza Requ.">Socio Limpieza Requ.</option>
-                </select>
-              </td>
-            </tr>
-            <tr id="row_m_ohaus">
-              <td class="col-pc">M-04</td>
-              <td class="col-desc">Cero Balanza e Indicador Ohaus</td>
-              <td class="col-rango">0.00 kg (+/- 0.02)</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.01" id="m_ohaus" class="input-field" oninput="evaluarRangos()"><span class="unit-label">kg</span></div></td>
-            </tr>
-            <tr id="row_m_presion_aire">
-              <td class="col-pc">M-05</td>
-              <td class="col-desc">Presión de Aire Comprimido Suministro</td>
-              <td class="col-rango">80 PSI a 100 PSI</td>
-              <td class="col-ind"><div class="input-unit-cell"><input type="number" step="1" id="m_presion_aire" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          <tr id="row_tag52">
+            <td class="col-pc">TAG 52</td>
+            <td class="col-desc">Presión agua acueducto</td>
+            <td class="col-rango">15 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag52" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+          </tr>
+          <tr id="row_tag80">
+            <td class="col-pc">TAG 80</td>
+            <td class="col-desc">Presión salida agua filtro multimedia 1</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag80" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+          </tr>
+          <tr id="row_diff_m1" class="calculated-val">
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro multimedia 1 (TAG52 - TAG80)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_m1">0.00</span> PSI</td>
+          </tr>
+          <tr id="row_tag81">
+            <td class="col-pc">TAG 81</td>
+            <td class="col-desc">Presión salida agua filtro multimedia 2</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag81" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+          </tr>
+          <tr id="row_diff_m2" class="calculated-val">
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro multimedia 2 (TAG80 - TAG81)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_m2">0.00</span> PSI</td>
+          </tr>
+          <tr id="row_tag82">
+            <td class="col-pc">TAG 82</td>
+            <td class="col-desc">Presión salida filtro de 10 micras</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag82" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+          </tr>
+          <tr id="row_diff_f10" class="calculated-val">
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro 10 micras (TAG81 - TAG82)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_f10">0.00</span> PSI</td>
+          </tr>
+          <tr id="row_tag83">
+            <td class="col-pc">TAG 83</td>
+            <td class="col-desc">Presión salida filtro de 5 micras</td>
+            <td class="col-rango">20 PSI a 60 PSI</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag83" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
+          </tr>
+          <tr id="row_diff_f5" class="calculated-val">
+            <td class="diagonal-cell col-pc"></td>
+            <td class="col-desc">Diferencial presión filtro 5 micras (TAG82 - TAG83)</td>
+            <td class="col-rango">Menor a 10 PSI</td>
+            <td class="col-ind"><span id="diff_f5">0.00</span> PSI</td>
+          </tr>
+          <tr id="row_fugas">
+            <td class="col-pc">Inspección</td>
+            <td class="col-desc">Presencia de fuga de agua</td>
+            <td class="col-rango">SI o NO</td>
+            <td class="col-ind">
+              <select id="fugas" class="input-field" style="margin:0;" onchange="evaluarRangos()">
+                <option value="NO">NO</option>
+                <option value="SI">SI</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
       <!-- SECCIÓN DE OBSERVACIONES -->
       <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
       <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
 
-      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
+      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES (CON 3 LÍNEAS DE ESPACIO DE SEPARACIÓN) -->
       <div class="signatures-grid">
+        <!-- BLOQUE TÉCNICO -->
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
           <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
           <b>Cargo:</b> Técnico de Mantenimiento<br><br>
@@ -656,6 +584,7 @@
           <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
         </div>
 
+        <!-- BLOQUE COORDINADOR -->
         <div id="block-admin-sig" class="sig-col hidden" style="width: 100%;">
           <b>Revisado por:</b> Jorge Alberto Mendoza Ospina<br>
           <b>Cargo:</b> Coordinador de Mantenimiento<br><br>
@@ -680,6 +609,7 @@
       return false;
     };
 
+    // ---------- CONFIGURACIÓN GENERAL ----------
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
@@ -695,25 +625,10 @@
     ];
     if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
 
+    // ===== BLOQUE API REST FIREBASE =====
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
-    var formatoActual = "PAP";
+    var COLECCION = "chequeosPAP";
     var sesion = null;
-
-    function obtenerColeccion() {
-      return formatoActual === "MEZCLAS" ? "chequeosMezclas" : "chequeosPAP";
-    }
-
-    function cambiarFormato(nuevoFormato) {
-      formatoActual = nuevoFormato;
-      var isMezclas = (formatoActual === 'MEZCLAS');
-      
-      document.getElementById('header-pap').classList.toggle('hidden', isMezclas);
-      document.getElementById('header-mezclas').classList.toggle('hidden', !isMezclas);
-      document.getElementById('form-pap-body').classList.toggle('hidden', isMezclas);
-      document.getElementById('form-mezclas-body').classList.toggle('hidden', !isMezclas);
-      
-      evaluarRangos();
-    }
 
     function guardarSesion(s) {
       sesion = s;
@@ -829,7 +744,7 @@
     async function crearReporte(datos) {
       var token = await tokenValido();
       var id = nuevoId();
-      await pedir(FS_BASE + "/" + obtenerColeccion() + "?documentId=" + id + "&key=" + API_KEY, {
+      await pedir(FS_BASE + "/" + COLECCION + "?documentId=" + id + "&key=" + API_KEY, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ fields: aCampos(datos) })
@@ -838,7 +753,7 @@
     }
 
     async function leerReporte(id) {
-      var d = await pedir(FS_BASE + "/" + obtenerColeccion() + "/" + encodeURIComponent(id) + "?key=" + API_KEY);
+      var d = await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?key=" + API_KEY);
       return deCampos(d.fields);
     }
 
@@ -846,7 +761,7 @@
       var token = await tokenValido();
       var mascara = ['firmaAdm', 'fechaFirmaAdm', 'estado']
         .map(function(k) { return "updateMask.fieldPaths=" + k; }).join("&");
-      await pedir(FS_BASE + "/" + obtenerColeccion() + "/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
+      await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ fields: aCampos(datos) })
@@ -856,15 +771,13 @@
     var urlParams = new URLSearchParams(window.location.search);
     var modo = urlParams.get('mode');
     var reporteId = urlParams.get('id');
-    var paramFormato = urlParams.get('form');
-    if (paramFormato) { formatoActual = paramFormato; }
-
     var modoAprobar = (modo === 'aprobar');
     var modoVer = (modo === 'ver');
     var baseUrl = window.location.origin + window.location.pathname;
 
     var padTech, padAdmin;
 
+    // CAPTURA DE FECHA Y HORA CON SEGUNDOS INCLUIDOS (hh:mm:ss a. m. / p. m.)
     function ahora() {
       var d = new Date();
       var year = d.getFullYear();
@@ -937,119 +850,108 @@
       return "Error de acceso: " + (e.apiMessage || e.message || "Credenciales incorrectas");
     }
 
+    // EVALUACIÓN DE RANGOS DE OPERACIÓN, ALERTAS Y OBSERVACIONES
     function evaluarRangos() {
+      var v34 = parseFloat(document.getElementById('tag34').value);
+      var v35 = parseFloat(document.getElementById('tag35').value);
+      var diff_micro1 = (!isNaN(v34) && !isNaN(v35)) ? (v34 - v35) : NaN;
+      document.getElementById('diff_micro1').innerText = isNaN(diff_micro1) ? "0.00" : diff_micro1.toFixed(2);
+
+      var v52 = parseFloat(document.getElementById('tag52').value);
+      var v80 = parseFloat(document.getElementById('tag80').value);
+      var diff_m1 = (!isNaN(v52) && !isNaN(v80)) ? (v52 - v80) : NaN;
+      document.getElementById('diff_m1').innerText = isNaN(diff_m1) ? "0.00" : diff_m1.toFixed(2);
+
+      var v81 = parseFloat(document.getElementById('tag81').value);
+      var diff_m2 = (!isNaN(v80) && !isNaN(v81)) ? (v80 - v81) : NaN;
+      document.getElementById('diff_m2').innerText = isNaN(diff_m2) ? "0.00" : diff_m2.toFixed(2);
+
+      var v82 = parseFloat(document.getElementById('tag82').value);
+      var diff_f10 = (!isNaN(v81) && !isNaN(v82)) ? (v81 - v82) : NaN;
+      document.getElementById('diff_f10').innerText = isNaN(diff_f10) ? "0.00" : diff_f10.toFixed(2);
+
+      var v83 = parseFloat(document.getElementById('tag83').value);
+      var diff_f5 = (!isNaN(v82) && !isNaN(v83)) ? (v82 - v83) : NaN;
+      document.getElementById('diff_f5').innerText = isNaN(diff_f5) ? "0.00" : diff_f5.toFixed(2);
+
+      var reglas = [
+        { id: 'tag34', min: 1, max: 4, label: 'TAG 34', row: 'row_tag34', unit: 'bar' },
+        { id: 'tag35', min: 1, max: 4, label: 'TAG 35', row: 'row_tag35', unit: 'bar' },
+        { val: diff_micro1, max: 0.7, label: 'Diferencial Filtro 1 micra', row: 'row_diff_micro1', unit: 'bar' },
+        { id: 'tag39a', min: 1, max: 3, label: 'TAG 39A', row: 'row_tag39a', unit: 'bar' },
+        { id: 'tag39b', min: 1, max: 3, label: 'TAG 39B', row: 'row_tag39b', unit: 'bar' },
+        { id: 'tag27', min: 3, max: 25, label: 'TAG 27', row: 'row_tag27', unit: 'L/min' },
+        { id: 'tag30', min: 2, max: 2, label: 'TAG 30', row: 'row_tag30', unit: 'L/min' },
+        { id: 'tag28', min: 10, max: 25, label: 'TAG 28', row: 'row_tag28', unit: 'L/min' },
+        { id: 'tag29', min: 4, max: 9, label: 'TAG 29', row: 'row_tag29', unit: 'PSI' },
+        { id: 'tag43', min: 10, max: 13.5, label: 'TAG 43', row: 'row_tag43', unit: 'bar' },
+        { id: 'tag38', min: 0.5, max: 4, label: 'TAG 38', row: 'row_tag38', unit: 'bar' },
+        { id: 'tag37', min: 10, max: 14, label: 'TAG 37', row: 'row_tag37', unit: 'bar' },
+        { id: 'tag33', min: 1, max: 19, label: 'TAG 33', row: 'row_tag33', unit: 'MΩ*cm' },
+        { id: 'tag53', min: 10, max: 95, label: 'TAG 53', row: 'row_tag53', unit: 'VDC' },
+        { id: 'tag54', min: 0.5, max: 6, label: 'TAG 54', row: 'row_tag54', unit: 'A' },
+        { id: 'tag47', max: 10, label: 'TAG 47', row: 'row_tag47', unit: 'µS/cm' },
+        { id: 'tag50', exact: 'Verde', label: 'TAG 50', row: 'row_tag50' },
+        { id: 'tag51', max: 400, label: 'TAG 51', row: 'row_tag51', unit: 'mV' },
+        { id: 'tag71_dial', min: 25, max: 100, label: 'TAG 71 (Dial)', row: 'row_tag71_dial' },
+        { id: 'tag71_nivel', min: 10, max: 50, label: 'TAG 71 (Nivel)', row: 'row_tag71_nivel', unit: 'L' },
+        { id: 'tag70', max: 34, label: 'TAG 70', row: 'row_tag70', unit: 'ºC' },
+        { id: 'tag42', min: 5, max: 7, label: 'TAG 42', row: 'row_tag42' },
+        { id: 'tag73', min: 30, max: 365, label: 'TAG 73', row: 'row_tag73', unit: 'días' },
+        { id: 'tag110', min: 30, max: 365, label: 'TAG 110', row: 'row_tag110', unit: 'días' },
+        { id: 'tag74', min: 30, max: 365, label: 'TAG 74', row: 'row_tag74', unit: 'días' },
+        { id: 'tag75', min: 30, max: 365, label: 'TAG 75', row: 'row_tag75', unit: 'días' },
+        { id: 'tag52', min: 15, max: 60, label: 'TAG 52', row: 'row_tag52', unit: 'PSI' },
+        { id: 'tag80', min: 20, max: 60, label: 'TAG 80', row: 'row_tag80', unit: 'PSI' },
+        { val: diff_m1, max: 10, label: 'Diferencial Filtro Multimedia 1', row: 'row_diff_m1', unit: 'PSI' },
+        { id: 'tag81', min: 20, max: 60, label: 'TAG 81', row: 'row_tag81', unit: 'PSI' },
+        { val: diff_m2, max: 10, label: 'Diferencial Filtro Multimedia 2', row: 'row_diff_m2', unit: 'PSI' },
+        { id: 'tag82', min: 20, max: 60, label: 'TAG 82', row: 'row_tag82', unit: 'PSI' },
+        { val: diff_f10, max: 10, label: 'Diferencial Filtro 10 micras', row: 'row_diff_f10', unit: 'PSI' },
+        { id: 'tag83', min: 20, max: 60, label: 'TAG 83', row: 'row_tag83', unit: 'PSI' },
+        { val: diff_f5, max: 10, label: 'Diferencial Filtro 5 micras', row: 'row_diff_f5', unit: 'PSI' },
+        { id: 'fugas', exact: 'NO', label: 'Fugas de agua', row: 'row_fugas' }
+      ];
+
       var desviaciones = [];
 
-      if (formatoActual === 'PAP') {
-        var v34 = parseFloat(document.getElementById('tag34').value);
-        var v35 = parseFloat(document.getElementById('tag35').value);
-        var diff_micro1 = (!isNaN(v34) && !isNaN(v35)) ? (v34 - v35) : NaN;
-        document.getElementById('diff_micro1').innerText = isNaN(diff_micro1) ? "0.00" : diff_micro1.toFixed(2);
+      reglas.forEach(function(r) {
+        var rowEl = document.getElementById(r.row);
+        if (!rowEl) return;
 
-        var v52 = parseFloat(document.getElementById('tag52').value);
-        var v80 = parseFloat(document.getElementById('tag80').value);
-        var diff_m1 = (!isNaN(v52) && !isNaN(v80)) ? (v52 - v80) : NaN;
-        document.getElementById('diff_m1').innerText = isNaN(diff_m1) ? "0.00" : diff_m1.toFixed(2);
-
-        var v81 = parseFloat(document.getElementById('tag81').value);
-        var diff_m2 = (!isNaN(v80) && !isNaN(v81)) ? (v80 - v81) : NaN;
-        document.getElementById('diff_m2').innerText = isNaN(diff_m2) ? "0.00" : diff_m2.toFixed(2);
-
-        var v82 = parseFloat(document.getElementById('tag82').value);
-        var diff_f10 = (!isNaN(v81) && !isNaN(v82)) ? (v81 - v82) : NaN;
-        document.getElementById('diff_f10').innerText = isNaN(diff_f10) ? "0.00" : diff_f10.toFixed(2);
-
-        var v83 = parseFloat(document.getElementById('tag83').value);
-        var diff_f5 = (!isNaN(v82) && !isNaN(v83)) ? (v82 - v83) : NaN;
-        document.getElementById('diff_f5').innerText = isNaN(diff_f5) ? "0.00" : diff_f5.toFixed(2);
-
-        var reglas = [
-          { id: 'tag34', min: 1, max: 4, label: 'TAG 34', row: 'row_tag34', unit: 'bar' },
-          { id: 'tag35', min: 1, max: 4, label: 'TAG 35', row: 'row_tag35', unit: 'bar' },
-          { val: diff_micro1, max: 0.7, label: 'Diferencial Filtro 1 micra', row: 'row_diff_micro1', unit: 'bar' },
-          { id: 'tag39a', min: 1, max: 3, label: 'TAG 39A', row: 'row_tag39a', unit: 'bar' },
-          { id: 'tag39b', min: 1, max: 3, label: 'TAG 39B', row: 'row_tag39b', unit: 'bar' },
-          { id: 'tag27', min: 3, max: 25, label: 'TAG 27', row: 'row_tag27', unit: 'L/min' },
-          { id: 'tag30', min: 2, max: 2, label: 'TAG 30', row: 'row_tag30', unit: 'L/min' },
-          { id: 'tag28', min: 10, max: 25, label: 'TAG 28', row: 'row_tag28', unit: 'L/min' },
-          { id: 'tag29', min: 4, max: 9, label: 'TAG 29', row: 'row_tag29', unit: 'PSI' },
-          { id: 'tag43', min: 10, max: 13.5, label: 'TAG 43', row: 'row_tag43', unit: 'bar' },
-          { id: 'tag38', min: 0.5, max: 4, label: 'TAG 38', row: 'row_tag38', unit: 'bar' },
-          { id: 'tag37', min: 10, max: 14, label: 'TAG 37', row: 'row_tag37', unit: 'bar' },
-          { id: 'tag33', min: 1, max: 19, label: 'TAG 33', row: 'row_tag33', unit: 'MΩ*cm' },
-          { id: 'tag53', min: 10, max: 95, label: 'TAG 53', row: 'row_tag53', unit: 'VDC' },
-          { id: 'tag54', min: 0.5, max: 6, label: 'TAG 54', row: 'row_tag54', unit: 'A' },
-          { id: 'tag47', max: 10, label: 'TAG 47', row: 'row_tag47', unit: 'µS/cm' },
-          { id: 'tag50', exact: 'Verde', label: 'TAG 50', row: 'row_tag50' },
-          { id: 'tag51', max: 400, label: 'TAG 51', row: 'row_tag51', unit: 'mV' },
-          { id: 'tag71_dial', min: 25, max: 100, label: 'TAG 71 (Dial)', row: 'row_tag71_dial' },
-          { id: 'tag71_nivel', min: 10, max: 50, label: 'TAG 71 (Nivel)', row: 'row_tag71_nivel', unit: 'L' },
-          { id: 'tag70', max: 34, label: 'TAG 70', row: 'row_tag70', unit: 'ºC' },
-          { id: 'tag42', min: 5, max: 7, label: 'TAG 42', row: 'row_tag42' },
-          { id: 'tag73', min: 30, max: 365, label: 'TAG 73', row: 'row_tag73', unit: 'días' },
-          { id: 'tag110', min: 30, max: 365, label: 'TAG 110', row: 'row_tag110', unit: 'días' },
-          { id: 'tag74', min: 30, max: 365, label: 'TAG 74', row: 'row_tag74', unit: 'días' },
-          { id: 'tag75', min: 30, max: 365, label: 'TAG 75', row: 'row_tag75', unit: 'días' },
-          { id: 'tag52', min: 15, max: 60, label: 'TAG 52', row: 'row_tag52', unit: 'PSI' },
-          { id: 'tag80', min: 20, max: 60, label: 'TAG 80', row: 'row_tag80', unit: 'PSI' },
-          { val: diff_m1, max: 10, label: 'Diferencial Filtro Multimedia 1', row: 'row_diff_m1', unit: 'PSI' },
-          { id: 'tag81', min: 20, max: 60, label: 'TAG 81', row: 'row_tag81', unit: 'PSI' },
-          { val: diff_m2, max: 10, label: 'Diferencial Filtro Multimedia 2', row: 'row_diff_m2', unit: 'PSI' },
-          { id: 'tag82', min: 20, max: 60, label: 'TAG 82', row: 'row_tag82', unit: 'PSI' },
-          { val: diff_f10, max: 10, label: 'Diferencial Filtro 10 micras', row: 'row_diff_f10', unit: 'PSI' },
-          { id: 'tag83', min: 20, max: 60, label: 'TAG 83', row: 'row_tag83', unit: 'PSI' },
-          { val: diff_f5, max: 10, label: 'Diferencial Filtro 5 micras', row: 'row_diff_f5', unit: 'PSI' },
-          { id: 'fugas', exact: 'NO', label: 'Fugas de agua', row: 'row_fugas' }
-        ];
-
-        reglas.forEach(function(r) {
-          var rowEl = document.getElementById(r.row);
-          if (!rowEl) return;
-          var v = (r.val !== undefined) ? r.val : NaN;
-          if (r.id) {
-            var input = document.getElementById(r.id);
-            if (input) { v = (input.tagName === 'SELECT') ? input.value : parseFloat(input.value); }
-          }
-          var fuera = false;
-          var msgDesc = "";
-          if (typeof v === 'string') {
-            if (r.exact && v !== r.exact) { fuera = true; msgDesc = r.label + " fuera de especificación (Valor: " + v + ")"; }
-          } else if (!isNaN(v)) {
-            if (r.min !== undefined && v < r.min) { fuera = true; msgDesc = r.label + " bajo especificación (Valor: " + v + " " + (r.unit||'') + " | Min: " + r.min + ")"; }
-            else if (r.max !== undefined && v > r.max) { fuera = true; msgDesc = r.label + " sobre especificación (Valor: " + v + " " + (r.unit||'') + " | Máx: " + r.max + ")"; }
-          }
-          if (fuera) { rowEl.classList.add('out-of-range'); desviaciones.push(msgDesc); }
-          else { rowEl.classList.remove('out-of-range'); }
-        });
-
-      } else {
-        var reglasM = [
-          { id: 'm_caudal', min: 5, max: 20, label: 'M-01 Caudal Dosificación', row: 'row_m_caudal', unit: 'L/min' },
-          { id: 'm_agitador', min: 100, max: 350, label: 'M-02 Agitador Mezclas 2', row: 'row_m_agitador', unit: 'RPM' },
-          { id: 'm_ducto', exact: 'Conforme', label: 'M-03 Ductos Extracción', row: 'row_m_ducto' },
-          { id: 'm_ohaus', min: -0.02, max: 0.02, label: 'M-04 Cero Balanza Ohaus', row: 'row_m_ohaus', unit: 'kg' },
-          { id: 'm_presion_aire', min: 80, max: 100, label: 'M-05 Presión Aire Comprimido', row: 'row_m_presion_aire', unit: 'PSI' }
-        ];
-
-        reglasM.forEach(function(r) {
-          var rowEl = document.getElementById(r.row);
-          if (!rowEl) return;
+        var v = (r.val !== undefined) ? r.val : NaN;
+        if (r.id) {
           var input = document.getElementById(r.id);
-          var v = input ? ((input.tagName === 'SELECT') ? input.value : parseFloat(input.value)) : NaN;
-          var fuera = false;
-          var msgDesc = "";
-
-          if (typeof v === 'string') {
-            if (r.exact && v !== r.exact) { fuera = true; msgDesc = r.label + " fuera de rango (Valor: " + v + ")"; }
-          } else if (!isNaN(v)) {
-            if (r.min !== undefined && v < r.min) { fuera = true; msgDesc = r.label + " bajo rango (Valor: " + v + " " + (r.unit||'') + ")"; }
-            else if (r.max !== undefined && v > r.max) { fuera = true; msgDesc = r.label + " sobre rango (Valor: " + v + " " + (r.unit||'') + ")"; }
+          if (input) {
+            v = (input.tagName === 'SELECT') ? input.value : parseFloat(input.value);
           }
+        }
 
-          if (fuera) { rowEl.classList.add('out-of-range'); desviaciones.push(msgDesc); }
-          else { rowEl.classList.remove('out-of-range'); }
-        });
-      }
+        var fuera = false;
+        var msgDesc = "";
+
+        if (typeof v === 'string') {
+          if (r.exact && v !== r.exact) {
+            fuera = true;
+            msgDesc = r.label + " fuera de especificación (Valor: " + v + ")";
+          }
+        } else if (!isNaN(v)) {
+          if (r.min !== undefined && v < r.min) {
+            fuera = true;
+            msgDesc = r.label + " bajo especificación (Valor: " + v + " " + (r.unit||'') + " | Min: " + r.min + ")";
+          } else if (r.max !== undefined && v > r.max) {
+            fuera = true;
+            msgDesc = r.label + " sobre especificación (Valor: " + v + " " + (r.unit||'') + " | Máx: " + r.max + ")";
+          }
+        }
+
+        if (fuera) {
+          rowEl.classList.add('out-of-range');
+          desviaciones.push(msgDesc);
+        } else {
+          rowEl.classList.remove('out-of-range');
+        }
+      });
 
       var obsTextarea = document.getElementById('observaciones');
       if (obsTextarea) {
@@ -1061,34 +963,25 @@
       }
     }
 
+    // VALIDACIÓN OBLIGATORIA DE TODAS LAS CASILLAS
     function validarFormularioCompleto() {
-      var listaIds = [];
-      if (formatoActual === 'PAP') {
-        listaIds = [
-          { id: 'tag34', nombre: 'TAG 34' }, { id: 'tag35', nombre: 'TAG 35' },
-          { id: 'tag39a', nombre: 'TAG 39A' }, { id: 'tag39b', nombre: 'TAG 39B' },
-          { id: 'tag27', nombre: 'TAG 27' }, { id: 'tag30', nombre: 'TAG 30' },
-          { id: 'tag28', nombre: 'TAG 28' }, { id: 'tag29', nombre: 'TAG 29' },
-          { id: 'tag43', nombre: 'TAG 43' }, { id: 'tag38', nombre: 'TAG 38' },
-          { id: 'tag37', nombre: 'TAG 37' }, { id: 'tag33', nombre: 'TAG 33' },
-          { id: 'tag53', nombre: 'TAG 53' }, { id: 'tag54', nombre: 'TAG 54' },
-          { id: 'tag47', nombre: 'TAG 47' }, { id: 'tag51', nombre: 'TAG 51' },
-          { id: 'tag71_dial', nombre: 'TAG 71 (Dial)' }, { id: 'tag71_nivel', nombre: 'TAG 71 (Nivel)' },
-          { id: 'tag70', nombre: 'TAG 70' }, { id: 'tag42', nombre: 'TAG 42' },
-          { id: 'tag73', nombre: 'TAG 73' }, { id: 'tag110', nombre: 'TAG 110' },
-          { id: 'tag74', nombre: 'TAG 74' }, { id: 'tag75', nombre: 'TAG 75' },
-          { id: 'tag52', nombre: 'TAG 52' }, { id: 'tag80', nombre: 'TAG 80' },
-          { id: 'tag81', nombre: 'TAG 81' }, { id: 'tag82', nombre: 'TAG 82' },
-          { id: 'tag83', nombre: 'TAG 83' }
-        ];
-      } else {
-        listaIds = [
-          { id: 'm_caudal', nombre: 'Caudal de Dosificación' },
-          { id: 'm_agitador', nombre: 'Agitador Principal' },
-          { id: 'm_ohaus', nombre: 'Balanza Ohaus' },
-          { id: 'm_presion_aire', nombre: 'Presión Aire Comprimido' }
-        ];
-      }
+      var listaIds = [
+        { id: 'tag34', nombre: 'TAG 34' }, { id: 'tag35', nombre: 'TAG 35' },
+        { id: 'tag39a', nombre: 'TAG 39A' }, { id: 'tag39b', nombre: 'TAG 39B' },
+        { id: 'tag27', nombre: 'TAG 27' }, { id: 'tag30', nombre: 'TAG 30' },
+        { id: 'tag28', nombre: 'TAG 28' }, { id: 'tag29', nombre: 'TAG 29' },
+        { id: 'tag43', nombre: 'TAG 43' }, { id: 'tag38', nombre: 'TAG 38' },
+        { id: 'tag37', nombre: 'TAG 37' }, { id: 'tag33', nombre: 'TAG 33' },
+        { id: 'tag53', nombre: 'TAG 53' }, { id: 'tag54', nombre: 'TAG 54' },
+        { id: 'tag47', nombre: 'TAG 47' }, { id: 'tag51', nombre: 'TAG 51' },
+        { id: 'tag71_dial', nombre: 'TAG 71 (Dial)' }, { id: 'tag71_nivel', nombre: 'TAG 71 (Nivel)' },
+        { id: 'tag70', nombre: 'TAG 70' }, { id: 'tag42', nombre: 'TAG 42' },
+        { id: 'tag73', nombre: 'TAG 73' }, { id: 'tag110', nombre: 'TAG 110' },
+        { id: 'tag74', nombre: 'TAG 74' }, { id: 'tag75', nombre: 'TAG 75' },
+        { id: 'tag52', nombre: 'TAG 52' }, { id: 'tag80', nombre: 'TAG 80' },
+        { id: 'tag81', nombre: 'TAG 81' }, { id: 'tag82', nombre: 'TAG 82' },
+        { id: 'tag83', nombre: 'TAG 83' }
+      ];
 
       for (var i = 0; i < listaIds.length; i++) {
         var el = document.getElementById(listaIds[i].id);
@@ -1101,13 +994,13 @@
       return true;
     }
 
+    // EL NOMBRE Y TIMESTAMP DEL PDF CONSTRUÍDO RIGUROSAMENTE CON LA FECHA Y HORA INICIAL CONGELADA DEL REPORTE
     function obtenerNombrePDF() {
       var fVal = document.getElementById('fecha-auto').value || '';
       var hVal = document.getElementById('hora-auto').value || '';
       var numFecha = fVal.replace(/[^0-9]/g, '');
       var numHora = hVal.replace(/[^0-9]/g, '');
-      var cod = (formatoActual === 'MEZCLAS') ? "CVSAG005-F002" : "CVSAG005-F001";
-      return (numFecha + numHora) + "_" + cod + ".pdf";
+      return (numFecha + numHora) + "_CVSAG005-F001.pdf";
     }
 
     async function procesarLogin() {
@@ -1144,7 +1037,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v6 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v5 | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | email: " + (window.emailjs ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
@@ -1173,6 +1066,7 @@
       var infoAprobacion = null;
       var cargaFallida = false;
 
+      // FECHA Y HORA INICIALES CONGELADAS AL ABRIR EL FORMULARIO (CON SEGUNDOS)
       var tInicio = ahora();
       document.getElementById('fecha-auto').value = tInicio.fecha;
       document.getElementById('hora-auto').value = tInicio.hora;
@@ -1192,52 +1086,38 @@
         document.getElementById('fecha-auto').value = d.fechaInicio || d.fecha;
         document.getElementById('hora-auto').value = d.horaInicio || d.hora;
 
-        if (d.formato === 'MEZCLAS' || d.m_caudal) {
-          cambiarFormato('MEZCLAS');
-          document.getElementById('select-formato').value = 'MEZCLAS';
-          document.getElementById('m_caudal').value = d.m_caudal || '';
-          document.getElementById('m_agitador').value = d.m_agitador || '';
-          document.getElementById('m_ducto').value = d.m_ducto || 'Conforme';
-          document.getElementById('m_ohaus').value = d.m_ohaus || '';
-          document.getElementById('m_presion_aire').value = d.m_presion_aire || '';
-        } else {
-          cambiarFormato('PAP');
-          document.getElementById('select-formato').value = 'PAP';
-          document.getElementById('tag34').value = d.tag34 || '';
-          document.getElementById('tag35').value = d.tag35 || '';
-          document.getElementById('tag39a').value = d.tag39a || '';
-          document.getElementById('tag39b').value = d.tag39b || '';
-          document.getElementById('tag27').value = d.tag27 || '';
-          document.getElementById('tag30').value = d.tag30 || '';
-          document.getElementById('tag28').value = d.tag28 || '';
-          document.getElementById('tag29').value = d.tag29 || '';
-          document.getElementById('tag43').value = d.tag43 || '';
-          document.getElementById('tag38').value = d.tag38 || '';
-          document.getElementById('tag37').value = d.tag37 || '';
-          document.getElementById('tag33').value = d.tag33 || '';
-          document.getElementById('tag53').value = d.tag53 || '';
-          document.getElementById('tag54').value = d.tag54 || '';
-          document.getElementById('tag47').value = d.tag47 || '';
-          document.getElementById('tag50').value = d.tag50 || 'Verde';
-          document.getElementById('tag51').value = d.tag51 || '';
-          document.getElementById('tag71_dial').value = d.tag71_dial || '';
-          document.getElementById('tag71_nivel').value = d.tag71_nivel || '';
-          document.getElementById('tag70').value = d.tag70 || '';
-          document.getElementById('tag42').value = d.tag42 || '';
-          document.getElementById('tag73').value = d.tag73 || '';
-          document.getElementById('tag110').value = d.tag110 || '';
-          document.getElementById('tag74').value = d.tag74 || '';
-          document.getElementById('tag75').value = d.tag75 || '';
-          document.getElementById('tag52').value = d.tag52 || '';
-          document.getElementById('tag80').value = d.tag80 || '';
-          document.getElementById('tag81').value = d.tag81 || '';
-          document.getElementById('tag82').value = d.tag82 || '';
-          document.getElementById('tag83').value = d.tag83 || '';
-          document.getElementById('fugas').value = d.fugas || 'NO';
-        }
-
+        document.getElementById('tag34').value = d.tag34 || '';
+        document.getElementById('tag35').value = d.tag35 || '';
+        document.getElementById('tag39a').value = d.tag39a || '';
+        document.getElementById('tag39b').value = d.tag39b || '';
+        document.getElementById('tag27').value = d.tag27 || '';
+        document.getElementById('tag30').value = d.tag30 || '';
+        document.getElementById('tag28').value = d.tag28 || '';
+        document.getElementById('tag29').value = d.tag29 || '';
+        document.getElementById('tag43').value = d.tag43 || '';
+        document.getElementById('tag38').value = d.tag38 || '';
+        document.getElementById('tag37').value = d.tag37 || '';
+        document.getElementById('tag33').value = d.tag33 || '';
+        document.getElementById('tag53').value = d.tag53 || '';
+        document.getElementById('tag54').value = d.tag54 || '';
+        document.getElementById('tag47').value = d.tag47 || '';
+        document.getElementById('tag50').value = d.tag50 || 'Verde';
+        document.getElementById('tag51').value = d.tag51 || '';
+        document.getElementById('tag71_dial').value = d.tag71_dial || '';
+        document.getElementById('tag71_nivel').value = d.tag71_nivel || '';
+        document.getElementById('tag70').value = d.tag70 || '';
+        document.getElementById('tag42').value = d.tag42 || '';
+        document.getElementById('tag73').value = d.tag73 || '';
+        document.getElementById('tag110').value = d.tag110 || '';
+        document.getElementById('tag74').value = d.tag74 || '';
+        document.getElementById('tag75').value = d.tag75 || '';
+        document.getElementById('tag52').value = d.tag52 || '';
+        document.getElementById('tag80').value = d.tag80 || '';
+        document.getElementById('tag81').value = d.tag81 || '';
+        document.getElementById('tag82').value = d.tag82 || '';
+        document.getElementById('tag83').value = d.tag83 || '';
+        document.getElementById('fugas').value = d.fugas || 'NO';
         document.getElementById('observaciones').value = d.observaciones || '';
-        document.getElementById('selector-form-box').classList.add('hidden');
         
         evaluarRangos();
 
@@ -1255,7 +1135,7 @@
         vistaFinal = true;
         ponerDatosTecnico(d);
         badge.innerText = "Reporte Aprobado";
-        titulo.innerText = (formatoActual === 'MEZCLAS') ? "Chequeo Mezclas y Aditivos" : "Lista de Chequeo Planta Agua Purificada";
+        titulo.innerText = "Lista de Chequeo Planta de Agua Purificada";
         
         blockTech.classList.remove('hidden');
         blockAdmin.classList.remove('hidden');
@@ -1329,7 +1209,6 @@
         userDisplay.innerText = sesion ? sesion.email : '';
         document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
         
-        document.getElementById('selector-form-box').classList.remove('hidden');
         blockTech.classList.remove('hidden');
         blockAdmin.classList.add('hidden');
         
@@ -1388,6 +1267,7 @@
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
+      // GENERACIÓN DE PDF ROBUSTA CON NOMBRE BASADO EN EL INICIO DEL REPORTE Y PIE DE PÁGINA NATIVO
       async function descargarPDF() {
         btnSubmit.disabled = true;
         var textoOriginal = btnSubmit.innerText;
@@ -1402,11 +1282,11 @@
 
           var nombrePdf = obtenerNombrePDF();
 
+          // Reemplazar inputs por texto plano para visualización limpia en el PDF
           var inputs = pdfArea.querySelectorAll('input, select, textarea');
           var reponer = [];
 
           inputs.forEach(function(inp) {
-            if (inp.offsetParent === null) return;
             var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
             var span = document.createElement('span');
             span.style.fontWeight = 'bold';
@@ -1488,7 +1368,6 @@
           try {
             var tFin = ahora();
             var payload = {
-              formato: formatoActual,
               fechaInicio: document.getElementById('fecha-auto').value,
               horaInicio: document.getElementById('hora-auto').value,
               fecha: tFin.fecha,
@@ -1496,54 +1375,43 @@
               firmaTec: firmaImagen(canvasTech, 400, 0.7),
               estado: 'pendiente',
               tecnico: sesion ? sesion.email : '',
+              tag34: document.getElementById('tag34').value,
+              tag35: document.getElementById('tag35').value,
+              tag39a: document.getElementById('tag39a').value,
+              tag39b: document.getElementById('tag39b').value,
+              tag27: document.getElementById('tag27').value,
+              tag30: document.getElementById('tag30').value,
+              tag28: document.getElementById('tag28').value,
+              tag29: document.getElementById('tag29').value,
+              tag43: document.getElementById('tag43').value,
+              tag38: document.getElementById('tag38').value,
+              tag37: document.getElementById('tag37').value,
+              tag33: document.getElementById('tag33').value,
+              tag53: document.getElementById('tag53').value,
+              tag54: document.getElementById('tag54').value,
+              tag47: document.getElementById('tag47').value,
+              tag50: document.getElementById('tag50').value,
+              tag51: document.getElementById('tag51').value,
+              tag71_dial: document.getElementById('tag71_dial').value,
+              tag71_nivel: document.getElementById('tag71_nivel').value,
+              tag70: document.getElementById('tag70').value,
+              tag42: document.getElementById('tag42').value,
+              tag73: document.getElementById('tag73').value,
+              tag110: document.getElementById('tag110').value,
+              tag74: document.getElementById('tag74').value,
+              tag75: document.getElementById('tag75').value,
+              tag52: document.getElementById('tag52').value,
+              tag80: document.getElementById('tag80').value,
+              tag81: document.getElementById('tag81').value,
+              tag82: document.getElementById('tag82').value,
+              tag83: document.getElementById('tag83').value,
+              fugas: document.getElementById('fugas').value,
               observaciones: document.getElementById('observaciones').value
             };
 
-            if (formatoActual === 'PAP') {
-              payload.tag34 = document.getElementById('tag34').value;
-              payload.tag35 = document.getElementById('tag35').value;
-              payload.tag39a = document.getElementById('tag39a').value;
-              payload.tag39b = document.getElementById('tag39b').value;
-              payload.tag27 = document.getElementById('tag27').value;
-              payload.tag30 = document.getElementById('tag30').value;
-              payload.tag28 = document.getElementById('tag28').value;
-              payload.tag29 = document.getElementById('tag29').value;
-              payload.tag43 = document.getElementById('tag43').value;
-              payload.tag38 = document.getElementById('tag38').value;
-              payload.tag37 = document.getElementById('tag37').value;
-              payload.tag33 = document.getElementById('tag33').value;
-              payload.tag53 = document.getElementById('tag53').value;
-              payload.tag54 = document.getElementById('tag54').value;
-              payload.tag47 = document.getElementById('tag47').value;
-              payload.tag50 = document.getElementById('tag50').value;
-              payload.tag51 = document.getElementById('tag51').value;
-              payload.tag71_dial = document.getElementById('tag71_dial').value;
-              payload.tag71_nivel = document.getElementById('tag71_nivel').value;
-              payload.tag70 = document.getElementById('tag70').value;
-              payload.tag42 = document.getElementById('tag42').value;
-              payload.tag73 = document.getElementById('tag73').value;
-              payload.tag110 = document.getElementById('tag110').value;
-              payload.tag74 = document.getElementById('tag74').value;
-              payload.tag75 = document.getElementById('tag75').value;
-              payload.tag52 = document.getElementById('tag52').value;
-              payload.tag80 = document.getElementById('tag80').value;
-              payload.tag81 = document.getElementById('tag81').value;
-              payload.tag82 = document.getElementById('tag82').value;
-              payload.tag83 = document.getElementById('tag83').value;
-              payload.fugas = document.getElementById('fugas').value;
-            } else {
-              payload.m_caudal = document.getElementById('m_caudal').value;
-              payload.m_agitador = document.getElementById('m_agitador').value;
-              payload.m_ducto = document.getElementById('m_ducto').value;
-              payload.m_ohaus = document.getElementById('m_ohaus').value;
-              payload.m_presion_aire = document.getElementById('m_presion_aire').value;
-            }
-
             var id = await crearReporte(payload);
-            var link = baseUrl + "?mode=aprobar&form=" + formatoActual + "&id=" + id;
-            
-            var titWA = (formatoActual === 'MEZCLAS') ? "*SOLICITUD DE APROBACIÓN - MEZCLAS Y ADITIVOS*\nCódigo: CVSAG005-F002" : "*SOLICITUD DE APROBACIÓN - PLANTA AGUA PURIFICADA*\nCódigo: CVSAG005-F001";
-            var texto = titWA + "\nCoordinador Jorge Mendoza\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
+            var link = baseUrl + "?mode=aprobar&id=" + id;
+            var texto = "*LISTA DE CHEQUEO PLANTA AGUA PURIFICADA*\nCódigo: CVSAG005-F001\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
                         "\nEnlace de aprobación: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
 
@@ -1584,12 +1452,10 @@
             }
 
             if (!window.emailjs) throw new Error("EmailJS no cargó");
-            var linkReporte = baseUrl + "?mode=ver&form=" + formatoActual + "&id=" + reporteId;
-            var clienteNombre = (formatoActual === 'MEZCLAS') ? "MEZCLAS Y ADITIVOS (CVSAG005-F002)" : "PLANTA AGUA PURIFICADA (CVSAG005-F001)";
-            
+            var linkReporte = baseUrl + "?mode=ver&id=" + reporteId;
             await enviarCorreo({
               to_email: CORREOS_DESTINO,
-              cliente: clienteNombre,
+              cliente: "PLANTA AGUA PURIFICADA (CVSAG005-F001)",
               detalle: document.getElementById('observaciones').value || "Lista de Chequeo Diligenciada",
               fecha_reporte: datosReporte.fecha || '',
               hora_reporte: datosReporte.hora || '',
