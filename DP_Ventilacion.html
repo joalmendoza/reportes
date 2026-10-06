@@ -105,31 +105,37 @@
       margin-bottom: 10px;
       font-size: 11px;
     }
-    .header-table td, .param-table th, .param-table td {
+    .header-table td, .param-table td {
       border: 1px solid #cbd5e1;
       padding: 5px 6px;
       text-align: left;
     }
+
+    /* ENCABEZADO DE TABLA MÁS GRANDE Y DESTACADO */
     .param-table th {
-      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      background-color: #e2e8f0;
+      color: #0f172a;
       font-weight: bold;
+      font-size: 13px; /* Aumentado de tamaño */
+      padding: 8px 6px;
       text-align: center;
     }
 
-    /* CASILLA DE INDICACIÓN OPTIMIZADA (MÁS ANCHA Y CÓMODA) */
+    /* CASILLA DE INDICACIÓN EQUILIBRADA */
     .input-unit-cell {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       width: 100%;
     }
     .input-unit-cell input {
       flex: 1;
       width: 100%;
-      min-width: 90px; /* Ancho mínimo garantizado */
+      min-width: 0;
       margin: 0;
-      padding: 8px 10px;
-      font-size: 16px; /* Tipografía más clara y visible */
+      padding: 6px 6px;
+      font-size: 15px; /* Negrita cómoda para 3 dígitos */
       font-weight: bold;
       color: #0f172a;
       box-sizing: border-box;
@@ -149,10 +155,10 @@
       white-space: nowrap;
     }
 
-    /* DISTRIBUCIÓN DE ANCHOS DE COLUMNAS */
-    .col-desc { width: 48%; }
-    .col-rango { width: 22%; }
-    .col-ind { width: 30%; } /* Ampliada al 30% para máxima comodidad */
+    /* PROPORCIÓN ARMONIOSA DE COLUMNAS */
+    .col-desc { width: 52%; }
+    .col-rango { width: 26%; }
+    .col-ind { width: 22%; }
 
     .out-of-range {
       background-color: #fecdd3 !important;
@@ -355,7 +361,6 @@
     var COLECCION = "chequeosDPVentilacion";
     var sesion = null;
 
-    // LISTADO ACTUALIZADO CON DESGLOSE SOLICITADO
     var listaEquipos = [
       { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
@@ -636,10 +641,10 @@
         if (!isNaN(v)) {
           if (v < eq.min) {
             fuera = true;
-            msgDesc = eq.nombre + " bajo especificación (Valor: " + v + " " + eq.unit + " | Mín: " + eq.min + ")";
+            msgDesc = eq.nombre + " bajo especificación (Valor: " + v + " " + eq.unit + " | Mín: " + eq.min.toFixed(2) + ")";
           } else if (v > eq.max) {
             fuera = true;
-            msgDesc = eq.nombre + " sobre especificación (Valor: " + v + " " + eq.unit + " | Máx: " + eq.max + ")";
+            msgDesc = eq.nombre + " sobre especificación (Valor: " + v + " " + eq.unit + " | Máx: " + eq.max.toFixed(2) + ")";
           }
         }
 
@@ -716,14 +721,19 @@
       listaEquipos.forEach(function(eq, index) {
         var tr = document.createElement('tr');
         tr.id = "row_" + eq.id;
+        
+        // FORMATO DE 2 DECIMALES PARA EL RANGO DE OPERACIÓN
+        var minFormat = eq.min.toFixed(2);
+        var maxFormat = eq.max.toFixed(2);
+
         tr.innerHTML = `
           <td class="col-desc">${eq.nombre}</td>
-          <td class="col-rango text-center" style="text-align:center;">${eq.min} ${eq.unit} a ${eq.max} ${eq.unit}</td>
+          <td class="col-rango text-center" style="text-align:center;">${minFormat} ${eq.unit} a ${maxFormat} ${eq.unit}</td>
           <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.01" id="${eq.id}" class="input-field" oninput="evaluarRangos()"><span class="unit-label">${eq.unit}</span></div></td>
         `;
         tbody.appendChild(tr);
 
-        // SALTO DE PÁGINA REPROGRAMADO AL ÍTEM 30 PARA CONSERVAR EXACTAMENTE 2 PÁGINAS UNIFORMES
+        // SALTO DE PÁGINA REPROGRAMADO AL ÍTEM 30 PARA EXACTAMENTE 2 PÁGINAS UNIFORMES
         if (index === 29) {
           var trPageBreak = document.createElement('tr');
           trPageBreak.className = 'page-break';
