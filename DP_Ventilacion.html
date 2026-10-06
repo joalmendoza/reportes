@@ -5,22 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lista de Chequeo DP Ventilación - Carval</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Signature Pad -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-  <!-- html2pdf.js para exportar PDF con alta fidelidad -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-2 sm:p-6">
 
-  <!-- Navegación entre formularios -->
-  <div class="max-w-4xl mx-auto mb-4 flex justify-between items-center bg-white p-3 rounded-lg shadow text-sm font-bold text-gray-700">
+  <!-- Navegación Superior -->
+  <div id="noPrintHeader" class="max-w-4xl mx-auto mb-4 flex justify-between items-center bg-white p-3 rounded-lg shadow text-sm font-bold text-gray-700">
     <a href="index.html" class="text-blue-600 hover:underline">← Volver al Formulario Principal</a>
-    <span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded">Código: CVSAI018-F001 | Ver. 18</span>
+    <span id="badgeModo" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Modo Técnico</span>
   </div>
 
-  <!-- Contenedor Imprimible/Exportable -->
+  <!-- Contenedor del Reporte Imprimible -->
   <div id="pdfContainer" class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
     
     <!-- Encabezado Oficial Carval -->
@@ -48,7 +46,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-700">Hora:</label>
-          <input type="time" id="horaReporte" required class="w-full p-1 border rounded text-sm bg-white" />
+          <input type="text" id="horaReporte" required class="w-full p-1 border rounded text-sm bg-white" placeholder="ej. 09:30 p. m." />
         </div>
       </div>
 
@@ -71,37 +69,70 @@
       <!-- Sección de Observaciones Automáticas -->
       <div class="mt-4">
         <label class="block text-xs font-bold text-gray-700 mb-1">OBSERVACIONES (Equipos fuera de rango de operación):</label>
-        <textarea id="observacionesAuto" readonly rows="3" class="w-full p-2 border rounded text-xs bg-yellow-50 text-red-700 font-medium" placeholder="Los equipos que registren valores fuera de rango aparecerán aquí automáticamente..."></textarea>
+        <textarea id="observacionesAuto" readonly rows="3" class="w-full p-2 border rounded text-xs bg-yellow-50 text-red-700 font-medium"></textarea>
       </div>
 
-      <!-- Sección de Firmas y Responsables -->
+      <!-- Sección de Firmas y Aprobaciones -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-6">
         <!-- Técnico / Responsable -->
         <div class="space-y-2">
-          <p class="text-xs font-bold text-gray-700">Responsable: <span class="font-normal" id="labelTecnico">Técnico de Mantenimiento</span></p>
+          <p class="text-xs font-bold text-gray-700">Responsable: <span class="font-normal">Técnico de Mantenimiento</span></p>
           <p class="text-xs font-bold text-gray-700">Cargo: <span class="font-normal">Técnico de Mantenimiento</span></p>
           
           <label class="block text-xs font-bold text-gray-700 mt-2">Firma del Responsable:</label>
-          <div class="border rounded bg-gray-50">
+          <div id="containerFirmaTec" class="border rounded bg-gray-50 min-h-[112px] flex items-center justify-center">
             <canvas id="canvasFirmaTec" class="w-full h-28"></canvas>
+            <img id="imgFirmaTec" class="hidden max-h-28 object-contain" alt="Firma Técnico" />
           </div>
-          <button type="button" id="btnClearFirma" class="text-xs text-red-600 underline">Limpiar firma</button>
+          <button type="button" id="btnClearFirmaTec" class="text-xs text-red-600 underline">Limpiar firma</button>
         </div>
 
         <!-- Aprobación Coordinador -->
         <div class="space-y-2 bg-gray-50 p-3 rounded border">
           <p class="text-xs font-bold text-gray-700">Aprobado por: <span class="font-normal">Jorge Alberto Mendoza Ospina</span></p>
           <p class="text-xs font-bold text-gray-700">Cargo: <span class="font-normal">Coordinador de Mantenimiento</span></p>
-          <p class="text-xs text-yellow-700 font-semibold mt-4">Estado de Firma: <span class="bg-yellow-200 px-1 py-0.5 rounded">Pendiente Firma Coordinador</span></p>
+          
+          <div id="secFirmaCoord" class="hidden">
+            <label class="block text-xs font-bold text-gray-700 mt-2">Firma de Aprobación Coordinador:</label>
+            <div id="containerFirmaCoord" class="border rounded bg-white min-h-[112px] flex items-center justify-center">
+              <canvas id="canvasFirmaCoord" class="w-full h-28"></canvas>
+              <img id="imgFirmaCoord" class="hidden max-h-28 object-contain" alt="Firma Coordinador" />
+            </div>
+            <button type="button" id="btnClearFirmaCoord" class="text-xs text-red-600 underline mt-1">Limpiar firma</button>
+          </div>
+          <p id="statusFirmaCoord" class="text-xs text-yellow-700 font-semibold mt-4">Estado: <span class="bg-yellow-200 px-1 py-0.5 rounded">Pendiente Firma Coordinador</span></p>
         </div>
       </div>
 
-      <!-- Botones de Acción (Se ocultan al exportar a PDF) -->
-      <div id="actionButtons" class="flex flex-col sm:flex-row gap-2 pt-4">
-        <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 text-sm">
-          Guardar en Firebase
+      <!-- Botones de Acción según el Estado -->
+      <div id="actionButtons" class="mt-6">
+        <!-- 1. Botón Técnico -->
+        <button 
+          type="button" 
+          id="btnEnviarWhatsApp" 
+          onclick="enviarAWhatsAppYGuardar()" 
+          class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow flex items-center justify-center gap-2 text-base transition-colors">
+          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.842-1.001z"/>
+          </svg>
+          Enviar a WhatsApp al Coordinador
         </button>
-        <button type="button" id="btnExportPDF" class="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700 text-sm">
+
+        <!-- 2. Botón Coordinador -->
+        <button 
+          type="button" 
+          id="btnAprobarYNotificar" 
+          onclick="aprobarYNotificarCoordinador()" 
+          class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow text-base transition-colors">
+          Firmar, Aprobar y Enviar Correo con Enlace
+        </button>
+
+        <!-- 3. Botón Descargar PDF -->
+        <button 
+          type="button" 
+          id="btnDescargarPDF" 
+          onclick="descargarPDFDirecto()" 
+          class="hidden w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-4 rounded-lg shadow text-base transition-colors">
           Descargar Reporte PDF
         </button>
       </div>
@@ -109,13 +140,13 @@
     </form>
   </div>
 
-  <!-- Scripts Firebase & Lógica de Negocio -->
+  <!-- Firebase SDK & Lógica de Negocio -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, addDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuración Firebase (Reemplazar datos por tus credenciales)
+    // Configuración Firebase
     const firebaseConfig = {
       apiKey: "TU_API_KEY",
       authDomain: "TU_PROJECT_ID.firebaseapp.com",
@@ -131,7 +162,10 @@
 
     signInAnonymously(auth).catch(console.error);
 
-    // Listado Oficial de Equipos y Rangos (CVSAI018-F001)
+    // Inicializar EmailJS con tu clave pública habitual
+    emailjs.init("TU_EMAILJS_PUBLIC_KEY");
+
+    // Listado Oficial CVSAI018-F001 v18
     const listaEquipos = [
       { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5 },
       { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5 },
@@ -174,7 +208,10 @@
       { id: "e39", nombre: "UMA Granulación 2", min: 0.1, max: 2.5 }
     ];
 
-    // Renderizar Filas de Equipos
+    const urlParams = new URLSearchParams(window.location.search);
+    const docIdParam = urlParams.get('id');
+
+    // Cargar tabla
     const tbody = document.getElementById('tablaEquipos');
     listaEquipos.forEach(eq => {
       const tr = document.createElement('tr');
@@ -183,64 +220,117 @@
         <td class="border border-gray-300 p-1.5 text-center text-gray-600 font-mono">${eq.min} inH2O a ${eq.max} inH2O</td>
         <td class="border border-gray-300 p-1">
           <input type="number" step="0.01" id="input_${eq.id}" data-min="${eq.min}" data-max="${eq.max}" data-nombre="${eq.nombre}"
-            class="input-val w-full p-1 text-center border rounded focus:ring-1 focus:ring-blue-500 font-bold" placeholder="0.00" />
+            class="input-val w-full p-1 text-center border rounded font-bold" placeholder="0.00" />
         </td>
       `;
       tbody.appendChild(tr);
     });
 
-    // Validación Dinámica de Valores Fuera de Rango
-    document.querySelectorAll('.input-val').forEach(input => {
-      input.addEventListener('input', evaluarRangos);
-    });
+    const padTec = new SignaturePad(document.getElementById('canvasFirmaTec'));
+    const padCoord = new SignaturePad(document.getElementById('canvasFirmaCoord'));
+    document.getElementById('btnClearFirmaTec').addEventListener('click', () => padTec.clear());
+    document.getElementById('btnClearFirmaCoord').addEventListener('click', () => padCoord.clear());
+
+    if (!docIdParam) {
+      document.getElementById('fechaReporte').value = new Date().toISOString().split('T')[0];
+      document.getElementById('horaReporte').value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+      document.querySelectorAll('.input-val').forEach(input => {
+        input.addEventListener('input', evaluarRangos);
+      });
+    } else {
+      cargarDatosFirebase(docIdParam);
+    }
 
     function evaluarRangos() {
-      let fueraDeRango = [];
+      let fuera = [];
       document.querySelectorAll('.input-val').forEach(inp => {
         const val = parseFloat(inp.value);
-        const min = parseFloat(inp.dataset.min);
-        const max = parseFloat(inp.dataset.max);
-        const nombre = inp.dataset.nombre;
-
         if (!isNaN(val)) {
-          if (val < min || val > max) {
-            inp.classList.add('bg-red-100', 'text-red-700', 'border-red-500');
-            fueraDeRango.push(`• ${nombre}: Valor ingresado (${val} inH2O) fuera de rango [${min} - ${max}]`);
+          if (val < parseFloat(inp.dataset.min) || val > parseFloat(inp.dataset.max)) {
+            inp.classList.add('bg-red-100', 'text-red-700');
+            fuera.push(`• ${inp.dataset.nombre}: ${val} inH2O`);
           } else {
-            inp.classList.remove('bg-red-100', 'text-red-700', 'border-red-500');
+            inp.classList.remove('bg-red-100', 'text-red-700');
           }
         }
       });
-
-      const txtObs = document.getElementById('observacionesAuto');
-      txtObs.value = fueraDeRango.length > 0 
-        ? fueraDeRango.join('\n') 
-        : "Todos los equipos se encuentran dentro del rango de operación normal.";
+      document.getElementById('observacionesAuto').value = fuera.length > 0 ? fuera.join('\n') : "Todos los equipos dentro del rango normal.";
     }
 
-    // Firma Digital
-    const canvas = document.getElementById('canvasFirmaTec');
-    const signaturePad = new SignaturePad(canvas);
-    document.getElementById('btnClearFirma').addEventListener('click', () => signaturePad.clear());
+    async function cargarDatosFirebase(id) {
+      try {
+        const docSnap = await getDoc(doc(db, "chequeosDPVentilacion", id));
+        if (!docSnap.exists()) return alert("El registro solicitado no existe.");
 
-    // Guardar en Firestore (Cumpliendo las Reglas de Seguridad)
-    document.getElementById('formDPVentilacion').addEventListener('submit', async (e) => {
-      e.preventDefault();
+        const data = docSnap.data();
+        document.getElementById('fechaReporte').value = data.fecha;
+        document.getElementById('horaReporte').value = data.hora;
+        document.getElementById('observacionesAuto').value = data.observaciones;
 
-      if (signaturePad.isEmpty()) {
-        alert("Por favor firme el reporte antes de guardar.");
-        return;
+        document.getElementById('fechaReporte').disabled = true;
+        document.getElementById('horaReporte').disabled = true;
+
+        if (data.lecturas) {
+          listaEquipos.forEach(eq => {
+            const el = document.getElementById(`input_${eq.id}`);
+            if (data.lecturas[eq.id] !== undefined) el.value = data.lecturas[eq.id];
+            el.disabled = true;
+          });
+        }
+        evaluarRangos();
+
+        if (data.firmaTec) {
+          document.getElementById('canvasFirmaTec').classList.add('hidden');
+          document.getElementById('btnClearFirmaTec').classList.add('hidden');
+          const img = document.getElementById('imgFirmaTec');
+          img.src = data.firmaTec;
+          img.classList.remove('hidden');
+        }
+
+        if (data.estado === 'pendiente') {
+          document.getElementById('badgeModo').innerText = "Modo Coordinador (Aprobación)";
+          document.getElementById('btnEnviarWhatsApp').classList.add('hidden');
+          document.getElementById('btnAprobarYNotificar').classList.remove('hidden');
+          document.getElementById('secFirmaCoord').classList.remove('hidden');
+        } else if (data.estado === 'aprobado') {
+          document.getElementById('badgeModo').innerText = "Reporte Aprobado (Vista Final)";
+          document.getElementById('badgeModo').className = "text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-bold";
+
+          document.getElementById('btnEnviarWhatsApp').classList.add('hidden');
+          document.getElementById('btnAprobarYNotificar').classList.add('hidden');
+          document.getElementById('btnDescargarPDF').classList.remove('hidden');
+
+          document.getElementById('secFirmaCoord').classList.remove('hidden');
+          document.getElementById('canvasFirmaCoord').classList.add('hidden');
+          document.getElementById('btnClearFirmaCoord').classList.add('hidden');
+          
+          if (data.firmaCoord) {
+            const imgC = document.getElementById('imgFirmaCoord');
+            imgC.src = data.firmaCoord;
+            imgC.classList.remove('hidden');
+          }
+
+          document.getElementById('statusFirmaCoord').innerHTML = `Estado: <span class="bg-green-200 text-green-800 px-2 py-0.5 rounded font-bold">Aprobado</span>`;
+        }
+      } catch (err) {
+        alert("Error cargando reporte: " + err.message);
       }
+    }
 
-      // Estructurar Mediciones
-      const lecturas = {};
-      listaEquipos.forEach(eq => {
-        const val = document.getElementById(`input_${eq.id}`).value;
-        lecturas[eq.id] = val !== "" ? parseFloat(val) : null;
-      });
+    // ACCIÓN TÉCNICO: GUARDAR Y ENVIAR A WHATSAPP
+    window.enviarAWhatsAppYGuardar = async function() {
+      if (padTec.isEmpty()) return alert("Por favor ingresa la firma del responsable.");
+
+      const btn = document.getElementById('btnEnviarWhatsApp');
+      btn.disabled = true;
+      btn.innerText = "Guardando en Firebase...";
 
       try {
-        await addDoc(collection(db, "chequeosPAP"), {
+        const lecturas = {};
+        listaEquipos.forEach(eq => lecturas[eq.id] = document.getElementById(`input_${eq.id}`).value);
+
+        const docRef = await addDoc(collection(db, "chequeosDPVentilacion"), {
           estado: "pendiente",
           tipoFormulario: "DP_Ventilacion",
           codigoDocumento: "CVSAI018-F001",
@@ -248,36 +338,107 @@
           hora: document.getElementById('horaReporte').value,
           observaciones: document.getElementById('observacionesAuto').value,
           lecturas: lecturas,
-          firmaTec: signaturePad.toDataURL(),
+          firmaTec: padTec.toDataURL(),
           creadoEn: new Date().toISOString()
         });
 
-        alert("Reporte guardado exitosamente en Firebase.");
-      } catch (err) {
-        alert("Error al guardar: " + err.message);
-      }
-    });
+        const linkAprobacion = `${window.location.origin}${window.location.pathname}?id=${docRef.id}`;
+        const telCoord = "573105398897"; // Teléfono de Jorge Mendoza
+        const msg = encodeURIComponent(
+          `*REPORTE DE VENTILACIÓN (CVSAI018-F001)*\n` +
+          `📅 *Fecha:* ${document.getElementById('fechaReporte').value}\n` +
+          `📌 *Estado:* Pendiente Firma Coordinador\n\n` +
+          `*Enlace de Aprobación:*\n${linkAprobacion}`
+        );
 
-    // Descarga Directa a PDF
-    document.getElementById('btnExportPDF').addEventListener('click', () => {
+        window.open(`https://wa.me/${telCoord}?text=${msg}`, '_blank');
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="w-6 h-6 fill-current inline mr-2" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.842-1.001z"/>
+          </svg>
+          Enviar a WhatsApp al Coordinador`;
+      }
+    };
+
+    // ACCIÓN COORDINADOR: FIRMAR Y ENVIAR CORREO CON ENLACE WEB
+    window.aprobarYNotificarCoordinador = async function() {
+      if (padCoord.isEmpty()) return alert("Por favor ingresa tu firma de aprobación.");
+
+      const btn = document.getElementById('btnAprobarYNotificar');
+      btn.disabled = true;
+      btn.innerText = "Aprobando y enviando correo...";
+
+      try {
+        await updateDoc(doc(db, "chequeosDPVentilacion", docIdParam), {
+          estado: "aprobado",
+          firmaCoord: padCoord.toDataURL(),
+          fechaAprobacion: new Date().toISOString()
+        });
+
+        const linkReporteFinal = `${window.location.origin}${window.location.pathname}?id=${docIdParam}`;
+
+        await emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+          to_email: "jorge.mendoza@carval.com.co",
+          doc_id: docIdParam,
+          fecha: document.getElementById('fechaReporte').value,
+          link_reporte: linkReporteFinal
+        });
+
+        alert("¡Reporte aprobado y correo enviado exitosamente!");
+        window.location.reload();
+
+      } catch (err) {
+        alert("Error en aprobación: " + err.message);
+        btn.disabled = false;
+        btn.innerText = "Firmar, Aprobar y Enviar Correo con Enlace";
+      }
+    };
+
+    // GENERACIÓN Y DESCARGA DE PDF DE 2 PÁGINAS CON PIE OFICIAL
+    window.descargarPDFDirecto = function() {
       const element = document.getElementById('pdfContainer');
       const actionBtns = document.getElementById('actionButtons');
+      const noPrintHeader = document.getElementById('noPrintHeader');
 
-      // Ocultar botones temporalmente durante la impresión
-      actionBtns.style.display = 'none';
+      if (actionBtns) actionBtns.style.display = 'none';
+      if (noPrintHeader) noPrintHeader.style.display = 'none';
+
+      const fechaVal = document.getElementById('fechaReporte').value || new Date().toISOString().split('T')[0];
+      const nombreArchivo = `Reporte_CVSAI018-F001_DP_Ventilacion_${fechaVal}.pdf`;
 
       const opt = {
-        margin:       [0.3, 0.3, 0.3, 0.3],
-        filename:     `Chequeo_DP_Ventilacion_${document.getElementById('fechaReporte').value || 'reporte'}.pdf`,
+        margin:       [0.4, 0.4, 0.6, 0.4],
+        filename:     nombreArchivo,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
+        html2canvas:  { scale: 2, logging: false },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
 
-      html2pdf().set(opt).from(element).save().then(() => {
-        actionBtns.style.display = 'flex';
+      html2pdf().set(opt).from(element).toPdf().get('jspdf').then(function(pdf) {
+        const totalPages = pdf.internal.getNumberOfPages();
+
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(8);
+          pdf.setTextColor(100);
+
+          // Línea divisoria de pie de página
+          pdf.setDrawColor(200, 200, 200);
+          pdf.line(0.4, 10.3, 8.1, 10.3);
+
+          // Pie de página oficial Carval
+          pdf.text("Carval de Colombia S.A.S. | Código: CVSAI018-F001", 0.4, 10.5);
+          pdf.text(`Página ${i} de ${totalPages}`, 7.5, 10.5, { align: 'right' });
+        }
+      }).save().then(() => {
+        if (actionBtns) actionBtns.style.display = 'block';
+        if (noPrintHeader) noPrintHeader.style.display = 'flex';
       });
-    });
+    };
   </script>
 </body>
 </html>
