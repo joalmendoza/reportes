@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Chequeo DP Ventilación - Carval</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Signature Pad -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+  <!-- html2pdf.js para exportar PDF con alta fidelidad -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-2 sm:p-6">
+
+  <!-- Navegación entre formularios -->
+  <div class="max-w-4xl mx-auto mb-4 flex justify-between items-center bg-white p-3 rounded-lg shadow text-sm font-bold text-gray-700">
+    <a href="index.html" class="text-blue-600 hover:underline">← Volver al Formulario Principal</a>
+    <span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded">Código: CVSAI018-F001 | Ver. 18</span>
+  </div>
+
+  <!-- Contenedor Imprimible/Exportable -->
+  <div id="pdfContainer" class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+    
+    <!-- Encabezado Oficial Carval -->
+    <div class="border border-gray-400 p-4 mb-4 grid grid-cols-1 md:grid-cols-3 items-center gap-2 text-center md:text-left">
+      <div>
+        <h1 class="text-2xl font-extrabold text-blue-900">Carval</h1>
+      </div>
+      <div class="text-sm font-semibold text-gray-800 text-center">
+        Lista de Chequeo para Medición de Diferenciales de Presión en UMAS, Ventiladores de Inyección, Extracción y Colectores de Polvo
+      </div>
+      <div class="text-xs text-gray-600 border-t md:border-t-0 md:border-l border-gray-300 pt-2 md:pt-0 md:pl-2">
+        <p><strong>Código:</strong> CVSAI018-F001</p>
+        <p><strong>Versión:</strong> 18</p>
+        <p><strong>Estado:</strong> Vigente</p>
+      </div>
+    </div>
+
+    <form id="formDPVentilacion" class="space-y-4">
+      
+      <!-- Datos de Encabezado -->
+      <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded border">
+        <div>
+          <label class="block text-xs font-bold text-gray-700">Fecha:</label>
+          <input type="date" id="fechaReporte" required class="w-full p-1 border rounded text-sm bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700">Hora:</label>
+          <input type="time" id="horaReporte" required class="w-full p-1 border rounded text-sm bg-white" />
+        </div>
+      </div>
+
+      <!-- Tabla de Equipos e Indicaciones -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-gray-200 text-gray-800 font-bold">
+              <th class="border border-gray-300 p-2 text-left">Equipo</th>
+              <th class="border border-gray-300 p-2 text-center w-48">Rango de Operación</th>
+              <th class="border border-gray-300 p-2 text-center w-36">Indicación (inH2O)</th>
+            </tr>
+          </thead>
+          <tbody id="tablaEquipos">
+            <!-- Filas generadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Sección de Observaciones Automáticas -->
+      <div class="mt-4">
+        <label class="block text-xs font-bold text-gray-700 mb-1">OBSERVACIONES (Equipos fuera de rango de operación):</label>
+        <textarea id="observacionesAuto" readonly rows="3" class="w-full p-2 border rounded text-xs bg-yellow-50 text-red-700 font-medium" placeholder="Los equipos que registren valores fuera de rango aparecerán aquí automáticamente..."></textarea>
+      </div>
+
+      <!-- Sección de Firmas y Responsables -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-6">
+        <!-- Técnico / Responsable -->
+        <div class="space-y-2">
+          <p class="text-xs font-bold text-gray-700">Responsable: <span class="font-normal" id="labelTecnico">Técnico de Mantenimiento</span></p>
+          <p class="text-xs font-bold text-gray-700">Cargo: <span class="font-normal">Técnico de Mantenimiento</span></p>
+          
+          <label class="block text-xs font-bold text-gray-700 mt-2">Firma del Responsable:</label>
+          <div class="border rounded bg-gray-50">
+            <canvas id="canvasFirmaTec" class="w-full h-28"></canvas>
+          </div>
+          <button type="button" id="btnClearFirma" class="text-xs text-red-600 underline">Limpiar firma</button>
+        </div>
+
+        <!-- Aprobación Coordinador -->
+        <div class="space-y-2 bg-gray-50 p-3 rounded border">
+          <p class="text-xs font-bold text-gray-700">Aprobado por: <span class="font-normal">Jorge Alberto Mendoza Ospina</span></p>
+          <p class="text-xs font-bold text-gray-700">Cargo: <span class="font-normal">Coordinador de Mantenimiento</span></p>
+          <p class="text-xs text-yellow-700 font-semibold mt-4">Estado de Firma: <span class="bg-yellow-200 px-1 py-0.5 rounded">Pendiente Firma Coordinador</span></p>
+        </div>
+      </div>
+
+      <!-- Botones de Acción (Se ocultan al exportar a PDF) -->
+      <div id="actionButtons" class="flex flex-col sm:flex-row gap-2 pt-4">
+        <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 text-sm">
+          Guardar en Firebase
+        </button>
+        <button type="button" id="btnExportPDF" class="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700 text-sm">
+          Descargar Reporte PDF
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Scripts Firebase & Lógica de Negocio -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Configuración Firebase (Reemplazar datos por tus credenciales)
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_PROJECT_ID.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_PROJECT_ID.appspot.com",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    signInAnonymously(auth).catch(console.error);
+
+    // Listado Oficial de Equipos y Rangos (CVSAI018-F001)
+    const listaEquipos = [
+      { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5 },
+      { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5 },
+      { id: "e3", nombre: "UMA # 2 Granulación", min: 0.1, max: 2.5 },
+      { id: "e4", nombre: "UMA Proceso Granulación (60% al 95% / 99.99%)", min: 0.1, max: 2.5 },
+      { id: "e5", nombre: "Colector de Polvos Proceso Granulación", min: 0.2, max: 20.0 },
+      { id: "e6", nombre: "UMA Acondicionamiento de Solidos Solubles, Líquidos Orales, Etiquetado y Envase Granulación", min: 0.1, max: 2.5 },
+      { id: "e7", nombre: "UMA Envase de Sólidos Solubles", min: 0.1, max: 2.5 },
+      { id: "e8", nombre: "Ventilador de Inyección Esclusa Alistamiento", min: 0.1, max: 2.5 },
+      { id: "e9", nombre: "UMA Envase Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5 },
+      { id: "e10", nombre: "Colector de Polvos Fraccionamiento", min: 0.2, max: 6.0 },
+      { id: "e11", nombre: "Colector de Polvos Envase de Sólidos Solubles", min: 0.2, max: 6.0 },
+      { id: "e12", nombre: "Colector de Polvos Granulación", min: 0.2, max: 6.0 },
+      { id: "e13", nombre: "UMA Mezclas 2", min: 0.1, max: 2.5 },
+      { id: "e14", nombre: "Ventilador de Inyección Pasillo Fraccionamiento", min: 0.1, max: 2.5 },
+      { id: "e15", nombre: "UMA Fraccionamiento", min: 0.1, max: 2.5 },
+      { id: "e16", nombre: "UMA # 1 Control de Calidad", min: 1.0, max: 2.5 },
+      { id: "e17", nombre: "UMA # 2 Control de Calidad", min: 1.0, max: 2.5 },
+      { id: "e18", nombre: "UMA Fabricación Orales (30% al 95% / 99.99%)", min: 0.1, max: 2.5 },
+      { id: "e19", nombre: "Colector de Polvos Mezclas 2", min: 0.2, max: 6.0 },
+      { id: "e20", nombre: "Ventilador de Extracción Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5 },
+      { id: "e21", nombre: "Ventilador de Extracción Fabricación Envase Desinfectantes", min: 0.1, max: 2.5 },
+      { id: "e22", nombre: "UMA Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5 },
+      { id: "e23", nombre: "UMA Fabricación Envase Desinfectantes", min: 0.1, max: 2.5 },
+      { id: "e24", nombre: "Ventilador de Inyección Agua Purificada", min: 0.1, max: 2.5 },
+      { id: "e25", nombre: "Ventilador de Inyección Pasillo Volúmenes Bajos 2 y Mezclas 2", min: 0.1, max: 2.5 },
+      { id: "e26", nombre: "UMA Lavado de Equipos y Equipo Limpio", min: 0.1, max: 2.5 },
+      { id: "e27", nombre: "Ventilador de Inyección Vestieres", min: 0.1, max: 2.5 },
+      { id: "e28", nombre: "UMA Fabricación Envase Volúmenes Bajos 2 (30% al 95% / 99.99%)", min: 0.1, max: 2.5 },
+      { id: "e29", nombre: "Colector de Polvos Volúmenes Bajos 2", min: 0.2, max: 6.0 },
+      { id: "e30", nombre: "Ventilador de Inyección Bodega Materia Prima", min: 0.1, max: 2.5 },
+      { id: "e31", nombre: "Ventilador de Extracción Fraccionamiento", min: 0.01, max: 1.0 },
+      { id: "e32", nombre: "Ventilador de Extracción Alistamiento", min: 0.01, max: 1.0 },
+      { id: "e33", nombre: "Ventilador de Extracción Envase de Sólidos Solubles", min: 0.01, max: 1.0 },
+      { id: "e34", nombre: "Ventilador de Extracción Volúmenes Bajos 2", min: 0.01, max: 1.0 },
+      { id: "e35", nombre: "Ventilador de Extracción Mueble de Reactivos en Uso", min: 1.0, max: 2.5 },
+      { id: "e36", nombre: "Ventilador de Extracción Control de Calidad", min: 0.02, max: 0.15 },
+      { id: "e37", nombre: "Ventilador de Extracción Mueble Almacén de Reactivos", min: 1.0, max: 2.5 },
+      { id: "e38", nombre: "Ventilador de Extracción Mezclas 2", min: 0.01, max: 1.0 },
+      { id: "e39", nombre: "UMA Granulación 2", min: 0.1, max: 2.5 }
+    ];
+
+    // Renderizar Filas de Equipos
+    const tbody = document.getElementById('tablaEquipos');
+    listaEquipos.forEach(eq => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="border border-gray-300 p-1.5">${eq.nombre}</td>
+        <td class="border border-gray-300 p-1.5 text-center text-gray-600 font-mono">${eq.min} inH2O a ${eq.max} inH2O</td>
+        <td class="border border-gray-300 p-1">
+          <input type="number" step="0.01" id="input_${eq.id}" data-min="${eq.min}" data-max="${eq.max}" data-nombre="${eq.nombre}"
+            class="input-val w-full p-1 text-center border rounded focus:ring-1 focus:ring-blue-500 font-bold" placeholder="0.00" />
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Validación Dinámica de Valores Fuera de Rango
+    document.querySelectorAll('.input-val').forEach(input => {
+      input.addEventListener('input', evaluarRangos);
+    });
+
+    function evaluarRangos() {
+      let fueraDeRango = [];
+      document.querySelectorAll('.input-val').forEach(inp => {
+        const val = parseFloat(inp.value);
+        const min = parseFloat(inp.dataset.min);
+        const max = parseFloat(inp.dataset.max);
+        const nombre = inp.dataset.nombre;
+
+        if (!isNaN(val)) {
+          if (val < min || val > max) {
+            inp.classList.add('bg-red-100', 'text-red-700', 'border-red-500');
+            fueraDeRango.push(`• ${nombre}: Valor ingresado (${val} inH2O) fuera de rango [${min} - ${max}]`);
+          } else {
+            inp.classList.remove('bg-red-100', 'text-red-700', 'border-red-500');
+          }
+        }
+      });
+
+      const txtObs = document.getElementById('observacionesAuto');
+      txtObs.value = fueraDeRango.length > 0 
+        ? fueraDeRango.join('\n') 
+        : "Todos los equipos se encuentran dentro del rango de operación normal.";
+    }
+
+    // Firma Digital
+    const canvas = document.getElementById('canvasFirmaTec');
+    const signaturePad = new SignaturePad(canvas);
+    document.getElementById('btnClearFirma').addEventListener('click', () => signaturePad.clear());
+
+    // Guardar en Firestore (Cumpliendo las Reglas de Seguridad)
+    document.getElementById('formDPVentilacion').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (signaturePad.isEmpty()) {
+        alert("Por favor firme el reporte antes de guardar.");
+        return;
+      }
+
+      // Estructurar Mediciones
+      const lecturas = {};
+      listaEquipos.forEach(eq => {
+        const val = document.getElementById(`input_${eq.id}`).value;
+        lecturas[eq.id] = val !== "" ? parseFloat(val) : null;
+      });
+
+      try {
+        await addDoc(collection(db, "chequeosPAP"), {
+          estado: "pendiente",
+          tipoFormulario: "DP_Ventilacion",
+          codigoDocumento: "CVSAI018-F001",
+          fecha: document.getElementById('fechaReporte').value,
+          hora: document.getElementById('horaReporte').value,
+          observaciones: document.getElementById('observacionesAuto').value,
+          lecturas: lecturas,
+          firmaTec: signaturePad.toDataURL(),
+          creadoEn: new Date().toISOString()
+        });
+
+        alert("Reporte guardado exitosamente en Firebase.");
+      } catch (err) {
+        alert("Error al guardar: " + err.message);
+      }
+    });
+
+    // Descarga Directa a PDF
+    document.getElementById('btnExportPDF').addEventListener('click', () => {
+      const element = document.getElementById('pdfContainer');
+      const actionBtns = document.getElementById('actionButtons');
+
+      // Ocultar botones temporalmente durante la impresión
+      actionBtns.style.display = 'none';
+
+      const opt = {
+        margin:       [0.3, 0.3, 0.3, 0.3],
+        filename:     `Chequeo_DP_Ventilacion_${document.getElementById('fechaReporte').value || 'reporte'}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        actionBtns.style.display = 'flex';
+      });
+    });
+  </script>
+</body>
+</html>
