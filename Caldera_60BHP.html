@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="
   default-src 'self'; 
   script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; 
-  connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://script.google.com; 
+  connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://script.google.com https://script.googleusercontent.com; 
   style-src 'self' 'unsafe-inline'; 
   img-src 'self' data: blob:;
 ">
@@ -245,7 +245,7 @@
       <input type="password" id="password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v5 | CVSAG005-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v6 | CVSAG005-F001</p>
     </div>
   </div>
 
@@ -604,6 +604,7 @@
     </div>
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
+    <button type="button" id="btn-resend" class="btn hidden" style="background: #7c3aed;">Reenviar correo con PDF</button>
   </div>
 
   <script>
@@ -616,7 +617,6 @@
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
-    var CORREOS_DESTINO = "jorge.mendoza@carval.com.co, formatosmtto.carval@gmail.com";
     
     // URL DE GOOGLE APPS SCRIPT
     var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2Lmo-aM06kxykqeBcW2OeTUmbaFNmAZlb70lCrniDlSLiw3lSVR0WvbzX9Vurfjzv/exec";
@@ -774,26 +774,28 @@
     var padTech, padAdmin;
 
     function ahora() {
-      var d = new Date();
-      var year = d.getFullYear();
-      var month = String(d.getMonth() + 1).padStart(2, '0');
-      var day = String(d.getDate()).padStart(2, '0');
-      
+      var p = {};
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+      }).formatToParts(new Date()).forEach(function(x) { p[x.type] = x.value; });
       return {
-        fecha: year + "-" + month + "-" + day,
-        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
-        stamp: year.toString() + month + day +
-               String(d.getHours()).padStart(2, '0') +
-               String(d.getMinutes()).padStart(2, '0') +
-               String(d.getSeconds()).padStart(2, '0')
+        fecha: p.year + "-" + p.month + "-" + p.day,
+        hora: p.hour + ":" + p.minute + ":" + p.second,
+        stamp: p.year + p.month + p.day + p.hour + p.minute + p.second
       };
+    }
+
+    function recortarHora(h) {
+      var m = String(h || '').match(/^(\d{1,2}):(\d{2})/);
+      return m ? (m[1].padStart(2, '0') + ':' + m[2]) : (h || '');
     }
 
     function pintarFechas(repFecha, repHora, aprFechaTexto) {
       document.getElementById('fecha-tec').innerHTML =
-        repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " - " + repHora : "";
+        repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " " + recortarHora(repHora) : "";
       document.getElementById('fecha-adm').innerHTML =
-        aprFechaTexto ? "<b>Visto bueno:</b> " + aprFechaTexto : "";
+        aprFechaTexto ? "<b>Visto bueno:</b> " + String(aprFechaTexto).slice(0, 16) : "";
     }
 
     function firmaImagen(canvas, ancho, calidad) {
@@ -810,20 +812,44 @@
 
     // ENVÍO DE PDF Y NOTIFICACIÓN MEDIANTE GOOGLE APPS SCRIPT
     async function enviarPorAppsScript(payloadData) {
-      var resp = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payloadData)
-      });
-      var res = await resp.json();
-      if (!res.success) {
-        throw new Error(res.message || "Error al procesar la solicitud en Apps Script");
+      // El script comprueba que quien envía es el coordinador usando su sesión de Firebase
+      payloadData.idToken = await tokenValido();
+
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, 90000);
+      var resp;
+      try {
+        var cfg = {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payloadData)
+        };
+        if (ctrl) cfg.signal = ctrl.signal;
+        resp = await fetch(APPS_SCRIPT_URL, cfg);
+      } catch (e) {
+        var er = new Error((e && e.name === 'AbortError')
+          ? "el servicio de correo tardó demasiado en responder"
+          : "no se pudo contactar el servicio de correo (revisa tu internet)");
+        er.code = 'script-red';
+        throw er;
+      } finally {
+        clearTimeout(timer);
+      }
+
+      var txt = await resp.text();
+      var res;
+      try { res = JSON.parse(txt); } catch (e) {
+        throw new Error("respuesta inesperada del servicio de correo (¿publicaste la nueva versión del script?)");
+      }
+      if (res.status !== 'success') {
+        throw new Error(res.message || "error al procesar la solicitud en Apps Script");
       }
       return res;
     }
 
     function textoError(e) {
       if (!e) return "desconocido";
+      if (e.code === 'script-red') return e.message;
       if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
       if (e.code === 'red') return "sin conexión a internet";
       if (e.status === 403) return "sin permiso en la base de datos (revisa las reglas de Firestore)";
@@ -988,11 +1014,9 @@
     }
 
     function obtenerNombrePDF() {
-      var fVal = document.getElementById('fecha-auto').value || '';
-      var hVal = document.getElementById('hora-auto').value || '';
-      var numFecha = fVal.replace(/[^0-9]/g, '');
-      var numHora = hVal.replace(/[^0-9]/g, '');
-      return (numFecha + numHora) + "_CVSAG005-F001.pdf";
+      var f = (document.getElementById('fecha-auto').value || '').replace(/\D/g, '');
+      var h = (document.getElementById('hora-auto').value || '').replace(/\D/g, '');
+      return f + (h + '000000').slice(0, 6) + "_CVSAG005-F001.pdf";
     }
 
     async function procesarLogin() {
@@ -1017,7 +1041,6 @@
         passEl.value = "";
         if (window.alIniciarSesion) window.alIniciarSesion();
       } catch (e) {
-        emailEl.value = "";
         passEl.value = "";
         errorDiv.innerText = mensajeLogin(e);
         console.log(e);
@@ -1063,7 +1086,7 @@
       var opt = {
         margin: [8, 8, 12, 8],
         filename: nombrePdf,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 0.9 },
         html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
@@ -1114,7 +1137,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v5 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v6 | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
       }
@@ -1220,6 +1243,8 @@
         imgAdminSig.classList.remove('hidden');
         btnSubmit.innerText = "Descargar PDF";
         btnSubmit.style.background = "#2563eb";
+        var br = document.getElementById('btn-resend');
+        if (modoAprobar && sesion) br.classList.remove('hidden'); else br.classList.add('hidden');
       }
 
       function mostrarParaFirmar(d) {
@@ -1337,6 +1362,31 @@
           if (sesion.rol === 'coordinador') mostrarHomeCoord("");
           else mostrarFormularioTecnico();
         } else mostrarLogin();
+      }
+
+      async function enviarCorreoConPdf(reenviar) {
+        var pdf = await generarPdfBase64();
+        var fa = '', ha = '';
+        if (infoAprobacion) {
+          fa = infoAprobacion.fecha; ha = infoAprobacion.hora;
+        } else if (datosReporte && datosReporte.fechaFirmaAdm) {
+          var pp = datosReporte.fechaFirmaAdm.split(' ');
+          fa = pp[0] || ''; ha = pp[1] || '';
+        }
+        return enviarPorAppsScript({
+          reporteId: reporteId,
+          reenviar: !!reenviar,
+          cliente: "PLANTA AGUA PURIFICADA (CVSAG005-F001)",
+          tecnico: (datosReporte && datosReporte.tecnico) || '',
+          detalle: document.getElementById('observaciones').value || "Sin novedades",
+          fecha_reporte: (datosReporte && datosReporte.fecha) || '',
+          hora_reporte: (datosReporte && datosReporte.hora) || '',
+          fecha_aprobacion: fa,
+          hora_aprobacion: ha,
+          link_reporte: baseUrl + "?mode=ver&id=" + reporteId,
+          pdfBase64: pdf.base64,
+          pdfFileName: pdf.filename
+        });
       }
 
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
@@ -1463,25 +1513,10 @@
               imgAdminSig.classList.remove('hidden');
             }
 
-            // Generar PDF Base64
-            var pdfGenerado = await generarPdfBase64();
-            var linkReporte = baseUrl + "?mode=ver&id=" + reporteId;
+            // Generar PDF y enviarlo por correo (Apps Script)
+            await enviarCorreoConPdf(false);
 
-            // Enviar datos completos a Apps Script
-            await enviarPorAppsScript({
-              to_email: CORREOS_DESTINO,
-              cliente: "PLANTA AGUA PURIFICADA (CVSAG005-F001)",
-              detalle: document.getElementById('observaciones').value || "Lista de Chequeo Diligenciada",
-              fecha_reporte: datosReporte.fecha || '',
-              hora_reporte: datosReporte.hora || '',
-              fecha_aprobacion: infoAprobacion.fecha,
-              hora_aprobacion: infoAprobacion.hora,
-              link_reporte: linkReporte,
-              pdfBase64: pdfGenerado.base64,
-              pdfFileName: pdfGenerado.filename
-            });
-
-            alert("¡Reporte aprobado y enviado con éxito por Apps Script!");
+            alert("¡Reporte aprobado y correo enviado con éxito!");
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
             mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
             btnSubmit.disabled = false;
@@ -1505,6 +1540,22 @@
             btnSubmit.disabled = false;
           }
         }
+      };
+
+      document.getElementById('btn-resend').onclick = async function() {
+        if (!confirm("¿Reenviar el correo con el PDF a los destinatarios?")) return;
+        var b = this;
+        var textoBtn = b.innerText;
+        b.disabled = true;
+        b.innerText = "Enviando...";
+        try {
+          await enviarCorreoConPdf(true);
+          alert("Correo reenviado con éxito.");
+        } catch (e) {
+          alert("No se pudo enviar el correo: " + textoError(e));
+        }
+        b.disabled = false;
+        b.innerText = textoBtn;
       };
 
       document.getElementById('btn-logout').onclick = function() {
