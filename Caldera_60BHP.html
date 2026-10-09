@@ -8,7 +8,7 @@
   script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; 
   connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://script.google.com https://script.googleusercontent.com; 
   style-src 'self' 'unsafe-inline'; 
-  img-src 'self' data: blob:;
+  img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none';
 ">
   <title>CVSAG005-F001 - Lista de Chequeo Planta Agua Purificada</title>
 
@@ -239,13 +239,13 @@
 
     <div>
       <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
-      <input type="email" id="email" class="input-field" placeholder="Ingrese su correo electrónico" value="">
+      <input type="email" id="email" autocomplete="username" autocapitalize="none" class="input-field" placeholder="Ingrese su correo electrónico" value="">
 
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
-      <input type="password" id="password" class="input-field" placeholder="••••••••" value="">
+      <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v6 | CVSAG005-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v8 | CVSAG005-F001</p>
     </div>
   </div>
 
@@ -613,10 +613,16 @@
       return false;
     };
 
+    // Anti-clickjacking: si la página queda dentro de otra, se saca o se vacía
+    if (window.top !== window.self) {
+      try { window.top.location = window.self.location; } catch (e) { document.body.innerHTML = ''; }
+    }
+
     // ---------- CONFIGURACIÓN GENERAL ----------
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
+    var DURACION_MAX_SESION = 12 * 60 * 60 * 1000; // la sesión se cierra sola a las 12 horas
     
     // URL DE GOOGLE APPS SCRIPT
     var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2Lmo-aM06kxykqeBcW2OeTUmbaFNmAZlb70lCrniDlSLiw3lSVR0WvbzX9Vurfjzv/exec";
@@ -637,7 +643,12 @@
     function leerSesion() {
       try {
         var t = localStorage.getItem('sesionTecnico');
-        return t ? JSON.parse(t) : null;
+        var s = t ? JSON.parse(t) : null;
+        if (s && (!s.inicio || Date.now() - s.inicio > DURACION_MAX_SESION)) {
+          localStorage.removeItem('sesionTecnico');
+          return null;
+        }
+        return s;
       } catch (e) { return null; }
     }
 
@@ -706,6 +717,7 @@
       });
       guardarSesion({
         rol: rol || 'tecnico',
+        inicio: Date.now(),
         email: d.email,
         idToken: d.idToken,
         refreshToken: d.refreshToken,
@@ -715,6 +727,10 @@
 
     async function tokenValido() {
       if (!sesion) { var e0 = new Error("Sesión cerrada"); e0.code = 'sin-sesion'; throw e0; }
+      if (Date.now() - (sesion.inicio || 0) > DURACION_MAX_SESION) {
+        guardarSesion(null);
+        var e1 = new Error("Sesión vencida"); e1.code = 'sin-sesion'; throw e1;
+      }
       if (Date.now() < sesion.expira) return sesion.idToken;
       var d;
       try {
@@ -729,6 +745,7 @@
       }
       guardarSesion({
         rol: sesion.rol,
+        inicio: sesion.inicio,
         email: sesion.email,
         idToken: d.id_token,
         refreshToken: d.refresh_token,
@@ -749,7 +766,10 @@
     }
 
     async function leerReporte(id) {
-      var d = await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?key=" + API_KEY);
+      var token = await tokenValido();
+      var d = await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?key=" + API_KEY, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
       return deCampos(d.fields);
     }
 
@@ -767,6 +787,7 @@
     var urlParams = new URLSearchParams(window.location.search);
     var modo = urlParams.get('mode');
     var reporteId = urlParams.get('id');
+    if (reporteId && !/^[A-Za-z0-9]{20}$/.test(reporteId)) reporteId = null;
     var modoAprobar = (modo === 'aprobar');
     var modoVer = (modo === 'ver');
     var baseUrl = window.location.origin + window.location.pathname;
@@ -791,11 +812,24 @@
       return m ? (m[1].padStart(2, '0') + ':' + m[2]) : (h || '');
     }
 
+    // Texto plano siempre: lo que viene de la base de datos nunca se interpreta como HTML
     function pintarFechas(repFecha, repHora, aprFechaTexto) {
-      document.getElementById('fecha-tec').innerHTML =
-        repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " " + recortarHora(repHora) : "";
-      document.getElementById('fecha-adm').innerHTML =
-        aprFechaTexto ? "<b>Visto bueno:</b> " + String(aprFechaTexto).slice(0, 16) : "";
+      function poner(id, etiqueta, texto) {
+        var el = document.getElementById(id);
+        el.textContent = '';
+        if (!texto) return;
+        var b = document.createElement('b');
+        b.textContent = etiqueta + ' ';
+        el.appendChild(b);
+        el.appendChild(document.createTextNode(texto));
+      }
+      poner('fecha-tec', 'Fecha del reporte:', repFecha ? (repFecha + ' ' + recortarHora(repHora)) : '');
+      poner('fecha-adm', 'Visto bueno:', aprFechaTexto ? String(aprFechaTexto).slice(0, 16) : '');
+    }
+
+    // Solo acepta imágenes en base64 como firma
+    function srcSeguro(s) {
+      return /^data:image\/(jpeg|png);base64,[A-Za-z0-9+\/=]+$/.test(s || '') ? s : '';
     }
 
     function firmaImagen(canvas, ancho, calidad) {
@@ -852,7 +886,7 @@
       if (e.code === 'script-red') return e.message;
       if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
       if (e.code === 'red') return "sin conexión a internet";
-      if (e.status === 403) return "sin permiso en la base de datos (revisa las reglas de Firestore)";
+      if (e.status === 403) return "tu usuario no tiene permiso para esta acción";
       if (e.status === 404) return "no se encontró en la base de datos";
       return e.text || e.apiMessage || e.message || String(e);
     }
@@ -861,14 +895,11 @@
       if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
       if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
       var m = (e.apiMessage || e.message || "").toUpperCase();
-      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0)
-        return "El correo electrónico o la contraseña ingresados son incorrectos.";
-      if (m.indexOf("EMAIL_NOT_FOUND") >= 0)
-        return "El correo electrónico no se encuentra registrado.";
+      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0 || m.indexOf("EMAIL_NOT_FOUND") >= 0)
+        return "Correo o contraseña incorrectos.";
       if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos fallidos. Espera unos minutos.";
-      if (m.indexOf("OPERATION_NOT_ALLOWED") >= 0) return "El acceso con correo y contraseña no está activado en Firebase.";
       if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
-      return "Error de acceso: " + (e.apiMessage || e.message || "Credenciales incorrectas");
+      return "No se pudo iniciar sesión. Inténtalo de nuevo.";
     }
 
     function evaluarRangos() {
@@ -1019,6 +1050,9 @@
       return f + (h + '000000').slice(0, 6) + "_CVSAG005-F001.pdf";
     }
 
+    var intentosFallidos = 0;
+    var bloqueadoHasta = 0;
+
     async function procesarLogin() {
       var emailEl = document.getElementById('email');
       var passEl = document.getElementById('password');
@@ -1026,6 +1060,11 @@
       var passwordValue = passEl.value;
       var errorDiv = document.getElementById('error-message');
       var btn = document.getElementById('btn-submit-login');
+
+      if (Date.now() < bloqueadoHasta) {
+        errorDiv.innerText = "Demasiados intentos. Espera " + Math.ceil((bloqueadoHasta - Date.now()) / 1000) + " s.";
+        return;
+      }
 
       if (!emailValue || !passwordValue) {
         errorDiv.innerText = "Ingrese correo y contraseña para continuar.";
@@ -1039,9 +1078,12 @@
       try {
         await iniciarSesionApi(emailValue, passwordValue, modoAprobar ? 'coordinador' : 'tecnico');
         passEl.value = "";
+        intentosFallidos = 0;
         if (window.alIniciarSesion) window.alIniciarSesion();
       } catch (e) {
         passEl.value = "";
+        intentosFallidos++;
+        if (intentosFallidos >= 3) bloqueadoHasta = Date.now() + Math.min(300000, 15000 * Math.pow(2, intentosFallidos - 3));
         errorDiv.innerText = mensajeLogin(e);
         console.log(e);
       }
@@ -1137,7 +1179,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v6 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v8 | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
       }
@@ -1224,7 +1266,7 @@
 
         canvasTech.classList.add('hidden');
         btnClearTech.classList.add('hidden');
-        imgTechSig.src = d.firmaTec || '';
+        imgTechSig.src = srcSeguro(d.firmaTec);
         imgTechSig.classList.remove('hidden');
         pintarFechas(d.fecha, d.hora, d.fechaFirmaAdm || '');
       }
@@ -1239,7 +1281,7 @@
         blockAdmin.classList.remove('hidden');
         canvasAdmin.classList.add('hidden');
         btnClearAdmin.classList.add('hidden');
-        imgAdminSig.src = d.firmaAdm || '';
+        imgAdminSig.src = srcSeguro(d.firmaAdm);
         imgAdminSig.classList.remove('hidden');
         btnSubmit.innerText = "Descargar PDF";
         btnSubmit.style.background = "#2563eb";
@@ -1285,8 +1327,8 @@
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-title').innerText = "Acceso del Coordinador";
-        document.getElementById('login-nota').innerText = "Inicia sesión para aprobar el reporte.";
+        document.getElementById('login-title').innerText = modoVer ? "Acceso al reporte" : "Acceso del Coordinador";
+        document.getElementById('login-nota').innerText = modoVer ? "Inicia sesión para ver el reporte." : "Inicia sesión para aprobar el reporte.";
       }
 
       function mostrarHomeCoord(mensaje) {
@@ -1319,7 +1361,7 @@
         loginScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         mainScreen.classList.remove('hidden');
-        document.getElementById('btn-logout').classList.toggle('hidden', !modoAprobar);
+        document.getElementById('btn-logout').classList.toggle('hidden', !(modoAprobar || modoVer));
         userDisplay.innerText = "Cargando reporte...";
         badge.innerText = "Cargando...";
         btnSubmit.disabled = true;
@@ -1334,25 +1376,24 @@
           datosReporte = d;
           btnSubmit.disabled = false;
           if (modoVer || d.estado === 'aprobado') {
-            userDisplay.innerText = (sesion && modoAprobar) ? sesion.email : "Reporte firmado";
+            userDisplay.innerText = sesion ? sesion.email : "Reporte firmado";
             mostrarSoloLectura(d);
           } else {
             userDisplay.innerText = sesion ? sesion.email : "Coordinador";
             mostrarParaFirmar(d);
           }
         }).catch(function(e) {
+          if (e.code === 'sin-sesion' || e.status === 401) { guardarSesion(null); pedirLoginCoordinador(); return; }
           fallaCarga("Error al cargar", "No se pudo cargar el reporte: " + textoError(e));
         });
       }
 
       window.alIniciarSesion = function() {
-        if (modoAprobar) cargarReporte();
+        if (modoAprobar || modoVer) cargarReporte();
         else mostrarFormularioTecnico();
       };
 
-      if (modoVer) {
-        cargarReporte();
-      } else if (modoAprobar) {
+      if (modoVer || modoAprobar) {
         sesion = leerSesion();
         if (sesion && sesion.refreshToken) cargarReporte();
         else pedirLoginCoordinador();
@@ -1366,23 +1407,10 @@
 
       async function enviarCorreoConPdf(reenviar) {
         var pdf = await generarPdfBase64();
-        var fa = '', ha = '';
-        if (infoAprobacion) {
-          fa = infoAprobacion.fecha; ha = infoAprobacion.hora;
-        } else if (datosReporte && datosReporte.fechaFirmaAdm) {
-          var pp = datosReporte.fechaFirmaAdm.split(' ');
-          fa = pp[0] || ''; ha = pp[1] || '';
-        }
         return enviarPorAppsScript({
           reporteId: reporteId,
+          coleccion: COLECCION,
           reenviar: !!reenviar,
-          cliente: "PLANTA AGUA PURIFICADA (CVSAG005-F001)",
-          tecnico: (datosReporte && datosReporte.tecnico) || '',
-          detalle: document.getElementById('observaciones').value || "Sin novedades",
-          fecha_reporte: (datosReporte && datosReporte.fecha) || '',
-          hora_reporte: (datosReporte && datosReporte.hora) || '',
-          fecha_aprobacion: fa,
-          hora_aprobacion: ha,
           link_reporte: baseUrl + "?mode=ver&id=" + reporteId,
           pdfBase64: pdf.base64,
           pdfFileName: pdf.filename
@@ -1560,7 +1588,7 @@
 
       document.getElementById('btn-logout').onclick = function() {
         guardarSesion(null);
-        if (modoAprobar) pedirLoginCoordinador();
+        if (modoAprobar || modoVer) pedirLoginCoordinador();
         else mostrarLogin();
       };
 
