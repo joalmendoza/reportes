@@ -245,7 +245,7 @@
       <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v8 | CVSAG005-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v9 | CVSAG005-F001</p>
     </div>
   </div>
 
@@ -807,9 +807,9 @@
       };
     }
 
-    function recortarHora(h) {
-      var m = String(h || '').match(/^(\d{1,2}):(\d{2})/);
-      return m ? (m[1].padStart(2, '0') + ':' + m[2]) : (h || '');
+    function horaCompleta(h) {
+      var m = String(h || '').match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      return m ? (m[1].padStart(2, '0') + ':' + m[2] + ':' + (m[3] || '00')) : (h || '');
     }
 
     // Texto plano siempre: lo que viene de la base de datos nunca se interpreta como HTML
@@ -823,8 +823,8 @@
         el.appendChild(b);
         el.appendChild(document.createTextNode(texto));
       }
-      poner('fecha-tec', 'Fecha del reporte:', repFecha ? (repFecha + ' ' + recortarHora(repHora)) : '');
-      poner('fecha-adm', 'Visto bueno:', aprFechaTexto ? String(aprFechaTexto).slice(0, 16) : '');
+      poner('fecha-tec', 'Fecha del reporte:', repFecha ? (repFecha + ' ' + horaCompleta(repHora)) : '');
+      poner('fecha-adm', 'Visto bueno:', aprFechaTexto ? String(aprFechaTexto).slice(0, 19) : '');
     }
 
     // Solo acepta imágenes en base64 como firma
@@ -1050,6 +1050,20 @@
       return f + (h + '000000').slice(0, 6) + "_CVSAG005-F001.pdf";
     }
 
+    // Solo decide qué pantalla se muestra. Quien realmente puede aprobar lo deciden las reglas de Firestore.
+    var HASH_COORDINADORES = [
+      "dce01c2a945ed722800ca953b71c98dd35e8f70af7a2fade0ff10a3d0be8bf8e",
+      "d83282cf900f7e8cb54bfb730ff71687966d5c91786bfa2f4622525645b641f5"
+    ];
+
+    async function esCoordinadorUI(email) {
+      try {
+        var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(email || '').trim().toLowerCase()));
+        var hex = Array.prototype.map.call(new Uint8Array(buf), function(b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+        return HASH_COORDINADORES.indexOf(hex) >= 0;
+      } catch (e) { return false; }
+    }
+
     var intentosFallidos = 0;
     var bloqueadoHasta = 0;
 
@@ -1076,7 +1090,7 @@
       errorDiv.innerText = "";
 
       try {
-        await iniciarSesionApi(emailValue, passwordValue, modoAprobar ? 'coordinador' : 'tecnico');
+        await iniciarSesionApi(emailValue, passwordValue, (await esCoordinadorUI(emailValue)) ? 'coordinador' : 'tecnico');
         passEl.value = "";
         intentosFallidos = 0;
         if (window.alIniciarSesion) window.alIniciarSesion();
@@ -1179,7 +1193,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v8 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v9 | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
       }
@@ -1289,6 +1303,18 @@
         if (modoAprobar && sesion) br.classList.remove('hidden'); else br.classList.add('hidden');
       }
 
+      function mostrarSoloTecnico(d) {
+        vistaFinal = true;
+        ponerDatosTecnico(d);
+        pintarFechas(d.fecha, d.hora, '');
+        badge.innerText = "Reporte enviado (solo lectura)";
+        titulo.innerText = "Lista de Chequeo Planta de Agua Purificada";
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.add('hidden');
+        btnSubmit.classList.add('hidden');
+        document.getElementById('btn-resend').classList.add('hidden');
+      }
+
       function mostrarParaFirmar(d) {
         ponerDatosTecnico(d);
         badge.innerText = "Modo Coordinador";
@@ -1327,8 +1353,8 @@
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-title').innerText = modoVer ? "Acceso al reporte" : "Acceso del Coordinador";
-        document.getElementById('login-nota').innerText = modoVer ? "Inicia sesión para ver el reporte." : "Inicia sesión para aprobar el reporte.";
+        document.getElementById('login-title').innerText = "Iniciar sesión";
+        document.getElementById('login-nota').innerText = "Inicia sesión para ver el reporte.";
       }
 
       function mostrarHomeCoord(mensaje) {
@@ -1372,14 +1398,18 @@
           fallaCarga("Enlace no válido", "Este enlace no es válido. Pide al técnico que reenvíe la notificación.");
           return;
         }
-        leerReporte(reporteId).then(function(d) {
+        leerReporte(reporteId).then(async function(d) {
           datosReporte = d;
+          var esCoord = await esCoordinadorUI(sesion ? sesion.email : '');
           btnSubmit.disabled = false;
-          if (modoVer || d.estado === 'aprobado') {
-            userDisplay.innerText = sesion ? sesion.email : "Reporte firmado";
+          userDisplay.innerText = sesion ? sesion.email : "Reporte firmado";
+          btnSubmit.classList.remove('hidden');
+          if ((modoAprobar && !esCoord) || (modoVer && d.estado !== 'aprobado')) {
+            // Técnico (o cualquiera que no sea coordinador): solo ve hasta su firma
+            mostrarSoloTecnico(d);
+          } else if (modoVer || d.estado === 'aprobado') {
             mostrarSoloLectura(d);
           } else {
-            userDisplay.innerText = sesion ? sesion.email : "Coordinador";
             mostrarParaFirmar(d);
           }
         }).catch(function(e) {
@@ -1390,6 +1420,7 @@
 
       window.alIniciarSesion = function() {
         if (modoAprobar || modoVer) cargarReporte();
+        else if (sesion && sesion.rol === 'coordinador') mostrarHomeCoord("");
         else mostrarFormularioTecnico();
       };
 
