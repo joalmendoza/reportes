@@ -228,6 +228,7 @@
   <!-- LIBRERÍAS EXTERNAS -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
 <body>
 
@@ -245,7 +246,7 @@
       <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v4 DP | CVSAI018-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v5 DP | CVSAI018-F001</p>
     </div>
   </div>
 
@@ -816,6 +817,239 @@
       btn.innerText = "Iniciar Sesión";
     }
 
+    var FORMATO_XLSX = { codigo: 'CVSAI018-F001', titulo: 'LISTA DE CHEQUEO PARA MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN UMAS, VENTILADORES DE INYECCIÓN, EXTRACCIÓN Y COLECTORES DE POLVO', version: '18', emision: '2026', estado: 'Vigente', seccion: 'MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN EQUIPOS' };
+
+    // ---------- EXCEL (se adjunta al correo junto con el PDF) ----------
+    function bufferABase64(buf) {
+      var bytes = new Uint8Array(buf), bin = '', chunk = 0x8000;
+      for (var i = 0; i < bytes.length; i += chunk) {
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      return btoa(bin);
+    }
+
+    function dimsImagen(dataUrl) {
+      return new Promise(function(res) {
+        var im = new Image();
+        im.onload = function() { res({ w: im.naturalWidth || 400, h: im.naturalHeight || 160 }); };
+        im.onerror = function() { res({ w: 400, h: 160 }); };
+        im.src = dataUrl;
+      });
+    }
+
+    // Texto de una celda respetando los <br> (innerText los pierde si la pantalla no está visible)
+    function textoCelda(td) {
+      var cl = td.cloneNode(true);
+      cl.querySelectorAll('br').forEach(function(b) { b.replaceWith('\n'); });
+      return (cl.textContent || '').trim();
+    }
+
+    // Lee la tabla tal como está en pantalla (la misma fuente del PDF)
+    function leerTablaParaExcel() {
+      var area = document.getElementById('pdf-area');
+      var heads = Array.prototype.map.call(
+        area.querySelectorAll('table.param-table:not(.pdf-header-repeat) > thead > tr > th'),
+        function(t) { return t.textContent.trim(); });
+      var filas = [];
+      area.querySelectorAll('table.param-table:not(.pdf-header-repeat) > tbody > tr').forEach(function(tr) {
+        if (tr.classList.contains('page-break') || !tr.children.length) return;
+        var tds = tr.children, textos = [];
+        for (var i = 0; i < tds.length - 1; i++) textos.push(textoCelda(tds[i]));
+        var ult = tds[tds.length - 1], val = '', unidad = '';
+        var ctl = ult.querySelector('input, select');
+        if (ctl) {
+          val = (ctl.tagName === 'SELECT') ? ctl.options[ctl.selectedIndex].text : ctl.value;
+          var u = ult.querySelector('.unit-label');
+          unidad = u ? u.textContent.trim() : '';
+        } else {
+          var t = textoCelda(ult);
+          var m = t.match(/^(-?\d+(?:\.\d+)?)\s*(.*)$/);
+          if (m) { val = m[1]; unidad = m[2]; } else { val = t; }
+        }
+        filas.push({
+          textos: textos,
+          val: String(val == null ? '' : val).trim(),
+          unidad: unidad,
+          fuera: tr.classList.contains('out-of-range'),
+          calculada: tr.classList.contains('calculated-val')
+        });
+      });
+      return { heads: heads, filas: filas };
+    }
+
+    async function generarXlsxBase64(d) {
+      if (typeof ExcelJS === 'undefined') throw new Error('la librería de Excel no cargó (revisa tu internet)');
+      d = d || {};
+      var F = FORMATO_XLSX;
+      var tabla = leerTablaParaExcel();
+      var heads = tabla.heads.concat(['Unidad', 'Resultado']);
+      var nc = heads.length;
+      var iInd = tabla.heads.length - 1;           // columna "Indicación"
+
+      var wb = new ExcelJS.Workbook();
+      wb.creator = 'Carval - Mantenimiento';
+      wb.created = new Date();
+      var ws = wb.addWorksheet('Lista de chequeo', {
+        views: [{ showGridLines: false }],
+        pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0,
+                     margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 } }
+      });
+
+      // Anchos de columna según el contenido
+      var anchos = [];
+      for (var c = 0; c < nc; c++) {
+        if (c < iInd) {
+          var mx = (tabla.heads[c] || '').length;
+          tabla.filas.forEach(function(f) {
+            String(f.textos[c] || '').split('\n').forEach(function(l) { if (l.length > mx) mx = l.length; });
+          });
+          anchos.push(Math.max(12, Math.min(60, Math.round(mx * 1.05 + 2))));
+        } else if (c === iInd) {
+          var wi = 14;
+          tabla.filas.forEach(function(f) {
+            if (f.val && !/^-?\d+(\.\d+)?$/.test(f.val)) wi = Math.max(wi, Math.min(30, f.val.length + 3));
+          });
+          anchos.push(wi);
+        }
+        else if (c === iInd + 1) anchos.push(11);
+        else anchos.push(16);
+      }
+      anchos.forEach(function(w, i) { ws.getColumn(i + 1).width = w; });
+      var anchoTotal = anchos.reduce(function(a, b) { return a + b; }, 0);
+
+      var AZUL = 'FF1E3A8A', GRIS = 'FFE2E8F0', ROJO = 'FFFECDD3', ROJOT = 'FF881337', CALC = 'FFF8FAFC';
+      var fino = { style: 'thin', color: { argb: 'FFCBD5E1' } };
+      var borde = { top: fino, left: fino, bottom: fino, right: fino };
+      var r = 0;
+
+      function unir(fila) { if (nc > 1) ws.mergeCells(fila, 1, fila, nc); return ws.getCell(fila, 1); }
+      function linea(label, valor) {
+        r++;
+        var cel = unir(r);
+        cel.value = { richText: [{ font: { bold: true, size: 11 }, text: label + ' ' }, { font: { size: 11 }, text: String(valor || '') }] };
+        cel.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+      }
+
+      // Encabezado
+      r++; var c1 = unir(r); c1.value = 'Carval';
+      c1.font = { bold: true, size: 18, color: { argb: AZUL } };
+      c1.alignment = { horizontal: 'center', vertical: 'middle' }; ws.getRow(r).height = 28;
+      r++; var c2 = unir(r); c2.value = F.titulo;
+      c2.font = { bold: true, size: 12 };
+      c2.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      ws.getRow(r).height = Math.max(20, Math.ceil(F.titulo.length / (anchoTotal * 0.85)) * 17);
+      r++; var c3 = unir(r);
+      c3.value = 'Código: ' + F.codigo + '   |   Versión: ' + F.version + '   |   Fecha emisión: ' + F.emision + '   |   Estado: ' + F.estado;
+      c3.font = { size: 10 }; c3.alignment = { horizontal: 'center', vertical: 'middle' };
+      c3.border = { bottom: { style: 'medium', color: { argb: AZUL } } };
+      r++;
+
+      // Fecha y hora de inicio
+      linea('Fecha:', (document.getElementById('fecha-auto').value || d.fechaInicio || d.fecha || ''));
+      linea('Hora:', horaCompleta(document.getElementById('hora-auto').value || d.horaInicio || d.hora || ''));
+      r++;
+
+      // Título de sección
+      r++; var cs = unir(r); cs.value = F.seccion;
+      cs.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+      cs.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: AZUL } };
+      cs.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; ws.getRow(r).height = 22;
+
+      // Encabezado de la tabla
+      r++;
+      heads.forEach(function(h, i) {
+        var ce = ws.getCell(r, i + 1);
+        ce.value = h; ce.font = { bold: true, size: 11 };
+        ce.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GRIS } };
+        ce.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; ce.border = borde;
+      });
+      ws.getRow(r).height = 22;
+
+      // Filas
+      tabla.filas.forEach(function(f) {
+        r++;
+        var vacia = f.val === '';
+        var esNum = /^-?\d+(\.\d+)?$/.test(f.val);
+        var celdas = f.textos.concat([null, f.unidad, vacia ? '' : (f.fuera ? 'Fuera de rango' : 'Cumple')]);
+        var maxLineas = 1;
+        celdas.forEach(function(v, i) {
+          var ce = ws.getCell(r, i + 1);
+          if (i === iInd) {
+            if (esNum) {
+              var dec = (f.val.split('.')[1] || '').length;
+              ce.value = Number(f.val);
+              ce.numFmt = dec ? ('0.' + new Array(dec + 1).join('0')) : '0';
+            } else { ce.value = f.val; }
+            ce.font = { bold: true, size: 11 };
+            ce.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+          } else {
+            ce.value = v;
+            var centrar = (i > iInd) || (tabla.heads.length === 4 && i === 0) || (tabla.heads[i] || '').indexOf('Rango') === 0;
+            ce.alignment = { horizontal: centrar ? 'center' : 'left', vertical: 'middle', wrapText: true };
+            ce.font = { size: 10 };
+            var ls = Math.ceil(String(v || '').split('\n').reduce(function(m, l) { return Math.max(m, l.length); }, 0) / Math.max(1, anchos[i] * 0.95));
+            var nl = String(v || '').split('\n').length;
+            if (Math.max(ls, nl) > maxLineas) maxLineas = Math.max(ls, nl);
+          }
+          ce.border = borde;
+          if (f.calculada) { ce.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: CALC } }; ce.font = Object.assign({}, ce.font, { bold: true }); }
+          if (f.fuera) {
+            ce.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ROJO } };
+            ce.font = { bold: true, size: i === iInd ? 11 : 10, color: { argb: ROJOT } };
+          }
+        });
+        ws.getRow(r).height = Math.max(18, maxLineas * 14 + 4);
+      });
+      r++;
+
+      // Observaciones
+      r++; var co = ws.getCell(r, 1); co.value = 'OBSERVACIONES:'; co.font = { bold: true, size: 11 };
+      var obs = (document.getElementById('observaciones').value || d.observaciones || '').trim();
+      r++; var cob = unir(r); cob.value = obs;
+      cob.alignment = { vertical: 'top', horizontal: 'left', wrapText: true }; cob.font = { size: 10 };
+      for (var k = 1; k <= nc; k++) ws.getCell(r, k).border = borde;
+      var lineasObs = 0;
+      (obs || ' ').split('\n').forEach(function(l) { lineasObs += Math.max(1, Math.ceil(l.length / Math.max(20, anchoTotal * 0.95))); });
+      ws.getRow(r).height = Math.max(48, lineasObs * 14 + 8);
+      r++;
+
+      // Firma (imagen)
+      async function bloqueFirma(titulo, firma, colorTitulo) {
+        r++; var ct = ws.getCell(r, 1); ct.value = titulo; ct.font = { bold: true, size: 11, color: { argb: colorTitulo } };
+        var ok = (typeof srcSeguro === 'function') ? srcSeguro(firma) : '';
+        var filasImg = 7;
+        if (ok) {
+          var dm = await dimsImagen(ok);
+          var esc = Math.min(260 / dm.w, 120 / dm.h, 1);
+          var w = Math.round(dm.w * esc), h = Math.round(dm.h * esc);
+          var ext = /^data:image\/png/.test(ok) ? 'png' : 'jpeg';
+          var id = wb.addImage({ base64: ok, extension: ext });
+          ws.addImage(id, { tl: { col: 0.05, row: r + 0.1 }, ext: { width: w, height: h } });
+          filasImg = Math.ceil(h / 20) + 1;
+        } else {
+          r++; ws.getCell(r, 1).value = '(sin firma)'; ws.getCell(r, 1).font = { italic: true, color: { argb: 'FF6B7280' } };
+          filasImg = 1;
+        }
+        r += filasImg;
+      }
+
+      r++;
+      linea('Responsable:', (document.getElementById('tec-nombre').textContent || d.tecnico || ''));
+      linea('Cargo:', 'Técnico de Mantenimiento');
+      await bloqueFirma('Firma del Responsable', d.firmaTec, 'FF000000');
+      linea('Fecha del reporte:', (d.fecha || '') + ' ' + horaCompleta(d.hora || ''));
+
+      r++;
+      var etqAdm = (document.querySelector('#block-admin-sig b') || {}).textContent || 'Aprobado por:';
+      linea(etqAdm, 'Jorge Alberto Mendoza Ospina');
+      linea('Cargo:', 'Coordinador de Mantenimiento');
+      await bloqueFirma('Firma de Aprobación (Coordinador)', d.firmaAdm, 'FF2563EB');
+      linea('Visto bueno:', String(d.fechaFirmaAdm || '').slice(0, 19));
+
+      var buf = await wb.xlsx.writeBuffer();
+      return { base64: bufferABase64(buf), filename: obtenerNombrePDF().replace(/\.pdf$/i, '.xlsx') };
+    }
+
     // GENERAR PDF EN MEMORIA BASE64
     async function generarPdfBase64(fechaAdmTexto) {
       var pdfArea = document.getElementById('pdf-area');
@@ -989,8 +1223,9 @@
 
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v4 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v5 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
+          " | xlsx: " + (window.ExcelJS ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
       }
 
@@ -1219,14 +1454,25 @@
 
       async function enviarCorreoConPdf(reenviar) {
         var pdf = await generarPdfBase64(fechaAdmActual());
-        return enviarPorAppsScript({
+        var xlsx = null, excelError = '';
+        try {
+          xlsx = await generarXlsxBase64(datosReporte);
+        } catch (e) {
+          excelError = (e && e.message) || String(e);
+          console.error('Excel:', e);
+        }
+        var res = await enviarPorAppsScript({
           reporteId: reporteId,
           coleccion: COLECCION,
           reenviar: !!reenviar,
           link_reporte: baseUrl + "?mode=ver&id=" + reporteId,
           pdfBase64: pdf.base64,
-          pdfFileName: pdf.filename
+          pdfFileName: pdf.filename,
+          xlsxBase64: xlsx ? xlsx.base64 : '',
+          xlsxFileName: xlsx ? xlsx.filename : ''
         });
+        if (excelError) res.excelError = excelError;
+        return res;
       }
 
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
@@ -1323,6 +1569,9 @@
               });
               aprobadoGuardado = true;
               infoAprobacion = a;
+              datosReporte.firmaAdm = firmaFinal;
+              datosReporte.fechaFirmaAdm = fechaFirmaAdmTexto;
+              datosReporte.estado = 'aprobado';
               pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
 
               // La imagen mostrada (y usada en el PDF) es exactamente la que quedó guardada
@@ -1338,6 +1587,8 @@
             if (rs && rs.duplicado) msg = "Este reporte ya se había enviado antes.";
             if (rs && rs.enviadoA && rs.enviadoA.length) msg += "\n\nEnviado a:\n" + rs.enviadoA.join("\n");
             if (rs && rs.fallaron && rs.fallaron.length) msg += "\n\nNO se pudo enviar a:\n" + rs.fallaron.join("\n");
+            if (rs && rs.adjuntos && rs.adjuntos.length) msg += "\n\nAdjuntos: " + rs.adjuntos.join(", ");
+            if (rs && rs.excelError) msg += "\n\nOJO: el Excel no se pudo generar (" + rs.excelError + "). Se envió solo el PDF.";
             alert(msg);
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
             mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
@@ -1380,6 +1631,8 @@
           var m2 = "Correo reenviado.";
           if (rs2 && rs2.enviadoA && rs2.enviadoA.length) m2 += "\n\nEnviado a:\n" + rs2.enviadoA.join("\n");
           if (rs2 && rs2.fallaron && rs2.fallaron.length) m2 += "\n\nNO se pudo enviar a:\n" + rs2.fallaron.join("\n");
+          if (rs2 && rs2.adjuntos && rs2.adjuntos.length) m2 += "\n\nAdjuntos: " + rs2.adjuntos.join(", ");
+          if (rs2 && rs2.excelError) m2 += "\n\nOJO: el Excel no se pudo generar (" + rs2.excelError + "). Se envió solo el PDF.";
           alert(m2);
         } catch (e) {
           alert("No se pudo enviar el correo: " + textoError(e));
