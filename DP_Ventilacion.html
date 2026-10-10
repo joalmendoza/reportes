@@ -14,7 +14,7 @@
 
   <style>
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
       background-color: #f3f4f6;
       margin: 0;
       padding: 16px;
@@ -213,6 +213,16 @@
     .is-generating-pdf .sig-col {
       width: 50% !important;
     }
+
+    /* Fuente explícita en el área del PDF: con system-ui el PDF salía con letras encimadas y sin espacios */
+    #pdf-area, #pdf-area * {
+      font-family: Arial, Helvetica, sans-serif !important;
+      letter-spacing: normal !important;
+      word-spacing: normal !important;
+      text-rendering: auto !important;
+      font-kerning: none !important;
+    }
+    .is-generating-pdf .btn-clear { display: none !important; }
   </style>
 
   <!-- LIBRERÍAS EXTERNAS -->
@@ -235,7 +245,7 @@
       <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v2 DP | CVSAI018-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v4 DP | CVSAI018-F001</p>
     </div>
   </div>
 
@@ -807,12 +817,48 @@
     }
 
     // GENERAR PDF EN MEMORIA BASE64
-    async function generarPdfBase64() {
+    async function generarPdfBase64(fechaAdmTexto) {
       var pdfArea = document.getElementById('pdf-area');
       document.body.classList.add('is-generating-pdf');
+      var restaurar = [];
 
       document.getElementById('block-tech-sig').classList.remove('hidden');
       document.getElementById('block-admin-sig').classList.remove('hidden');
+
+      // Estado final consistente para el PDF, sin importar cómo se llegó aquí:
+      // toda firma dibujada en un canvas se convierte en imagen (mismo tamaño que la otra firma)
+      pdfArea.querySelectorAll('canvas').forEach(function(cv) {
+        if (cv.classList.contains('hidden')) return;
+        var im = cv.parentNode.querySelector('img.firma-img');
+        if (!im) return;
+        var conTrazo = false;
+        try {
+          var px = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+          for (var k = 3; k < px.length; k += 4) { if (px[k] !== 0) { conTrazo = true; break; } }
+        } catch (e) { conTrazo = true; }
+        if (!conTrazo) return;
+        var srcAnterior = im.getAttribute('src');
+        im.src = firmaImagen(cv, 400, 0.7);
+        im.classList.remove('hidden');
+        cv.classList.add('hidden');
+        restaurar.push(function() {
+          cv.classList.remove('hidden');
+          im.classList.add('hidden');
+          if (srcAnterior) im.setAttribute('src', srcAnterior); else im.removeAttribute('src');
+        });
+      });
+
+      // El "Visto bueno" siempre debe salir si el reporte ya está aprobado
+      var faEl = document.getElementById('fecha-adm');
+      if (fechaAdmTexto && faEl && !faEl.textContent.trim()) {
+        var faPrev = faEl.innerHTML;
+        faEl.textContent = '';
+        var fb = document.createElement('b');
+        fb.textContent = 'Visto bueno: ';
+        faEl.appendChild(fb);
+        faEl.appendChild(document.createTextNode(String(fechaAdmTexto).slice(0, 19)));
+        restaurar.push(function() { faEl.innerHTML = faPrev; });
+      }
 
       var nombrePdf = obtenerNombrePDF();
 
@@ -872,6 +918,7 @@
           if (item.unitLabel) item.unitLabel.style.display = '';
           item.span.remove();
         });
+        restaurar.forEach(function(fn) { fn(); });
 
         document.body.classList.remove('is-generating-pdf');
         
@@ -886,6 +933,7 @@
           if (item.unitLabel) item.unitLabel.style.display = '';
           item.span.remove();
         });
+        restaurar.forEach(function(fn) { fn(); });
         document.body.classList.remove('is-generating-pdf');
         throw err;
       }
@@ -941,7 +989,7 @@
 
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v2 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v4 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
       }
@@ -1164,8 +1212,13 @@
         } else mostrarLogin();
       }
 
+      function fechaAdmActual() {
+        if (infoAprobacion) return infoAprobacion.fecha + " " + infoAprobacion.hora;
+        return (datosReporte && datosReporte.fechaFirmaAdm) || '';
+      }
+
       async function enviarCorreoConPdf(reenviar) {
-        var pdf = await generarPdfBase64();
+        var pdf = await generarPdfBase64(fechaAdmActual());
         return enviarPorAppsScript({
           reporteId: reporteId,
           coleccion: COLECCION,
@@ -1185,7 +1238,7 @@
         btnSubmit.innerText = "Generando PDF...";
 
         try {
-          var pdfObj = await generarPdfBase64();
+          var pdfObj = await generarPdfBase64(fechaAdmActual());
           var link = document.createElement('a');
           link.href = "data:application/pdf;base64," + pdfObj.base64;
           link.download = pdfObj.filename;
