@@ -245,7 +245,7 @@
       <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v9 | CVSAG005-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v10 | CVSAG005-F001</p>
     </div>
   </div>
 
@@ -1193,7 +1193,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v9 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v10 | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
       }
@@ -1216,6 +1216,7 @@
       var homeCoord = document.getElementById('home-coord');
 
       var datosReporte = null;
+      var esCoordSesion = false;
       var vistaFinal = false;
       var aprobadoGuardado = false;
       var infoAprobacion = null;
@@ -1300,7 +1301,7 @@
         btnSubmit.innerText = "Descargar PDF";
         btnSubmit.style.background = "#2563eb";
         var br = document.getElementById('btn-resend');
-        if (modoAprobar && sesion) br.classList.remove('hidden'); else br.classList.add('hidden');
+        if (modoAprobar && sesion && esCoordSesion) br.classList.remove('hidden'); else br.classList.add('hidden');
       }
 
       function mostrarSoloTecnico(d) {
@@ -1325,6 +1326,7 @@
         
         btnSubmit.innerText = "Firmar y Enviar a Correo";
         btnSubmit.style.background = "#2563eb";
+        if (padAdmin && !aprobadoGuardado) { padAdmin.on(); btnClearAdmin.classList.remove('hidden'); }
         if (window.SignaturePad && !padAdmin) {
           padAdmin = new SignaturePad(canvasAdmin, { backgroundColor: 'rgba(0,0,0,0)', penColor: 'rgb(220, 38, 38)' });
           setTimeout(function() { resizeCanvas(canvasAdmin, padAdmin); }, 300);
@@ -1401,6 +1403,7 @@
         leerReporte(reporteId).then(async function(d) {
           datosReporte = d;
           var esCoord = await esCoordinadorUI(sesion ? sesion.email : '');
+          esCoordSesion = esCoord;
           btnSubmit.disabled = false;
           userDisplay.innerText = sesion ? sesion.email : "Reporte firmado";
           btnSubmit.classList.remove('hidden');
@@ -1548,16 +1551,22 @@
           }
           btnSubmit.disabled = false;
         } else {
-          if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma."); return; }
+          if (!aprobadoGuardado && (!padAdmin || padAdmin.isEmpty())) { alert("Falta tu firma."); return; }
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Generando PDF y Enviando...";
+
+          // La firma se congela desde el momento en que se toca el botón
+          if (padAdmin) padAdmin.off();
+          btnClearAdmin.classList.add('hidden');
+
           try {
             if (!aprobadoGuardado) {
               var a = ahora();
               var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
-              
+              var firmaFinal = firmaImagen(canvasAdmin, 400, 0.7);
+
               await firmarReporte(reporteId, {
-                firmaAdm: firmaImagen(canvasAdmin, 400, 0.7),
+                firmaAdm: firmaFinal,
                 fechaFirmaAdm: fechaFirmaAdmTexto,
                 estado: 'aprobado'
               });
@@ -1565,21 +1574,29 @@
               infoAprobacion = a;
               pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
 
-              // Actualizar visibilidad gráfica para el PDF
+              // La imagen mostrada (y usada en el PDF) es exactamente la que quedó guardada
               canvasAdmin.classList.add('hidden');
-              btnClearAdmin.classList.add('hidden');
-              imgAdminSig.src = firmaImagen(canvasAdmin, 400, 0.7);
+              imgAdminSig.src = firmaFinal;
               imgAdminSig.classList.remove('hidden');
             }
 
             // Generar PDF y enviarlo por correo (Apps Script)
-            await enviarCorreoConPdf(false);
+            var rs = await enviarCorreoConPdf(false);
 
-            alert("¡Reporte aprobado y correo enviado con éxito!");
+            var msg = "¡Reporte aprobado y correo enviado!";
+            if (rs && rs.duplicado) msg = "Este reporte ya se había enviado antes.";
+            if (rs && rs.enviadoA && rs.enviadoA.length) msg += "\n\nEnviado a:\n" + rs.enviadoA.join("\n");
+            if (rs && rs.fallaron && rs.fallaron.length) msg += "\n\nNO se pudo enviar a:\n" + rs.fallaron.join("\n");
+            alert(msg);
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
             mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
             btnSubmit.disabled = false;
           } catch (err) {
+            if (!aprobadoGuardado) {
+              // La firma NO quedó guardada: se puede volver a firmar
+              if (padAdmin) padAdmin.on();
+              btnClearAdmin.classList.remove('hidden');
+            }
             if (!aprobadoGuardado && (err.code === 'sin-sesion' || err.status === 401)) {
               alert("Tu sesión venció. Inicia sesión otra vez.");
               guardarSesion(null);
@@ -1589,7 +1606,7 @@
               return;
             }
             if (aprobadoGuardado) {
-              alert("Tu firma quedó guardada, pero el correo no salió: " + textoError(err) +
+              alert("Tu firma quedó guardada y ya no se puede cambiar, pero el correo no salió: " + textoError(err) +
                     "\n\nToca el botón para reintentar el envío del correo.");
               btnSubmit.innerText = "Reintentar envío de correo";
             } else {
@@ -1608,8 +1625,11 @@
         b.disabled = true;
         b.innerText = "Enviando...";
         try {
-          await enviarCorreoConPdf(true);
-          alert("Correo reenviado con éxito.");
+          var rs2 = await enviarCorreoConPdf(true);
+          var m2 = "Correo reenviado.";
+          if (rs2 && rs2.enviadoA && rs2.enviadoA.length) m2 += "\n\nEnviado a:\n" + rs2.enviadoA.join("\n");
+          if (rs2 && rs2.fallaron && rs2.fallaron.length) m2 += "\n\nNO se pudo enviar a:\n" + rs2.fallaron.join("\n");
+          alert(m2);
         } catch (e) {
           alert("No se pudo enviar el correo: " + textoError(e));
         }
