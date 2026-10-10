@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- ETIQUETA DE SEGURIDAD CONTENT SECURITY POLICY (CSP) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://script.google.com https://api.emailjs.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;">
+  <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self'; 
+  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; 
+  connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://script.google.com https://script.googleusercontent.com; 
+  style-src 'self' 'unsafe-inline'; 
+  img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none';
+">
   <title>CVSAI018-F001 - Lista de Chequeo DP Ventilación</title>
 
   <style>
@@ -211,9 +215,9 @@
     }
   </style>
 
+  <!-- LIBRERÍAS EXTERNAS -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -225,17 +229,17 @@
 
     <div>
       <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
-      <input type="email" id="email" class="input-field" placeholder="Ingrese su correo electrónico" value="">
+      <input type="email" id="email" autocomplete="username" autocapitalize="none" class="input-field" placeholder="Ingrese su correo electrónico" value="">
 
       <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
-      <input type="password" id="password" class="input-field" placeholder="••••••••" value="">
+      <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v18 | CVSAI018-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v1 DP | CVSAI018-F001</p>
     </div>
   </div>
 
-  <!-- PANTALLA DEL COORDINADOR -->
+  <!-- PANTALLA DEL COORDINADOR (SESIÓN ACTIVA) -->
   <div id="home-coord" class="card hidden" style="text-align:center;">
     <h2 style="margin-top:0;">Sesión de coordinador</h2>
     <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
@@ -299,11 +303,11 @@
         </tbody>
       </table>
 
-      <!-- SECCIÓN DE OBSERVACIONES -->
+      <!-- OBSERVACIONES -->
       <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
       <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
 
-      <!-- SECCIÓN DE RESPONSABLES Y FIRMAS DUALES -->
+      <!-- SECCIÓN DE FIRMAS DUALES -->
       <div class="signatures-grid">
         <!-- BLOQUE TÉCNICO -->
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
@@ -335,6 +339,7 @@
     </div>
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
+    <button type="button" id="btn-resend" class="btn hidden" style="background: #7c3aed;">Reenviar correo con PDF</button>
   </div>
 
   <script>
@@ -343,21 +348,21 @@
       return false;
     };
 
+    // Anti-clickjacking: si la página queda dentro de otra, se saca o se vacía
+    if (window.top !== window.self) {
+      try { window.top.location = window.self.location; } catch (e) { document.body.innerHTML = ''; }
+    }
+
+    // ---------- CONFIGURACIÓN GENERAL ----------
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
-    var CORREOS_DESTINO = "jorge.mendoza@carval.com.co, formatosmtto.carval@gmail.com";
+    var DURACION_MAX_SESION = 12 * 60 * 60 * 1000; // la sesión se cierra sola a las 12 horas
+    
+    // URL DE GOOGLE APPS SCRIPT
+    var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2Lmo-aM06kxykqeBcW2OeTUmbaFNmAZlb70lCrniDlSLiw3lSVR0WvbzX9Vurfjzv/exec";
 
-    var EMAILJS_SERVICE_ID = "service_m3xvu2j";
-    var EMAILJS_TEMPLATE_ID = "template_loi9vam";
-    var EMAILJS_PUBLIC_KEYS = [
-      "I_6FNZetkO_cSgx5A",
-      "l_6FNZetkO_cSgx5A",
-      "I_6FNZetk0_cSgx5A",
-      "l_6FNZetk0_cSgx5A"
-    ];
-    if (window.emailjs) { emailjs.init(EMAILJS_PUBLIC_KEYS[0]); }
-
+    // ===== BLOQUE API REST FIREBASE =====
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
     var COLECCION = "chequeosDPVentilacion";
     var sesion = null;
@@ -408,6 +413,7 @@
       { id: "e39", nombre: "UMA Granulación 2", min: 0.1, max: 2.5, unit: "inH2O" }
     ];
 
+
     function guardarSesion(s) {
       sesion = s;
       try {
@@ -419,7 +425,12 @@
     function leerSesion() {
       try {
         var t = localStorage.getItem('sesionTecnico');
-        return t ? JSON.parse(t) : null;
+        var s = t ? JSON.parse(t) : null;
+        if (s && (!s.inicio || Date.now() - s.inicio > DURACION_MAX_SESION)) {
+          localStorage.removeItem('sesionTecnico');
+          return null;
+        }
+        return s;
       } catch (e) { return null; }
     }
 
@@ -488,6 +499,7 @@
       });
       guardarSesion({
         rol: rol || 'tecnico',
+        inicio: Date.now(),
         email: d.email,
         idToken: d.idToken,
         refreshToken: d.refreshToken,
@@ -497,6 +509,10 @@
 
     async function tokenValido() {
       if (!sesion) { var e0 = new Error("Sesión cerrada"); e0.code = 'sin-sesion'; throw e0; }
+      if (Date.now() - (sesion.inicio || 0) > DURACION_MAX_SESION) {
+        guardarSesion(null);
+        var e1 = new Error("Sesión vencida"); e1.code = 'sin-sesion'; throw e1;
+      }
       if (Date.now() < sesion.expira) return sesion.idToken;
       var d;
       try {
@@ -511,6 +527,7 @@
       }
       guardarSesion({
         rol: sesion.rol,
+        inicio: sesion.inicio,
         email: sesion.email,
         idToken: d.id_token,
         refreshToken: d.refresh_token,
@@ -531,7 +548,10 @@
     }
 
     async function leerReporte(id) {
-      var d = await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?key=" + API_KEY);
+      var token = await tokenValido();
+      var d = await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?key=" + API_KEY, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
       return deCampos(d.fields);
     }
 
@@ -549,6 +569,7 @@
     var urlParams = new URLSearchParams(window.location.search);
     var modo = urlParams.get('mode');
     var reporteId = urlParams.get('id');
+    if (reporteId && !/^[A-Za-z0-9]{20}$/.test(reporteId)) reporteId = null;
     var modoAprobar = (modo === 'aprobar');
     var modoVer = (modo === 'ver');
     var baseUrl = window.location.origin + window.location.pathname;
@@ -556,26 +577,41 @@
     var padTech, padAdmin;
 
     function ahora() {
-      var d = new Date();
-      var year = d.getFullYear();
-      var month = String(d.getMonth() + 1).padStart(2, '0');
-      var day = String(d.getDate()).padStart(2, '0');
-      
+      var p = {};
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+      }).formatToParts(new Date()).forEach(function(x) { p[x.type] = x.value; });
       return {
-        fecha: year + "-" + month + "-" + day,
-        hora: d.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
-        stamp: year.toString() + month + day +
-               String(d.getHours()).padStart(2, '0') +
-               String(d.getMinutes()).padStart(2, '0') +
-               String(d.getSeconds()).padStart(2, '0')
+        fecha: p.year + "-" + p.month + "-" + p.day,
+        hora: p.hour + ":" + p.minute + ":" + p.second,
+        stamp: p.year + p.month + p.day + p.hour + p.minute + p.second
       };
     }
 
+    function horaCompleta(h) {
+      var m = String(h || '').match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      return m ? (m[1].padStart(2, '0') + ':' + m[2] + ':' + (m[3] || '00')) : (h || '');
+    }
+
+    // Texto plano siempre: lo que viene de la base de datos nunca se interpreta como HTML
     function pintarFechas(repFecha, repHora, aprFechaTexto) {
-      document.getElementById('fecha-tec').innerHTML =
-        repFecha ? "<b>Fecha del reporte:</b> " + repFecha + " - " + repHora : "";
-      document.getElementById('fecha-adm').innerHTML =
-        aprFechaTexto ? "<b>Visto bueno:</b> " + aprFechaTexto : "";
+      function poner(id, etiqueta, texto) {
+        var el = document.getElementById(id);
+        el.textContent = '';
+        if (!texto) return;
+        var b = document.createElement('b');
+        b.textContent = etiqueta + ' ';
+        el.appendChild(b);
+        el.appendChild(document.createTextNode(texto));
+      }
+      poner('fecha-tec', 'Fecha del reporte:', repFecha ? (repFecha + ' ' + horaCompleta(repHora)) : '');
+      poner('fecha-adm', 'Visto bueno:', aprFechaTexto ? String(aprFechaTexto).slice(0, 19) : '');
+    }
+
+    // Solo acepta imágenes en base64 como firma
+    function srcSeguro(s) {
+      return /^data:image\/(jpeg|png);base64,[A-Za-z0-9+\/=]+$/.test(s || '') ? s : '';
     }
 
     function firmaImagen(canvas, ancho, calidad) {
@@ -590,25 +626,49 @@
       return c.toDataURL('image/jpeg', calidad);
     }
 
-    async function enviarCorreo(params) {
-      var ultimoError = null;
-      for (var i = 0; i < EMAILJS_PUBLIC_KEYS.length; i++) {
-        try {
-          return await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params, EMAILJS_PUBLIC_KEYS[i]);
-        } catch (e) {
-          ultimoError = e;
-          var msg = ((e && e.text) || "").toLowerCase();
-          if (msg.indexOf("account not found") === -1) break;
-        }
+    // ENVÍO DE PDF Y NOTIFICACIÓN MEDIANTE GOOGLE APPS SCRIPT
+    async function enviarPorAppsScript(payloadData) {
+      // El script comprueba que quien envía es el coordinador usando su sesión de Firebase
+      payloadData.idToken = await tokenValido();
+
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, 90000);
+      var resp;
+      try {
+        var cfg = {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payloadData)
+        };
+        if (ctrl) cfg.signal = ctrl.signal;
+        resp = await fetch(APPS_SCRIPT_URL, cfg);
+      } catch (e) {
+        var er = new Error((e && e.name === 'AbortError')
+          ? "el servicio de correo tardó demasiado en responder"
+          : "no se pudo contactar el servicio de correo (revisa tu internet)");
+        er.code = 'script-red';
+        throw er;
+      } finally {
+        clearTimeout(timer);
       }
-      throw ultimoError;
+
+      var txt = await resp.text();
+      var res;
+      try { res = JSON.parse(txt); } catch (e) {
+        throw new Error("respuesta inesperada del servicio de correo (¿publicaste la nueva versión del script?)");
+      }
+      if (res.status !== 'success') {
+        throw new Error(res.message || "error al procesar la solicitud en Apps Script");
+      }
+      return res;
     }
 
     function textoError(e) {
       if (!e) return "desconocido";
+      if (e.code === 'script-red') return e.message;
       if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
       if (e.code === 'red') return "sin conexión a internet";
-      if (e.status === 403) return "sin permiso en la base de datos (revisa las reglas de Firestore)";
+      if (e.status === 403) return "tu usuario no tiene permiso para esta acción";
       if (e.status === 404) return "no se encontró en la base de datos";
       return e.text || e.apiMessage || e.message || String(e);
     }
@@ -617,14 +677,11 @@
       if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
       if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
       var m = (e.apiMessage || e.message || "").toUpperCase();
-      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0)
-        return "El correo electrónico o la contraseña ingresados son incorrectos.";
-      if (m.indexOf("EMAIL_NOT_FOUND") >= 0)
-        return "El correo electrónico no se encuentra registrado.";
+      if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0 || m.indexOf("EMAIL_NOT_FOUND") >= 0)
+        return "Correo o contraseña incorrectos.";
       if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos fallidos. Espera unos minutos.";
-      if (m.indexOf("OPERATION_NOT_ALLOWED") >= 0) return "El acceso con correo y contraseña no está activado en Firebase.";
       if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
-      return "Error de acceso: " + (e.apiMessage || e.message || "Credenciales incorrectas");
+      return "No se pudo iniciar sesión. Inténtalo de nuevo.";
     }
 
     // FORMATEA EL VALOR A 2 DECIMALES AUTOMÁTICAMENTE CUANDO EL TÉCNICO TERMINA DE DIGITAR
@@ -689,12 +746,27 @@
     }
 
     function obtenerNombrePDF() {
-      var fVal = document.getElementById('fecha-auto').value || '';
-      var hVal = document.getElementById('hora-auto').value || '';
-      var numFecha = fVal.replace(/[^0-9]/g, '');
-      var numHora = hVal.replace(/[^0-9]/g, '');
-      return (numFecha + numHora) + "_CVSAI018-F001.pdf";
+      var f = (document.getElementById('fecha-auto').value || '').replace(/\D/g, '');
+      var h = (document.getElementById('hora-auto').value || '').replace(/\D/g, '');
+      return f + (h + '000000').slice(0, 6) + "_CVSAI018-F001.pdf";
     }
+
+    // Solo decide qué pantalla se muestra. Quien realmente puede aprobar lo deciden las reglas de Firestore.
+    var HASH_COORDINADORES = [
+      "dce01c2a945ed722800ca953b71c98dd35e8f70af7a2fade0ff10a3d0be8bf8e",
+      "d83282cf900f7e8cb54bfb730ff71687966d5c91786bfa2f4622525645b641f5"
+    ];
+
+    async function esCoordinadorUI(email) {
+      try {
+        var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(email || '').trim().toLowerCase()));
+        var hex = Array.prototype.map.call(new Uint8Array(buf), function(b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+        return HASH_COORDINADORES.indexOf(hex) >= 0;
+      } catch (e) { return false; }
+    }
+
+    var intentosFallidos = 0;
+    var bloqueadoHasta = 0;
 
     async function procesarLogin() {
       var emailEl = document.getElementById('email');
@@ -703,6 +775,11 @@
       var passwordValue = passEl.value;
       var errorDiv = document.getElementById('error-message');
       var btn = document.getElementById('btn-submit-login');
+
+      if (Date.now() < bloqueadoHasta) {
+        errorDiv.innerText = "Demasiados intentos. Espera " + Math.ceil((bloqueadoHasta - Date.now()) / 1000) + " s.";
+        return;
+      }
 
       if (!emailValue || !passwordValue) {
         errorDiv.innerText = "Ingrese correo y contraseña para continuar.";
@@ -714,16 +791,104 @@
       errorDiv.innerText = "";
 
       try {
-        await iniciarSesionApi(emailValue, passwordValue, modoAprobar ? 'coordinador' : 'tecnico');
+        await iniciarSesionApi(emailValue, passwordValue, (await esCoordinadorUI(emailValue)) ? 'coordinador' : 'tecnico');
         passEl.value = "";
+        intentosFallidos = 0;
         if (window.alIniciarSesion) window.alIniciarSesion();
       } catch (e) {
-        emailEl.value = "";
         passEl.value = "";
+        intentosFallidos++;
+        if (intentosFallidos >= 3) bloqueadoHasta = Date.now() + Math.min(300000, 15000 * Math.pow(2, intentosFallidos - 3));
         errorDiv.innerText = mensajeLogin(e);
+        console.log(e);
       }
       btn.disabled = false;
       btn.innerText = "Iniciar Sesión";
+    }
+
+    // GENERAR PDF EN MEMORIA BASE64
+    async function generarPdfBase64() {
+      var pdfArea = document.getElementById('pdf-area');
+      document.body.classList.add('is-generating-pdf');
+
+      document.getElementById('block-tech-sig').classList.remove('hidden');
+      document.getElementById('block-admin-sig').classList.remove('hidden');
+
+      var nombrePdf = obtenerNombrePDF();
+
+      var inputs = pdfArea.querySelectorAll('input, select, textarea');
+      var reponer = [];
+
+      inputs.forEach(function(inp) {
+        var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
+        var span = document.createElement('span');
+        span.style.fontWeight = 'bold';
+        span.style.color = '#000';
+        span.style.fontSize = '12px';
+
+        var unitLabel = inp.nextElementSibling;
+        if (unitLabel && unitLabel.classList.contains('unit-label')) {
+          valText = valText ? (valText + ' ' + unitLabel.innerText) : '';
+        }
+
+        span.innerText = valText || ' ';
+        inp.parentNode.insertBefore(span, inp);
+        inp.style.display = 'none';
+        if (unitLabel && unitLabel.classList.contains('unit-label')) {
+          unitLabel.style.display = 'none';
+        }
+        reponer.push({ inp: inp, span: span, unitLabel: unitLabel });
+      });
+
+      var opt = {
+        margin: [8, 8, 12, 8],
+        filename: nombrePdf,
+        image: { type: 'jpeg', quality: 0.9 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      };
+
+      try {
+        var pdfDataUri = await html2pdf().set(opt).from(pdfArea).toPdf().get('pdf').then(function(pdfObj) {
+          var totalPages = pdfObj.internal.getNumberOfPages();
+          var pageWidth = pdfObj.internal.pageSize.getWidth();
+          var pageHeight = pdfObj.internal.pageSize.getHeight();
+
+          for (var i = 1; i <= totalPages; i++) {
+            pdfObj.setPage(i);
+            pdfObj.setFontSize(8);
+            pdfObj.setTextColor(100, 116, 139);
+
+            pdfObj.text(nombrePdf, 10, pageHeight - 6);
+            var textoPagina = "Página " + i + " de " + totalPages;
+            pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
+          }
+          return pdfObj.output('datauristring');
+        });
+
+        reponer.forEach(function(item) {
+          item.inp.style.display = '';
+          if (item.unitLabel) item.unitLabel.style.display = '';
+          item.span.remove();
+        });
+
+        document.body.classList.remove('is-generating-pdf');
+        
+        // Extraer unicamente el string en Base64
+        return {
+          base64: pdfDataUri.split(',')[1],
+          filename: nombrePdf
+        };
+      } catch(err) {
+        reponer.forEach(function(item) {
+          item.inp.style.display = '';
+          if (item.unitLabel) item.unitLabel.style.display = '';
+          item.span.remove();
+        });
+        document.body.classList.remove('is-generating-pdf');
+        throw err;
+      }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -776,9 +941,8 @@
 
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v18 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v1 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
-          " | email: " + (window.emailjs ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
       }
 
@@ -828,12 +992,12 @@
           var el = document.getElementById(eq.id);
           if (el && d[eq.id] !== undefined) {
             var valParsed = parseFloat(d[eq.id]);
-            el.value = !isNaN(valParsed) ? valParsed.toFixed(2) : d[eq.id];
+            el.value = !isNaN(valParsed) ? valParsed.toFixed(2) : String(d[eq.id]);
           }
         });
 
         document.getElementById('observaciones').value = d.observaciones || '';
-        
+
         evaluarRangos();
 
         var inputs = document.querySelectorAll('#pdf-area input, #pdf-area select, #pdf-area textarea');
@@ -841,7 +1005,7 @@
 
         canvasTech.classList.add('hidden');
         btnClearTech.classList.add('hidden');
-        imgTechSig.src = d.firmaTec || '';
+        imgTechSig.src = srcSeguro(d.firmaTec);
         imgTechSig.classList.remove('hidden');
         pintarFechas(d.fecha, d.hora, d.fechaFirmaAdm || '');
       }
@@ -856,10 +1020,24 @@
         blockAdmin.classList.remove('hidden');
         canvasAdmin.classList.add('hidden');
         btnClearAdmin.classList.add('hidden');
-        imgAdminSig.src = d.firmaAdm || '';
+        imgAdminSig.src = srcSeguro(d.firmaAdm);
         imgAdminSig.classList.remove('hidden');
         btnSubmit.innerText = "Descargar PDF";
         btnSubmit.style.background = "#2563eb";
+        var br = document.getElementById('btn-resend');
+        if (modoAprobar && sesion) br.classList.remove('hidden'); else br.classList.add('hidden');
+      }
+
+      function mostrarSoloTecnico(d) {
+        vistaFinal = true;
+        ponerDatosTecnico(d);
+        pintarFechas(d.fecha, d.hora, '');
+        badge.innerText = "Reporte enviado (solo lectura)";
+        titulo.innerText = "Lista de Chequeo DP Ventilación";
+        blockTech.classList.remove('hidden');
+        blockAdmin.classList.add('hidden');
+        btnSubmit.classList.add('hidden');
+        document.getElementById('btn-resend').classList.add('hidden');
       }
 
       function mostrarParaFirmar(d) {
@@ -900,8 +1078,8 @@
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-title').innerText = "Acceso del Coordinador";
-        document.getElementById('login-nota').innerText = "Inicia sesión para aprobar el reporte.";
+        document.getElementById('login-title').innerText = "Iniciar sesión";
+        document.getElementById('login-nota').innerText = "Inicia sesión para ver el reporte.";
       }
 
       function mostrarHomeCoord(mensaje) {
@@ -934,7 +1112,7 @@
         loginScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         mainScreen.classList.remove('hidden');
-        document.getElementById('btn-logout').classList.toggle('hidden', !modoAprobar);
+        document.getElementById('btn-logout').classList.toggle('hidden', !(modoAprobar || modoVer));
         userDisplay.innerText = "Cargando reporte...";
         badge.innerText = "Cargando...";
         btnSubmit.disabled = true;
@@ -945,29 +1123,33 @@
           fallaCarga("Enlace no válido", "Este enlace no es válido. Pide al técnico que reenvíe la notificación.");
           return;
         }
-        leerReporte(reporteId).then(function(d) {
+        leerReporte(reporteId).then(async function(d) {
           datosReporte = d;
+          var esCoord = await esCoordinadorUI(sesion ? sesion.email : '');
           btnSubmit.disabled = false;
-          if (modoVer || d.estado === 'aprobado') {
-            userDisplay.innerText = (sesion && modoAprobar) ? sesion.email : "Reporte firmado";
+          userDisplay.innerText = sesion ? sesion.email : "Reporte firmado";
+          btnSubmit.classList.remove('hidden');
+          if ((modoAprobar && !esCoord) || (modoVer && d.estado !== 'aprobado')) {
+            // Técnico (o cualquiera que no sea coordinador): solo ve hasta su firma
+            mostrarSoloTecnico(d);
+          } else if (modoVer || d.estado === 'aprobado') {
             mostrarSoloLectura(d);
           } else {
-            userDisplay.innerText = sesion ? sesion.email : "Coordinador";
             mostrarParaFirmar(d);
           }
         }).catch(function(e) {
+          if (e.code === 'sin-sesion' || e.status === 401) { guardarSesion(null); pedirLoginCoordinador(); return; }
           fallaCarga("Error al cargar", "No se pudo cargar el reporte: " + textoError(e));
         });
       }
 
       window.alIniciarSesion = function() {
-        if (modoAprobar) cargarReporte();
+        if (modoAprobar || modoVer) cargarReporte();
+        else if (sesion && sesion.rol === 'coordinador') mostrarHomeCoord("");
         else mostrarFormularioTecnico();
       };
 
-      if (modoVer) {
-        cargarReporte();
-      } else if (modoAprobar) {
+      if (modoVer || modoAprobar) {
         sesion = leerSesion();
         if (sesion && sesion.refreshToken) cargarReporte();
         else pedirLoginCoordinador();
@@ -979,6 +1161,18 @@
         } else mostrarLogin();
       }
 
+      async function enviarCorreoConPdf(reenviar) {
+        var pdf = await generarPdfBase64();
+        return enviarPorAppsScript({
+          reporteId: reporteId,
+          coleccion: COLECCION,
+          reenviar: !!reenviar,
+          link_reporte: baseUrl + "?mode=ver&id=" + reporteId,
+          pdfBase64: pdf.base64,
+          pdfFileName: pdf.filename
+        });
+      }
+
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
@@ -988,79 +1182,12 @@
         btnSubmit.innerText = "Generando PDF...";
 
         try {
-          var pdfArea = document.getElementById('pdf-area');
-          document.body.classList.add('is-generating-pdf');
-
-          blockTech.classList.remove('hidden');
-          blockAdmin.classList.remove('hidden');
-
-          var nombrePdf = obtenerNombrePDF();
-
-          var inputs = pdfArea.querySelectorAll('input, select, textarea');
-          var reponer = [];
-
-          inputs.forEach(function(inp) {
-            var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
-            var span = document.createElement('span');
-            span.style.fontWeight = 'bold';
-            span.style.color = '#000';
-            span.style.fontSize = '12px';
-
-            var unitLabel = inp.nextElementSibling;
-            if (unitLabel && unitLabel.classList.contains('unit-label')) {
-              valText = valText ? (valText + ' ' + unitLabel.innerText) : '';
-            }
-
-            span.innerText = valText || ' ';
-            inp.parentNode.insertBefore(span, inp);
-            inp.style.display = 'none';
-            if (unitLabel && unitLabel.classList.contains('unit-label')) {
-              unitLabel.style.display = 'none';
-            }
-            reponer.push({ inp: inp, span: span, unitLabel: unitLabel });
-          });
-
-          var opt = {
-            margin: [8, 8, 12, 8],
-            filename: nombrePdf,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] }
-          };
-
-          var worker = html2pdf().set(opt).from(pdfArea).toPdf();
-          
-          await worker.get('pdf').then(function(pdfObj) {
-            var totalPages = pdfObj.internal.getNumberOfPages();
-            var pageWidth = pdfObj.internal.pageSize.getWidth();
-            var pageHeight = pdfObj.internal.pageSize.getHeight();
-
-            for (var i = 1; i <= totalPages; i++) {
-              pdfObj.setPage(i);
-              pdfObj.setFontSize(8);
-              pdfObj.setTextColor(100, 116, 139);
-
-              pdfObj.text(nombrePdf, 10, pageHeight - 6);
-              var textoPagina = "Página " + i + " de " + totalPages;
-              pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
-            }
-          }).save();
-
-          reponer.forEach(function(item) {
-            item.inp.style.display = '';
-            if (item.unitLabel) item.unitLabel.style.display = '';
-            item.span.remove();
-          });
-          
-          if (!modoAprobar && !modoVer && !vistaFinal) {
-            blockAdmin.classList.add('hidden');
-          }
-
-          document.body.classList.remove('is-generating-pdf');
-
+          var pdfObj = await generarPdfBase64();
+          var link = document.createElement('a');
+          link.href = "data:application/pdf;base64," + pdfObj.base64;
+          link.download = pdfObj.filename;
+          link.click();
         } catch (e) {
-          document.body.classList.remove('is-generating-pdf');
           alert("No se pudo generar el PDF: " + (e.message || e));
         }
 
@@ -1121,7 +1248,7 @@
         } else {
           if (!padAdmin || padAdmin.isEmpty()) { alert("Falta tu firma."); return; }
           btnSubmit.disabled = true;
-          btnSubmit.innerText = "Enviando...";
+          btnSubmit.innerText = "Generando PDF y Enviando...";
           try {
             if (!aprobadoGuardado) {
               var a = ahora();
@@ -1135,22 +1262,18 @@
               aprobadoGuardado = true;
               infoAprobacion = a;
               pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
+
+              // Actualizar visibilidad gráfica para el PDF
+              canvasAdmin.classList.add('hidden');
+              btnClearAdmin.classList.add('hidden');
+              imgAdminSig.src = firmaImagen(canvasAdmin, 400, 0.7);
+              imgAdminSig.classList.remove('hidden');
             }
 
-            if (!window.emailjs) throw new Error("EmailJS no cargó");
-            var linkReporte = baseUrl + "?mode=ver&id=" + reporteId;
-            await enviarCorreo({
-              to_email: CORREOS_DESTINO,
-              cliente: "CHEQUEO DP VENTILACIÓN (CVSAI018-F001)",
-              detalle: document.getElementById('observaciones').value || "Lista de Chequeo Diligenciada",
-              fecha_reporte: datosReporte.fecha || '',
-              hora_reporte: datosReporte.hora || '',
-              fecha_aprobacion: infoAprobacion.fecha,
-              hora_aprobacion: infoAprobacion.hora,
-              link_reporte: linkReporte
-            });
+            // Generar PDF y enviarlo por correo (Apps Script)
+            await enviarCorreoConPdf(false);
 
-            alert("¡Reporte aprobado y enviado con éxito!");
+            alert("¡Reporte aprobado y correo enviado con éxito!");
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
             mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
             btnSubmit.disabled = false;
@@ -1176,9 +1299,25 @@
         }
       };
 
+      document.getElementById('btn-resend').onclick = async function() {
+        if (!confirm("¿Reenviar el correo con el PDF a los destinatarios?")) return;
+        var b = this;
+        var textoBtn = b.innerText;
+        b.disabled = true;
+        b.innerText = "Enviando...";
+        try {
+          await enviarCorreoConPdf(true);
+          alert("Correo reenviado con éxito.");
+        } catch (e) {
+          alert("No se pudo enviar el correo: " + textoError(e));
+        }
+        b.disabled = false;
+        b.innerText = textoBtn;
+      };
+
       document.getElementById('btn-logout').onclick = function() {
         guardarSesion(null);
-        if (modoAprobar) pedirLoginCoordinador();
+        if (modoAprobar || modoVer) pedirLoginCoordinador();
         else mostrarLogin();
       };
 
