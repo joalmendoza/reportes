@@ -246,7 +246,7 @@
       <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v8 DP | CVSAI018-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v9 DP | CVSAI018-F001</p>
     </div>
   </div>
 
@@ -371,7 +371,7 @@
     var DURACION_MAX_SESION = 12 * 60 * 60 * 1000; // la sesión se cierra sola a las 12 horas
     
     // URL DE GOOGLE APPS SCRIPT
-    var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2Lmo-aM06kxykqeBcW2OeTUmbaFNmAZlb70lCrniDlSLiw3lSVR0WvbzX9Vurfjzv/exec";
+    var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy67b_K5kbB9q6YFGsrgyNMGaYt-Nys3lUxwOsnvTTh--MSOUywMHd0qmYmDpE5Cc/exec";
 
     // ===== BLOQUE API REST FIREBASE =====
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
@@ -1218,7 +1218,7 @@
 
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v8 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v9 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | xlsx: " + (window.ExcelJS ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
@@ -1244,6 +1244,7 @@
       var datosReporte = null;
       var esCoordSesion = false;
       var vistaFinal = false;
+      var reporteEnviado = false;
       var aprobadoGuardado = false;
       var infoAprobacion = null;
       var cargaFallida = false;
@@ -1507,7 +1508,7 @@
       }
 
       btnSubmit.onclick = async function() {
-        if (cargaFallida) { window.location.reload(); return; }
+        if (cargaFallida || reporteEnviado) { window.location.reload(); return; }
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
         if (!modoAprobar) {
@@ -1540,9 +1541,14 @@
                         "\nEnlace de aprobación: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
 
-            padTech.clear();
-            btnSubmit.innerText = "¡Enviado! Puedes hacer otro reporte";
-            setTimeout(function() { btnSubmit.innerText = "Enviar a WhatsApp"; }, 4000);
+            // El reporte ya quedó guardado: la pantalla pasa a solo lectura con lo que se diligenció
+            // (campos bloqueados y firma del técnico visible). Para otro reporte se recarga la página.
+            reporteEnviado = true;
+            datosReporte = payload;
+            mostrarSoloTecnico(payload);
+            btnSubmit.classList.remove('hidden');
+            btnSubmit.innerText = "Hacer otro reporte";
+            btnSubmit.style.background = "#2563eb";
 
             var w = window.open(waUrl, "_blank");
             if (!w) window.location.href = waUrl;
