@@ -256,7 +256,7 @@
       <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v16 | CVSAG005-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v17 | CVSAG005-F001</p>
     </div>
   </div>
 
@@ -1470,7 +1470,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v16 | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v17 | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | xlsx: " + (window.ExcelJS ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
@@ -1496,6 +1496,7 @@
       var datosReporte = null;
       var esCoordSesion = false;
       var vistaFinal = false;
+      var reporteEnviado = false;
       var aprobadoGuardado = false;
       var infoAprobacion = null;
       var cargaFallida = false;
@@ -1782,7 +1783,7 @@
       }
 
       btnSubmit.onclick = async function() {
-        if (cargaFallida) { window.location.reload(); return; }
+        if (cargaFallida || reporteEnviado) { window.location.reload(); return; }
         if (modoVer || vistaFinal) { descargarPDF(); return; }
 
         if (!modoAprobar) {
@@ -1842,9 +1843,14 @@
                         "\nEnlace de aprobación: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
 
-            padTech.clear();
-            btnSubmit.innerText = "¡Enviado! Puedes hacer otro reporte";
-            setTimeout(function() { btnSubmit.innerText = "Enviar a WhatsApp"; }, 4000);
+            // El reporte ya quedó guardado: la pantalla pasa a solo lectura con lo que se diligenció
+            // (campos bloqueados y firma del técnico visible). Para otro reporte se recarga la página.
+            reporteEnviado = true;
+            datosReporte = payload;
+            mostrarSoloTecnico(payload);
+            btnSubmit.classList.remove('hidden');
+            btnSubmit.innerText = "Hacer otro reporte";
+            btnSubmit.style.background = "#2563eb";
 
             var w = window.open(waUrl, "_blank");
             if (!w) window.location.href = waUrl;
