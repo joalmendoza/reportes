@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  connect-src 'self' https://firestore.googleapis.com;
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none';
+">
+  <title>Verificación de reportes - Carval</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; background:#f3f4f6; margin:0; padding:12px; color:#1f2937; }
+    .wrap { max-width:560px; margin:0 auto; }
+    .top { background:linear-gradient(135deg,#1e3a8a,#2563eb); color:#fff; border-radius:16px; padding:20px 18px; }
+    .top small { opacity:.85; font-size:12px; }
+    .top h1 { margin:4px 0 0; font-size:21px; }
+    .card { background:#fff; border-radius:16px; padding:18px; margin-top:12px; box-shadow:0 4px 10px rgba(0,0,0,.07); }
+    label { display:block; font-size:13px; font-weight:bold; margin-bottom:6px; color:#374151; }
+    input[type=text] { width:100%; padding:12px; font-size:16px; border:2px solid #d1d5db; border-radius:10px; font-family:'Courier New',monospace; }
+    input[type=text]:focus { outline:none; border-color:#2563eb; }
+    .btn { display:block; width:100%; margin-top:10px; padding:13px; border:0; border-radius:12px; background:#2563eb; color:#fff; font-weight:bold; font-size:15px; cursor:pointer; }
+    .btn:disabled { background:#9ca3af; }
+    .ok { border-left:6px solid #16a34a; }
+    .mal { border-left:6px solid #e11d48; background:#fff7f8; }
+    .tit-ok { color:#15803d; font-size:18px; font-weight:bold; margin:0 0 10px; }
+    .tit-mal { color:#be123c; font-size:18px; font-weight:bold; margin:0 0 10px; }
+    .fila { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid #eef0f3; font-size:14px; }
+    .fila span:first-child { color:#6b7280; }
+    .fila span:last-child { font-weight:bold; text-align:right; }
+    .cod { font-family:'Courier New',monospace; font-size:20px; font-weight:bold; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:6px 10px; border-radius:8px; display:inline-block; margin:4px 0 10px; }
+    .res { margin-top:10px; padding:11px 12px; border-radius:10px; font-size:14px; font-weight:bold; display:none; }
+    .res.bien { display:block; background:#dcfce7; color:#15803d; }
+    .res.error { display:block; background:#ffe4e6; color:#9f1239; }
+    .nota { font-size:12px; color:#6b7280; line-height:1.5; margin-top:10px; }
+    h2 { font-size:15px; margin:0 0 10px; color:#1e3a8a; }
+    input[type=file] { width:100%; font-size:14px; padding:10px; border:2px dashed #93c5fd; border-radius:10px; background:#f8fafc; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top"><small>Carval · Mantenimiento</small><h1>Verificación de reportes</h1></div>
+
+    <div class="card">
+      <label for="id-reporte">ID del reporte</label>
+      <input type="text" id="id-reporte" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Está impreso en el recuadro del PDF">
+      <button type="button" class="btn" id="btn-consultar">Consultar</button>
+      <div id="msg-consulta" class="res"></div>
+    </div>
+
+    <div id="resultado" class="hidden">
+      <div class="card ok" id="card-registro">
+        <p class="tit-ok">✓ Reporte registrado</p>
+        <div class="fila"><span>Formato</span><span id="r-formato"></span></div>
+        <div class="fila"><span>Fecha del reporte</span><span id="r-fecha"></span></div>
+        <div class="fila"><span>Visto bueno</span><span id="r-aprob"></span></div>
+        <div style="margin-top:10px;font-size:13px;color:#6b7280">Código registrado</div>
+        <div class="cod" id="r-codigo"></div>
+      </div>
+
+      <div class="card">
+        <h2>1. Compara el código impreso</h2>
+        <label for="codigo-impreso">Escribe el código que sale en el pie del PDF</label>
+        <input type="text" id="codigo-impreso" maxlength="19" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX">
+        <button type="button" class="btn" id="btn-codigo">Comparar código</button>
+        <div id="msg-codigo" class="res"></div>
+      </div>
+
+      <div class="card">
+        <h2>2. Comprueba el archivo PDF</h2>
+        <label for="archivo-pdf">Selecciona el PDF que recibiste</label>
+        <input type="file" id="archivo-pdf" accept="application/pdf,.pdf">
+        <div id="msg-archivo" class="res"></div>
+        <p class="nota">El archivo no se sube a ningún lado: la comprobación se hace aquí, en tu navegador. Sirve para el PDF original que llegó por correo o que está en la carpeta de Drive. Si el archivo no coincide pero el código impreso sí, puede ser una copia descargada de nuevo; en ese caso pide el original al área de Mantenimiento.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
+    var PROYECTO = "appformatosmtto";
+    var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
+    var ficha = null;
+
+    function $(id) { return document.getElementById(id); }
+    function mostrar(el, clase, texto) { el.className = 'res ' + clase; el.textContent = texto; }
+    function limpiar(c) { return String(c || '').toUpperCase().replace(/[^0-9A-F]/g, ''); }
+
+    async function consultar() {
+      var id = $('id-reporte').value.trim();
+      $('resultado').classList.add('hidden');
+      ficha = null;
+      if (!/^[A-Za-z0-9]{20}$/.test(id)) { mostrar($('msg-consulta'), 'error', 'El ID debe tener 20 letras y números.'); return; }
+      $('btn-consultar').disabled = true;
+      mostrar($('msg-consulta'), 'bien', 'Consultando…');
+      try {
+        var r = await fetch(FS_BASE + "/verificaciones/" + encodeURIComponent(id) + "?key=" + API_KEY);
+        if (r.status === 404) { mostrar($('msg-consulta'), 'error', 'No hay ningún reporte registrado con ese ID. Revisa que esté bien escrito.'); return; }
+        if (!r.ok) { mostrar($('msg-consulta'), 'error', 'No se pudo consultar (error ' + r.status + '). Inténtalo de nuevo.'); return; }
+        var d = await r.json(), f = d.fields || {};
+        function v(k) { return (f[k] && f[k].stringValue) || ''; }
+        ficha = { codigo: v('codigo'), hashes: v('pdfHashes').split(',').filter(Boolean) };
+        $('r-formato').textContent = v('formato');
+        $('r-fecha').textContent = v('fechaReporte');
+        $('r-aprob').textContent = v('fechaAprobacion');
+        $('r-codigo').textContent = v('codigo');
+        $('codigo-impreso').value = ''; $('archivo-pdf').value = '';
+        $('msg-codigo').className = 'res'; $('msg-archivo').className = 'res';
+        $('msg-consulta').className = 'res';
+        $('resultado').classList.remove('hidden');
+      } catch (e) {
+        mostrar($('msg-consulta'), 'error', 'Sin conexión. Revisa tu internet e inténtalo de nuevo.');
+      } finally { $('btn-consultar').disabled = false; }
+    }
+
+    function compararCodigo() {
+      if (!ficha) return;
+      var c = limpiar($('codigo-impreso').value);
+      if (c.length !== 16) { mostrar($('msg-codigo'), 'error', 'El código tiene 16 caracteres (4 grupos de 4).'); return; }
+      if (c === limpiar(ficha.codigo)) mostrar($('msg-codigo'), 'bien', '✓ El código coincide con el registrado.');
+      else mostrar($('msg-codigo'), 'error', '✗ El código NO coincide. Este reporte pudo ser modificado.');
+    }
+
+    async function comprobarArchivo() {
+      if (!ficha) return;
+      var file = $('archivo-pdf').files[0];
+      if (!file) return;
+      if (file.size > 25 * 1024 * 1024) { mostrar($('msg-archivo'), 'error', 'El archivo es demasiado grande para ser un reporte.'); return; }
+      mostrar($('msg-archivo'), 'bien', 'Calculando…');
+      try {
+        var h = new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer())), hex = '';
+        for (var i = 0; i < h.length; i++) hex += ('0' + h[i].toString(16)).slice(-2);
+        if (ficha.hashes.indexOf(hex) >= 0) mostrar($('msg-archivo'), 'bien', '✓ El archivo es idéntico al original registrado. No ha sido modificado.');
+        else mostrar($('msg-archivo'), 'error', '✗ El archivo NO coincide con ningún original registrado. Fue modificado o es otra copia.');
+      } catch (e) { mostrar($('msg-archivo'), 'error', 'No se pudo leer el archivo.'); }
+    }
+
+    $('btn-consultar').onclick = consultar;
+    $('btn-codigo').onclick = compararCodigo;
+    $('archivo-pdf').onchange = comprobarArchivo;
+    $('id-reporte').addEventListener('keydown', function(e) { if (e.key === 'Enter') consultar(); });
+    $('codigo-impreso').addEventListener('keydown', function(e) { if (e.key === 'Enter') compararCodigo(); });
+    (function() {
+      var id = new URLSearchParams(window.location.search).get('id');
+      if (id && /^[A-Za-z0-9]{20}$/.test(id)) { $('id-reporte').value = id; consultar(); }
+    })();
+  </script>
+</body>
+</html>
