@@ -1854,7 +1854,7 @@
         html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
         jsPDF: (function() {
           var j = { unit: 'mm', format: 'a4', orientation: 'portrait' };
-          if (PROTEGER_PDF) j.encryption = { userPassword: '', ownerPassword: claveAleatoria(), userPermissions: ['print', 'print-high'] };
+          if (PROTEGER_PDF) j.encryption = { userPassword: '', ownerPassword: claveAleatoria(), userPermissions: ['print'] };
           return j;
         })(),
         pagebreak: { mode: ['css', 'legacy'], avoid: ['.verif-box'] }
@@ -2040,6 +2040,7 @@
       }
 
       function mostrarParaFirmar(d) {
+        vistaFinal = false;
         ponerDatosTecnico(d);
         badge.innerText = "Modo Coordinador";
         titulo.innerText = "Aprobación de Servicio";
@@ -2115,6 +2116,7 @@
         homeCoord.classList.add('hidden');
         mainScreen.classList.remove('hidden');
         document.getElementById('btn-logout').classList.toggle('hidden', !(modoAprobar || modoVer));
+        vistaFinal = false;
         userDisplay.innerText = "Cargando reporte...";
         badge.innerText = "Cargando...";
         btnSubmit.disabled = true;
