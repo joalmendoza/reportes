@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -290,6 +289,11 @@
     .seg button.sel.bad { border-color:#e11d48; background:#ffe4e6; color:#9f1239; }
     .seg button:disabled { opacity:.75; cursor:default; }
     #cap-sig { position:fixed; right:14px; bottom:16px; z-index:30; background:#2563eb; color:#fff; border:0; border-radius:99px; padding:12px 18px; font-size:14px; font-weight:bold; box-shadow:0 6px 16px rgba(37,99,235,.4); cursor:pointer; }
+    .verif-box { display:flex; gap:12px; align-items:center; border-top:2px solid #1e3a8a; margin-top:16px; padding-top:10px; page-break-inside:avoid; break-inside:avoid; }
+    .verif-box img { width:74px; height:74px; flex:none; }
+    .verif-txt { font-size:9.5px; line-height:1.55; color:#334155; word-break:break-all; }
+    .verif-txt b { color:#111; }
+    .verif-cod { font-family:'Courier New',monospace !important; font-weight:bold; font-size:13px; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:1px 6px; border-radius:3px; }
   </style>
 
   <!-- LIBRERÍAS EXTERNAS -->
@@ -678,6 +682,18 @@
         </div>
       </div>
 
+      <!-- RECUADRO DE VERIFICACIÓN (solo sale en el PDF) -->
+      <div id="verif-box" class="verif-box hidden">
+        <img id="verif-qr" alt="QR de verificación" width="74" height="74">
+        <div class="verif-txt">
+          <b>VERIFICACIÓN DEL REPORTE</b><br>
+          Código: <span id="verif-codigo" class="verif-cod"></span><br>
+          ID del reporte: <span id="verif-id"></span><br>
+          Verifica en: <span id="verif-url"></span><br>
+          Si el código no coincide, el reporte fue modificado.
+        </div>
+      </div>
+
     </div>
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
@@ -880,6 +896,212 @@
     var baseUrl = window.location.origin + window.location.pathname;
 
     var padTech, padAdmin;
+    /* ===== Generador de QR propio (modo byte, corrección M, versiones 1 a 10) ===== */
+    function qrMatriz(texto) {
+      var bytes = Array.prototype.slice.call(new TextEncoder().encode(texto));
+      var EC = {1:[10,[[1,16]]],2:[16,[[1,28]]],3:[26,[[1,44]]],4:[18,[[2,32]]],5:[24,[[2,43]]],6:[16,[[4,27]]],7:[18,[[4,31]]],8:[22,[[2,38],[2,39]]],9:[22,[[3,36],[2,37]]],10:[26,[[4,43],[1,44]]]};
+      var ALIGN = {1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
+      var ver = 0, cap = 0, i, j, k;
+      for (var v = 1; v <= 10; v++) {
+        var c = EC[v][1].reduce(function(a, g) { return a + g[0] * g[1]; }, 0);
+        if (4 + (v < 10 ? 8 : 16) + bytes.length * 8 <= c * 8) { ver = v; cap = c; break; }
+      }
+      if (!ver) throw new Error('QR demasiado largo');
+      var bits = [];
+      function put(val, n) { for (var q = n - 1; q >= 0; q--) bits.push((val >>> q) & 1); }
+      put(4, 4); put(bytes.length, ver < 10 ? 8 : 16);
+      bytes.forEach(function(b) { put(b, 8); });
+      put(0, Math.min(4, cap * 8 - bits.length));
+      while (bits.length % 8) bits.push(0);
+      for (var pad = 0xEC; bits.length < cap * 8; pad ^= 0xEC ^ 0x11) put(pad, 8);
+      var data = [];
+      for (i = 0; i < bits.length; i += 8) { var bv = 0; for (j = 0; j < 8; j++) bv = bv * 2 + bits[i + j]; data.push(bv); }
+
+      var EXP = [], LOG = [], x = 1;
+      for (i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11D; }
+      for (i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+      function mul(a, b) { return (a && b) ? EXP[LOG[a] + LOG[b]] : 0; }
+      function gen(n) {
+        var g = [1];
+        for (var a = 0; a < n; a++) {
+          var ng = new Array(g.length + 1).fill(0);
+          for (var b = 0; b < g.length; b++) { ng[b] ^= g[b]; ng[b + 1] ^= mul(g[b], EXP[a]); }
+          g = ng;
+        }
+        return g;
+      }
+      function resto(d, n) {
+        var g = gen(n), r = new Array(n).fill(0);
+        d.forEach(function(b) {
+          var f = b ^ r[0]; r.shift(); r.push(0);
+          if (f) for (var a = 0; a < n; a++) r[a] ^= mul(g[a + 1], f);
+        });
+        return r;
+      }
+      var ecn = EC[ver][0], blocks = [], pos = 0;
+      EC[ver][1].forEach(function(g) {
+        for (var n = 0; n < g[0]; n++) { var d = data.slice(pos, pos + g[1]); pos += g[1]; blocks.push({ d: d, e: resto(d, ecn) }); }
+      });
+      var out = [], maxd = Math.max.apply(null, blocks.map(function(b) { return b.d.length; }));
+      for (i = 0; i < maxd; i++) blocks.forEach(function(b) { if (i < b.d.length) out.push(b.d[i]); });
+      for (i = 0; i < ecn; i++) blocks.forEach(function(b) { out.push(b.e[i]); });
+
+      var size = 17 + 4 * ver, m = [], fn = [];
+      for (i = 0; i < size; i++) { m.push(new Array(size).fill(false)); fn.push(new Array(size).fill(false)); }
+      function setFn(px, py, val) { if (px < 0 || py < 0 || px >= size || py >= size) return; m[py][px] = !!val; fn[py][px] = true; }
+      for (i = 0; i < size; i++) { setFn(6, i, i % 2 === 0); setFn(i, 6, i % 2 === 0); }
+      function finder(cx, cy) {
+        for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++) {
+          var dist = Math.max(Math.abs(dx), Math.abs(dy)); setFn(cx + dx, cy + dy, dist !== 2 && dist !== 4);
+        }
+      }
+      finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+      var al = ALIGN[ver];
+      for (i = 0; i < al.length; i++) for (j = 0; j < al.length; j++) {
+        if ((i === 0 && j === 0) || (i === 0 && j === al.length - 1) || (i === al.length - 1 && j === 0)) continue;
+        for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) setFn(al[i] + dx, al[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+      }
+      function formato(mask) {
+        var d = (0 << 3) | mask, r = d;
+        for (var a = 0; a < 10; a++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+        var b = ((d << 10) | r) ^ 0x5412;
+        function bit(n) { return ((b >>> n) & 1) !== 0; }
+        for (var a2 = 0; a2 <= 5; a2++) setFn(8, a2, bit(a2));
+        setFn(8, 7, bit(6)); setFn(8, 8, bit(7)); setFn(7, 8, bit(8));
+        for (var a3 = 9; a3 < 15; a3++) setFn(14 - a3, 8, bit(a3));
+        for (var a4 = 0; a4 < 8; a4++) setFn(size - 1 - a4, 8, bit(a4));
+        for (var a5 = 8; a5 < 15; a5++) setFn(8, size - 15 + a5, bit(a5));
+        setFn(8, size - 8, true);
+      }
+      formato(0);
+      if (ver >= 7) {
+        var rv = ver;
+        for (i = 0; i < 12; i++) rv = (rv << 1) ^ ((rv >>> 11) * 0x1F25);
+        var vb = (ver << 12) | rv;
+        for (i = 0; i < 18; i++) { var bt = ((vb >>> i) & 1) !== 0, a6 = size - 11 + i % 3, b6 = Math.floor(i / 3); setFn(a6, b6, bt); setFn(b6, a6, bt); }
+      }
+      var idx = 0;
+      for (var right = size - 1; right >= 1; right -= 2) {
+        if (right === 6) right = 5;
+        for (var vert = 0; vert < size; vert++) for (j = 0; j < 2; j++) {
+          var xx = right - j, up = ((right + 1) & 2) === 0, yy = up ? size - 1 - vert : vert;
+          if (!fn[yy][xx] && idx < out.length * 8) { m[yy][xx] = ((out[idx >>> 3] >>> (7 - (idx & 7))) & 1) !== 0; idx++; }
+        }
+      }
+      var MASCARAS = [
+        function(a, b) { return (a + b) % 2 === 0; }, function(a, b) { return b % 2 === 0; },
+        function(a, b) { return a % 3 === 0; }, function(a, b) { return (a + b) % 3 === 0; },
+        function(a, b) { return (Math.floor(a / 3) + Math.floor(b / 2)) % 2 === 0; },
+        function(a, b) { return a * b % 2 + a * b % 3 === 0; },
+        function(a, b) { return (a * b % 2 + a * b % 3) % 2 === 0; },
+        function(a, b) { return ((a + b) % 2 + a * b % 3) % 2 === 0; }
+      ];
+      function aplicar(mask) { for (var yy2 = 0; yy2 < size; yy2++) for (var xx2 = 0; xx2 < size; xx2++) if (!fn[yy2][xx2] && MASCARAS[mask](xx2, yy2)) m[yy2][xx2] = !m[yy2][xx2]; }
+      function penalidad() {
+        var p = 0, a, b, run, col;
+        for (var pass = 0; pass < 2; pass++) {
+          for (a = 0; a < size; a++) {
+            run = 1; var hist = [];
+            for (b = 0; b < size; b++) {
+              var cur = pass ? m[b][a] : m[a][b];
+              hist.push(cur ? 1 : 0);
+              if (b > 0) { var prev = pass ? m[b - 1][a] : m[a][b - 1]; if (cur === prev) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; }
+            }
+            var s = hist.join('');
+            var re = /10111010000|00001011101/g, mm;
+            while ((mm = re.exec(s)) !== null) { p += 40; re.lastIndex = mm.index + 1; }
+          }
+        }
+        for (a = 0; a < size - 1; a++) for (b = 0; b < size - 1; b++) { col = m[a][b]; if (col === m[a][b + 1] && col === m[a + 1][b] && col === m[a + 1][b + 1]) p += 3; }
+        var dark = 0; for (a = 0; a < size; a++) for (b = 0; b < size; b++) if (m[a][b]) dark++;
+        p += (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1) * 10;
+        return p;
+      }
+      var mejor = 0, mejorP = Infinity;
+      for (k = 0; k < 8; k++) { aplicar(k); formato(k); var pp = penalidad(); if (pp < mejorP) { mejorP = pp; mejor = k; } aplicar(k); }
+      aplicar(mejor); formato(mejor);
+      return m;
+    }
+
+    function qrDataUrl(texto, px) {
+      var m = qrMatriz(texto), n = m.length, q = 4, mod = Math.max(2, Math.floor((px || 200) / (n + 2 * q)));
+      var cv = document.createElement('canvas'); cv.width = cv.height = (n + 2 * q) * mod;
+      var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.fillStyle = '#000';
+      for (var yy = 0; yy < n; yy++) for (var xx = 0; xx < n; xx++) if (m[yy][xx]) cx.fillRect((xx + q) * mod, (yy + q) * mod, mod, mod);
+      return cv.toDataURL('image/png');
+    }
+
+    /* ===== VERIFICACIÓN DEL REPORTE ===== */
+    var FORMATO_VERIF = "CVSAG005-F001 Planta de Agua Purificada";
+    var CAMPOS_VERIF = ['fechaInicio','horaInicio','fecha','hora','tecnico','observaciones','fugas',
+      'tag34','tag35','tag39a','tag39b','tag27','tag30','tag28','tag29','tag43','tag38','tag37','tag33','tag53','tag54','tag47','tag50','tag51',
+      'tag71_dial','tag71_nivel','tag70','tag42','tag73','tag110','tag74','tag75','tag52','tag80','tag81','tag82','tag83',
+      'firmaTec','firmaAdm','fechaFirmaAdm'];
+    // Bloqueo del PDF: se abre e imprime normal, pero Adobe/Chrome/celular no dejan editar, copiar ni anotar.
+    // Si algún día da problema, cambia true por false y el PDF sale como antes.
+    var PROTEGER_PDF = true;
+    function claveAleatoria() {
+      var a = new Uint8Array(16), o = '';
+      crypto.getRandomValues(a);
+      for (var i = 0; i < a.length; i++) o += ('0' + a[i].toString(16)).slice(-2);
+      return o;
+    }
+    var codigoVerifActual = '';
+    var idVerifActual = '';
+
+    function urlVerificarBase() { return baseUrl.replace(/[^\/]*$/, '') + 'verificar.html'; }
+
+    async function sha256Hex(bytes) {
+      var h = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+      var o = '';
+      for (var i = 0; i < h.length; i++) o += ('0' + h[i].toString(16)).slice(-2);
+      return o;
+    }
+
+    async function calcularCodigoVerif(id, d) {
+      var partes = [id, FORMATO_VERIF];
+      CAMPOS_VERIF.forEach(function(k) { partes.push(k + '=' + String(d[k] == null ? '' : d[k])); });
+      var hex = await sha256Hex(new TextEncoder().encode(JSON.stringify(partes)));
+      return hex.slice(0, 16).toUpperCase().match(/.{4}/g).join('-');
+    }
+
+    function base64ABytes(b64) {
+      var bin = atob(b64), u = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      return u;
+    }
+
+    // Registra (o agrega) la huella del PDF en la ficha pública mínima del reporte
+    async function guardarFichaVerif(id, d, codigo, hashPdf) {
+      var token = await tokenValido();
+      var url = FS_BASE + "/verificaciones/" + encodeURIComponent(id);
+      var hdr = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+      var existente = null;
+      try { existente = await pedir(url + "?key=" + API_KEY); }
+      catch (e) { if (e.status !== 404) throw e; }
+      if (!existente) {
+        await pedir(FS_BASE + "/verificaciones?documentId=" + encodeURIComponent(id) + "&key=" + API_KEY, {
+          method: 'POST', headers: hdr,
+          body: JSON.stringify({ fields: aCampos({
+            coleccion: COLECCION,
+            formato: FORMATO_VERIF,
+            codigo: codigo,
+            fechaReporte: (d.fecha || '') + ' ' + horaCompleta(d.hora),
+            fechaAprobacion: String(d.fechaFirmaAdm || '').slice(0, 19),
+            pdfHashes: hashPdf
+          }) })
+        });
+        return;
+      }
+      var f = deCampos(existente.fields);
+      var lista = (f.pdfHashes || '').split(',').filter(Boolean);
+      if (lista.indexOf(hashPdf) >= 0 || lista.length >= 10) return;
+      lista.push(hashPdf);
+      await pedir(url + "?updateMask.fieldPaths=pdfHashes&key=" + API_KEY, {
+        method: 'PATCH', headers: hdr,
+        body: JSON.stringify({ fields: aCampos({ pdfHashes: lista.join(',') }) })
+      });
+    }
 
     function ahora() {
       var p = {};
@@ -1585,6 +1807,20 @@
         restaurar.push(function() { faEl.innerHTML = faPrev; });
       }
 
+      var vb = document.getElementById('verif-box');
+      if (codigoVerifActual && idVerifActual && vb) {
+        try {
+          var qrImg = document.getElementById('verif-qr');
+          qrImg.src = qrDataUrl(urlVerificarBase() + '?id=' + idVerifActual, 260);
+          try { await qrImg.decode(); } catch (eq) {}
+          document.getElementById('verif-codigo').textContent = codigoVerifActual;
+          document.getElementById('verif-id').textContent = idVerifActual;
+          document.getElementById('verif-url').textContent = urlVerificarBase().replace(/^https?:\/\//, '');
+          vb.classList.remove('hidden');
+          restaurar.push(function() { vb.classList.add('hidden'); });
+        } catch (ev) { console.error('Recuadro de verificación:', ev); }
+      }
+
       var nombrePdf = obtenerNombrePDF();
 
       var inputs = pdfArea.querySelectorAll('input, select, textarea');
@@ -1616,8 +1852,12 @@
         filename: nombrePdf,
         image: { type: 'jpeg', quality: 0.9 },
         html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        jsPDF: (function() {
+          var j = { unit: 'mm', format: 'a4', orientation: 'portrait' };
+          if (PROTEGER_PDF) j.encryption = { userPassword: '', ownerPassword: claveAleatoria(), userPermissions: ['print', 'print-high'] };
+          return j;
+        })(),
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['.verif-box'] }
       };
 
       try {
@@ -1632,6 +1872,7 @@
             pdfObj.setTextColor(100, 116, 139);
 
             pdfObj.text(nombrePdf, 10, pageHeight - 6);
+            if (codigoVerifActual) pdfObj.text('Cód. ' + codigoVerifActual, pageWidth / 2, pageHeight - 6, { align: 'center' });
             var textoPagina = "Página " + i + " de " + totalPages;
             pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
           }
@@ -1648,9 +1889,15 @@
         document.body.classList.remove('is-generating-pdf');
         
         // Extraer unicamente el string en Base64
+        var b64Pdf = pdfDataUri.split(',')[1];
+        var protegido = false;
+        if (PROTEGER_PDF) {
+          try { protegido = atob(b64Pdf).indexOf('/Encrypt') >= 0; } catch (ep) {}
+        }
         return {
-          base64: pdfDataUri.split(',')[1],
-          filename: nombrePdf
+          base64: b64Pdf,
+          filename: nombrePdf,
+          protegido: protegido
         };
       } catch(err) {
         reponer.forEach(function(item) {
@@ -1923,7 +2170,16 @@
       }
 
       async function enviarCorreoConPdf(reenviar) {
+        await prepararVerificacion();
         var pdf = await generarPdfBase64(fechaAdmActual());
+        var verifError = '';
+        try {
+          if (!codigoVerifActual) throw new Error('no se pudo calcular el código');
+          await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdf.base64)));
+        } catch (e) {
+          verifError = (e && e.message) || String(e);
+          console.error('Ficha de verificación:', e);
+        }
         var xlsx = null, excelError = '', pdfUrl = '', pdfUrlError = '';
         try {
           var gp = await enviarPorAppsScript({
@@ -1956,11 +2212,24 @@
         });
         if (excelError) res.excelError = excelError;
         if (pdfUrlError) res.pdfUrlError = pdfUrlError;
+        if (verifError) res.verifError = verifError;
+        if (PROTEGER_PDF && !pdf.protegido) res.sinBloqueo = true;
+        res.codigoVerif = codigoVerifActual;
         return res;
       }
 
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
+
+      async function prepararVerificacion() {
+        codigoVerifActual = ''; idVerifActual = '';
+        try {
+          if (datosReporte && datosReporte.estado === 'aprobado' && reporteId) {
+            codigoVerifActual = await calcularCodigoVerif(reporteId, datosReporte);
+            idVerifActual = reporteId;
+          }
+        } catch (e) { console.error('Código de verificación:', e); }
+      }
 
       async function descargarPDF() {
         btnSubmit.disabled = true;
@@ -1968,7 +2237,12 @@
         btnSubmit.innerText = "Generando PDF...";
 
         try {
+          await prepararVerificacion();
           var pdfObj = await generarPdfBase64(fechaAdmActual());
+          if (esCoordSesion && codigoVerifActual) {
+            // si el coordinador baja una copia, también queda registrada como original válido
+            try { await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdfObj.base64))); } catch (e) { console.error('Ficha de verificación:', e); }
+          }
           var link = document.createElement('a');
           link.href = "data:application/pdf;base64," + pdfObj.base64;
           link.download = pdfObj.filename;
@@ -2107,6 +2381,8 @@
             if (rs && rs.adjuntos && rs.adjuntos.length) msg += "\n\nAdjuntos: " + rs.adjuntos.join(", ");
             if (rs && rs.pdfUrlError) msg += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
             if (rs && rs.excelError) msg += "\n\nOJO: el Excel no se pudo generar (" + rs.excelError + "). Se envió solo el PDF.";
+            if (rs && rs.sinBloqueo) msg += "\n\nOJO: el PDF salió SIN bloqueo de edición (la librería de PDF no lo aplicó). Avísale a Jorge.";
+            if (rs && rs.verifError) msg += "\n\nOJO: el código de verificación va impreso, pero no quedó registrado (" + rs.verifError + "). Revisa que las reglas de Firestore estén publicadas.";
             alert(msg);
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
             mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
@@ -2152,6 +2428,8 @@
           if (rs2 && rs2.adjuntos && rs2.adjuntos.length) m2 += "\n\nAdjuntos: " + rs2.adjuntos.join(", ");
           if (rs2 && rs2.pdfUrlError) m2 += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs2.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
           if (rs2 && rs2.excelError) m2 += "\n\nOJO: el Excel no se pudo generar (" + rs2.excelError + "). Se envió solo el PDF.";
+          if (rs2 && rs2.sinBloqueo) m2 += "\n\nOJO: el PDF salió SIN bloqueo de edición.";
+          if (rs2 && rs2.verifError) m2 += "\n\nOJO: no se pudo registrar la verificación (" + rs2.verifError + ").";
           alert(m2);
         } catch (e) {
           alert("No se pudo enviar el correo: " + textoError(e));
