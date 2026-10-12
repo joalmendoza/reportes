@@ -651,7 +651,9 @@
 
       <!-- OBSERVACIONES -->
       <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
-      <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
+      <div id="obs-auto" class="hidden" style="border:1px solid #fca5a5;background:#fef2f2;border-radius:6px;padding:8px 10px;margin:4px 0 8px;font-size:12px;color:#991b1b;line-height:1.5;"></div>
+      <label id="obs-label" style="font-weight: bold; font-size: 12px; color:#334155;">Observaciones adicionales del técnico:</label>
+      <textarea id="observaciones" class="input-field" rows="3" placeholder="Escribe aquí si quieres agregar algo (si no, déjalo vacío)"></textarea>
 
       <!-- SECCIÓN DE FIRMAS DUALES -->
       <div class="signatures-grid">
@@ -1432,12 +1434,22 @@
         }
       });
 
-      var obsTextarea = document.getElementById('observaciones');
-      if (obsTextarea) {
+      // Lo fuera de especificación se muestra aparte (se calcula solo); el texto del técnico no se toca
+      var obsAuto = document.getElementById('obs-auto');
+      if (obsAuto) {
+        obsAuto.textContent = '';
         if (desviaciones.length > 0) {
-          obsTextarea.value = "VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n- " + desviaciones.join("\n- ");
-        } else if (obsTextarea.value.indexOf("VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:") === 0) {
-          obsTextarea.value = "";
+          var tt = document.createElement('b');
+          tt.textContent = 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:';
+          obsAuto.appendChild(tt);
+          desviaciones.forEach(function(t) {
+            var ln = document.createElement('div');
+            ln.textContent = '- ' + t;
+            obsAuto.appendChild(ln);
+          });
+          obsAuto.classList.remove('hidden');
+        } else {
+          obsAuto.classList.add('hidden');
         }
       }
       sincronizarTarjetas();
@@ -1693,7 +1705,7 @@
         fuera.length,
         fuera.map(function(i) { return i.nombre + ' = ' + i.valor + (i.unidad ? ' ' + i.unidad : ''); }).join('; ')
       ].concat(items.map(function(i) { return i.valor; })).concat([
-        (document.getElementById('observaciones').value || d.observaciones || '').trim().split(/\r?\n/).map(function(t) { return t.replace(/^\s*-\s*/, '').trim(); }).filter(Boolean).join(' • '),
+        textoObsTecnico(document.getElementById('observaciones').value || d.observaciones || '').split(/\r?\n/).map(function(t) { return t.trim(); }).filter(Boolean).join(' • '),
         idRep ? (baseUrl + '?mode=ver&id=' + idRep) : '',
         d.pdfUrl || '',
         firmaTecTxt,
@@ -1764,6 +1776,25 @@
     }
 
     // GENERAR PDF EN MEMORIA BASE64
+    // Observaciones que escribe el técnico: si no hay nada, "N.A."
+    // (los reportes viejos guardaban ahí el bloque automático de fuera de especificación; se ignora)
+    function textoObsTecnico(v) {
+      v = String(v || '').trim();
+      if (v.indexOf('VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:') === 0) v = '';
+      return v || 'N.A.';
+    }
+
+    // En el PDF hay un solo recuadro de OBSERVACIONES (el formato impreso no cambia):
+    // primero lo fuera de especificación (si hay) y después lo que agregó el técnico (o N.A.)
+    function textoObsPdf() {
+      var tec = textoObsTecnico(document.getElementById('observaciones').value);
+      var auto = document.getElementById('obs-auto');
+      if (!auto || auto.classList.contains('hidden') || !auto.textContent.trim()) return tec;
+      var lineas = [];
+      auto.querySelectorAll('div').forEach(function(d) { lineas.push(d.textContent); });
+      return 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n' + lineas.join('\n') + '\nAdicional: ' + tec;
+    }
+
     async function generarPdfBase64(fechaAdmTexto) {
       var pdfArea = document.getElementById('pdf-area');
       document.body.classList.add('is-generating-pdf');
@@ -1823,11 +1854,20 @@
 
       var nombrePdf = obtenerNombrePDF();
 
+      ['obs-auto', 'obs-label'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var prev = el.style.display;
+        el.style.display = 'none';
+        restaurar.push(function() { el.style.display = prev; });
+      });
+
       var inputs = pdfArea.querySelectorAll('input, select, textarea');
       var reponer = [];
 
       inputs.forEach(function(inp) {
         var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
+        if (inp.id === 'observaciones') valText = textoObsPdf();
         var span = document.createElement('span');
         span.style.fontWeight = 'bold';
         span.style.color = '#000';
@@ -1995,7 +2035,7 @@
         document.getElementById('tag82').value = d.tag82 || '';
         document.getElementById('tag83').value = d.tag83 || '';
         document.getElementById('fugas').value = d.fugas || 'NO';
-        document.getElementById('observaciones').value = d.observaciones || '';
+        document.getElementById('observaciones').value = (textoObsTecnico(d.observaciones) === 'N.A.') ? '' : textoObsTecnico(d.observaciones);
         
         evaluarRangos();
 
