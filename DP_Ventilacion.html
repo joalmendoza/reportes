@@ -223,6 +223,11 @@
       font-kerning: none !important;
     }
     .is-generating-pdf .btn-clear { display: none !important; }
+    .verif-box { display:flex; gap:12px; align-items:center; border-top:2px solid #1e3a8a; margin-top:16px; padding-top:10px; page-break-inside:avoid; break-inside:avoid; }
+    .verif-box img { width:74px; height:74px; flex:none; }
+    .verif-txt { font-size:9.5px; line-height:1.55; color:#334155; word-break:break-all; }
+    .verif-txt b { color:#111; }
+    .verif-cod { font-family:'Courier New',monospace !important; font-weight:bold; font-size:13px; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:1px 6px; border-radius:3px; }
   </style>
 
   <!-- LIBRERÍAS EXTERNAS -->
@@ -246,7 +251,7 @@
       <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
 
       <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
-      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v9 DP | CVSAI018-F001</p>
+      <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v11 DP | CVSAI018-F001</p>
     </div>
   </div>
 
@@ -316,7 +321,9 @@
 
       <!-- OBSERVACIONES -->
       <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
-      <textarea id="observaciones" class="input-field" rows="3" placeholder="Comentarios adicionales..."></textarea>
+      <div id="obs-auto" class="hidden" style="border:1px solid #fca5a5;background:#fef2f2;border-radius:6px;padding:8px 10px;margin:4px 0 8px;font-size:12px;color:#991b1b;line-height:1.5;"></div>
+      <label id="obs-label" style="font-weight: bold; font-size: 12px; color:#334155;">Observaciones adicionales del técnico:</label>
+      <textarea id="observaciones" class="input-field" rows="3" placeholder="Escribe aquí si quieres agregar algo (si no, déjalo vacío)"></textarea>
 
       <!-- SECCIÓN DE FIRMAS DUALES -->
       <div class="signatures-grid">
@@ -347,6 +354,18 @@
         </div>
       </div>
 
+
+      <!-- RECUADRO DE VERIFICACIÓN (solo sale en el PDF) -->
+      <div id="verif-box" class="verif-box hidden">
+        <img id="verif-qr" alt="QR de verificación" width="74" height="74">
+        <div class="verif-txt">
+          <b>VERIFICACIÓN DEL REPORTE</b><br>
+          Código: <span id="verif-codigo" class="verif-cod"></span><br>
+          ID del reporte: <span id="verif-id"></span><br>
+          Verifica en: <span id="verif-url"></span><br>
+          Si el código no coincide, el reporte fue modificado.
+        </div>
+      </div>
     </div>
 
     <button type="button" id="btn-submit-main" class="btn" style="background: #16a34a;">Enviar a WhatsApp</button>
@@ -596,6 +615,213 @@
     var baseUrl = window.location.origin + window.location.pathname;
 
     var padTech, padAdmin;
+    /* ===== Generador de QR propio (modo byte, corrección M, versiones 1 a 10) ===== */
+    function qrMatriz(texto) {
+      var bytes = Array.prototype.slice.call(new TextEncoder().encode(texto));
+      var EC = {1:[10,[[1,16]]],2:[16,[[1,28]]],3:[26,[[1,44]]],4:[18,[[2,32]]],5:[24,[[2,43]]],6:[16,[[4,27]]],7:[18,[[4,31]]],8:[22,[[2,38],[2,39]]],9:[22,[[3,36],[2,37]]],10:[26,[[4,43],[1,44]]]};
+      var ALIGN = {1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
+      var ver = 0, cap = 0, i, j, k;
+      for (var v = 1; v <= 10; v++) {
+        var c = EC[v][1].reduce(function(a, g) { return a + g[0] * g[1]; }, 0);
+        if (4 + (v < 10 ? 8 : 16) + bytes.length * 8 <= c * 8) { ver = v; cap = c; break; }
+      }
+      if (!ver) throw new Error('QR demasiado largo');
+      var bits = [];
+      function put(val, n) { for (var q = n - 1; q >= 0; q--) bits.push((val >>> q) & 1); }
+      put(4, 4); put(bytes.length, ver < 10 ? 8 : 16);
+      bytes.forEach(function(b) { put(b, 8); });
+      put(0, Math.min(4, cap * 8 - bits.length));
+      while (bits.length % 8) bits.push(0);
+      for (var pad = 0xEC; bits.length < cap * 8; pad ^= 0xEC ^ 0x11) put(pad, 8);
+      var data = [];
+      for (i = 0; i < bits.length; i += 8) { var bv = 0; for (j = 0; j < 8; j++) bv = bv * 2 + bits[i + j]; data.push(bv); }
+
+      var EXP = [], LOG = [], x = 1;
+      for (i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11D; }
+      for (i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+      function mul(a, b) { return (a && b) ? EXP[LOG[a] + LOG[b]] : 0; }
+      function gen(n) {
+        var g = [1];
+        for (var a = 0; a < n; a++) {
+          var ng = new Array(g.length + 1).fill(0);
+          for (var b = 0; b < g.length; b++) { ng[b] ^= g[b]; ng[b + 1] ^= mul(g[b], EXP[a]); }
+          g = ng;
+        }
+        return g;
+      }
+      function resto(d, n) {
+        var g = gen(n), r = new Array(n).fill(0);
+        d.forEach(function(b) {
+          var f = b ^ r[0]; r.shift(); r.push(0);
+          if (f) for (var a = 0; a < n; a++) r[a] ^= mul(g[a + 1], f);
+        });
+        return r;
+      }
+      var ecn = EC[ver][0], blocks = [], pos = 0;
+      EC[ver][1].forEach(function(g) {
+        for (var n = 0; n < g[0]; n++) { var d = data.slice(pos, pos + g[1]); pos += g[1]; blocks.push({ d: d, e: resto(d, ecn) }); }
+      });
+      var out = [], maxd = Math.max.apply(null, blocks.map(function(b) { return b.d.length; }));
+      for (i = 0; i < maxd; i++) blocks.forEach(function(b) { if (i < b.d.length) out.push(b.d[i]); });
+      for (i = 0; i < ecn; i++) blocks.forEach(function(b) { out.push(b.e[i]); });
+
+      var size = 17 + 4 * ver, m = [], fn = [];
+      for (i = 0; i < size; i++) { m.push(new Array(size).fill(false)); fn.push(new Array(size).fill(false)); }
+      function setFn(px, py, val) { if (px < 0 || py < 0 || px >= size || py >= size) return; m[py][px] = !!val; fn[py][px] = true; }
+      for (i = 0; i < size; i++) { setFn(6, i, i % 2 === 0); setFn(i, 6, i % 2 === 0); }
+      function finder(cx, cy) {
+        for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++) {
+          var dist = Math.max(Math.abs(dx), Math.abs(dy)); setFn(cx + dx, cy + dy, dist !== 2 && dist !== 4);
+        }
+      }
+      finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+      var al = ALIGN[ver];
+      for (i = 0; i < al.length; i++) for (j = 0; j < al.length; j++) {
+        if ((i === 0 && j === 0) || (i === 0 && j === al.length - 1) || (i === al.length - 1 && j === 0)) continue;
+        for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) setFn(al[i] + dx, al[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+      }
+      function formato(mask) {
+        var d = (0 << 3) | mask, r = d;
+        for (var a = 0; a < 10; a++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+        var b = ((d << 10) | r) ^ 0x5412;
+        function bit(n) { return ((b >>> n) & 1) !== 0; }
+        for (var a2 = 0; a2 <= 5; a2++) setFn(8, a2, bit(a2));
+        setFn(8, 7, bit(6)); setFn(8, 8, bit(7)); setFn(7, 8, bit(8));
+        for (var a3 = 9; a3 < 15; a3++) setFn(14 - a3, 8, bit(a3));
+        for (var a4 = 0; a4 < 8; a4++) setFn(size - 1 - a4, 8, bit(a4));
+        for (var a5 = 8; a5 < 15; a5++) setFn(8, size - 15 + a5, bit(a5));
+        setFn(8, size - 8, true);
+      }
+      formato(0);
+      if (ver >= 7) {
+        var rv = ver;
+        for (i = 0; i < 12; i++) rv = (rv << 1) ^ ((rv >>> 11) * 0x1F25);
+        var vb = (ver << 12) | rv;
+        for (i = 0; i < 18; i++) { var bt = ((vb >>> i) & 1) !== 0, a6 = size - 11 + i % 3, b6 = Math.floor(i / 3); setFn(a6, b6, bt); setFn(b6, a6, bt); }
+      }
+      var idx = 0;
+      for (var right = size - 1; right >= 1; right -= 2) {
+        if (right === 6) right = 5;
+        for (var vert = 0; vert < size; vert++) for (j = 0; j < 2; j++) {
+          var xx = right - j, up = ((right + 1) & 2) === 0, yy = up ? size - 1 - vert : vert;
+          if (!fn[yy][xx] && idx < out.length * 8) { m[yy][xx] = ((out[idx >>> 3] >>> (7 - (idx & 7))) & 1) !== 0; idx++; }
+        }
+      }
+      var MASCARAS = [
+        function(a, b) { return (a + b) % 2 === 0; }, function(a, b) { return b % 2 === 0; },
+        function(a, b) { return a % 3 === 0; }, function(a, b) { return (a + b) % 3 === 0; },
+        function(a, b) { return (Math.floor(a / 3) + Math.floor(b / 2)) % 2 === 0; },
+        function(a, b) { return a * b % 2 + a * b % 3 === 0; },
+        function(a, b) { return (a * b % 2 + a * b % 3) % 2 === 0; },
+        function(a, b) { return ((a + b) % 2 + a * b % 3) % 2 === 0; }
+      ];
+      function aplicar(mask) { for (var yy2 = 0; yy2 < size; yy2++) for (var xx2 = 0; xx2 < size; xx2++) if (!fn[yy2][xx2] && MASCARAS[mask](xx2, yy2)) m[yy2][xx2] = !m[yy2][xx2]; }
+      function penalidad() {
+        var p = 0, a, b, run, col;
+        for (var pass = 0; pass < 2; pass++) {
+          for (a = 0; a < size; a++) {
+            run = 1; var hist = [];
+            for (b = 0; b < size; b++) {
+              var cur = pass ? m[b][a] : m[a][b];
+              hist.push(cur ? 1 : 0);
+              if (b > 0) { var prev = pass ? m[b - 1][a] : m[a][b - 1]; if (cur === prev) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; }
+            }
+            var s = hist.join('');
+            var re = /10111010000|00001011101/g, mm;
+            while ((mm = re.exec(s)) !== null) { p += 40; re.lastIndex = mm.index + 1; }
+          }
+        }
+        for (a = 0; a < size - 1; a++) for (b = 0; b < size - 1; b++) { col = m[a][b]; if (col === m[a][b + 1] && col === m[a + 1][b] && col === m[a + 1][b + 1]) p += 3; }
+        var dark = 0; for (a = 0; a < size; a++) for (b = 0; b < size; b++) if (m[a][b]) dark++;
+        p += (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1) * 10;
+        return p;
+      }
+      var mejor = 0, mejorP = Infinity;
+      for (k = 0; k < 8; k++) { aplicar(k); formato(k); var pp = penalidad(); if (pp < mejorP) { mejorP = pp; mejor = k; } aplicar(k); }
+      aplicar(mejor); formato(mejor);
+      return m;
+    }
+
+    function qrDataUrl(texto, px) {
+      var m = qrMatriz(texto), n = m.length, q = 4, mod = Math.max(2, Math.floor((px || 200) / (n + 2 * q)));
+      var cv = document.createElement('canvas'); cv.width = cv.height = (n + 2 * q) * mod;
+      var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.fillStyle = '#000';
+      for (var yy = 0; yy < n; yy++) for (var xx = 0; xx < n; xx++) if (m[yy][xx]) cx.fillRect((xx + q) * mod, (yy + q) * mod, mod, mod);
+      return cv.toDataURL('image/png');
+    }
+
+    /* ===== VERIFICACIÓN DEL REPORTE ===== */
+    var FORMATO_VERIF = "CVSAI018-F001 DP Ventilación";
+    var CAMPOS_FIJOS_VERIF = ['fechaInicio','horaInicio','fecha','hora','tecnico','observaciones'];
+    var CAMPOS_FINALES_VERIF = ['firmaTec','firmaAdm','fechaFirmaAdm'];
+    function camposVerif() {
+      return CAMPOS_FIJOS_VERIF.concat(listaEquipos.map(function(e) { return e.id; }), CAMPOS_FINALES_VERIF);
+    }
+    // Bloqueo del PDF: se abre e imprime normal, pero Adobe/Chrome/celular no dejan editar, copiar ni anotar.
+    // Si algún día da problema, cambia true por false y el PDF sale como antes.
+    var PROTEGER_PDF = true;
+    function claveAleatoria() {
+      var a = new Uint8Array(16), o = '';
+      crypto.getRandomValues(a);
+      for (var i = 0; i < a.length; i++) o += ('0' + a[i].toString(16)).slice(-2);
+      return o;
+    }
+    var codigoVerifActual = '';
+    var idVerifActual = '';
+
+    function urlVerificarBase() { return baseUrl.replace(/[^\/]*$/, '') + 'verificar.html'; }
+
+    async function sha256Hex(bytes) {
+      var h = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+      var o = '';
+      for (var i = 0; i < h.length; i++) o += ('0' + h[i].toString(16)).slice(-2);
+      return o;
+    }
+
+    async function calcularCodigoVerif(id, d) {
+      var partes = [id, FORMATO_VERIF];
+      camposVerif().forEach(function(k) { partes.push(k + '=' + String(d[k] == null ? '' : d[k])); });
+      var hex = await sha256Hex(new TextEncoder().encode(JSON.stringify(partes)));
+      return hex.slice(0, 16).toUpperCase().match(/.{4}/g).join('-');
+    }
+
+    function base64ABytes(b64) {
+      var bin = atob(b64), u = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      return u;
+    }
+
+    // Registra (o agrega) la huella del PDF en la ficha pública mínima del reporte
+    async function guardarFichaVerif(id, d, codigo, hashPdf) {
+      var token = await tokenValido();
+      var url = FS_BASE + "/verificaciones/" + encodeURIComponent(id);
+      var hdr = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+      var existente = null;
+      try { existente = await pedir(url + "?key=" + API_KEY); }
+      catch (e) { if (e.status !== 404) throw e; }
+      if (!existente) {
+        await pedir(FS_BASE + "/verificaciones?documentId=" + encodeURIComponent(id) + "&key=" + API_KEY, {
+          method: 'POST', headers: hdr,
+          body: JSON.stringify({ fields: aCampos({
+            coleccion: COLECCION,
+            formato: FORMATO_VERIF,
+            codigo: codigo,
+            fechaReporte: (d.fecha || '') + ' ' + horaCompleta(d.hora),
+            fechaAprobacion: String(d.fechaFirmaAdm || '').slice(0, 19),
+            pdfHashes: hashPdf
+          }) })
+        });
+        return;
+      }
+      var f = deCampos(existente.fields);
+      var lista = (f.pdfHashes || '').split(',').filter(Boolean);
+      if (lista.indexOf(hashPdf) >= 0 || lista.length >= 10) return;
+      lista.push(hashPdf);
+      await pedir(url + "?updateMask.fieldPaths=pdfHashes&key=" + API_KEY, {
+        method: 'PATCH', headers: hdr,
+        body: JSON.stringify({ fields: aCampos({ pdfHashes: lista.join(',') }) })
+      });
+    }
 
     function ahora() {
       var p = {};
@@ -744,12 +970,22 @@
         }
       });
 
-      var obsTextarea = document.getElementById('observaciones');
-      if (obsTextarea) {
+      // Lo fuera de especificación se muestra aparte (se calcula solo); el texto del técnico no se toca
+      var obsAuto = document.getElementById('obs-auto');
+      if (obsAuto) {
+        obsAuto.textContent = '';
         if (desviaciones.length > 0) {
-          obsTextarea.value = "VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n- " + desviaciones.join("\n- ");
-        } else if (obsTextarea.value.indexOf("VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:") === 0) {
-          obsTextarea.value = "";
+          var tt = document.createElement('b');
+          tt.textContent = 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:';
+          obsAuto.appendChild(tt);
+          desviaciones.forEach(function(t) {
+            var ln = document.createElement('div');
+            ln.textContent = '- ' + t;
+            obsAuto.appendChild(ln);
+          });
+          obsAuto.classList.remove('hidden');
+        } else {
+          obsAuto.classList.add('hidden');
         }
       }
     }
@@ -976,9 +1212,9 @@
         aFechaExcel(pAdm[0], pAdm.slice(1).join(' ')),
         fuera.length ? 'Con desviaciones' : 'Cumple',
         fuera.length,
-        fuera.map(function(i) { return i.nombre; }).join('; ')
+        fuera.map(function(i) { return i.nombre + ' = ' + i.valor + (i.unidad ? ' ' + i.unidad : ''); }).join('; ')
       ].concat(items.map(function(i) { return i.valor; })).concat([
-        (document.getElementById('observaciones').value || d.observaciones || '').trim(),
+        textoObsTecnico(document.getElementById('observaciones').value || d.observaciones || '').split(/\r?\n/).map(function(t) { return t.trim(); }).filter(Boolean).join(' • '),
         idRep ? (baseUrl + '?mode=ver&id=' + idRep) : '',
         d.pdfUrl || '',
         firmaTecTxt,
@@ -1009,6 +1245,9 @@
         ws.getCell(2, c).alignment = { vertical: 'top', horizontal: 'left', wrapText: (n === 'Observaciones' || n === 'Parámetros fuera de rango') };
       });
       ws.getRow(1).height = Math.min(210, Math.max(45, Math.ceil(maxCab / 17) * 15 + 6));
+      // Altura de la fila de datos: que se vea completo el texto de Observaciones y de Parámetros fuera de rango
+      var altObs = Math.ceil(String(fila[nF + items.length] || '').length / 55), altPar = Math.ceil(String(fila[13] || '').length / 38);
+      ws.getRow(2).height = Math.min(400, Math.max(30, Math.max(altObs, altPar) * 15 + 4));
       [5, 6, 11].forEach(function(c) { ws.getCell(2, c).numFmt = 'yyyy-mm-dd hh:mm:ss'; });
       items.forEach(function(it, i) {
         var ce = ws.getCell(2, nF + i + 1);
@@ -1042,10 +1281,42 @@
       }
 
       var buf = await wb.xlsx.writeBuffer();
-      return { base64: bufferABase64(buf), filename: obtenerNombrePDF().replace(/\.pdf$/i, '.xlsx') };
+
+      // Datos para el historial maestro en Drive: la misma fila, sin las firmas en base64 (pesan mucho)
+      var histCols = [], histVals = [], histFuera = [];
+      cols.forEach(function(n, i) {
+        if (/\(base64\)$/.test(n)) return;
+        var v = fila[i];
+        if (v instanceof Date) v = v.toISOString().slice(0, 19).replace('T', ' ');   // la hora local se guardó como si fuera UTC
+        histCols.push(n);
+        histVals.push(v === null || v === undefined ? '' : v);
+      });
+      items.forEach(function(it) { if (it.fuera) histFuera.push(it.col); });
+
+      return { base64: bufferABase64(buf), filename: obtenerNombrePDF().replace(/\.pdf$/i, '.xlsx'),
+               histCols: histCols, histVals: histVals, histFuera: histFuera };
     }
 
     // GENERAR PDF EN MEMORIA BASE64
+    // Observaciones que escribe el técnico: si no hay nada, "N.A."
+    // (los reportes viejos guardaban ahí el bloque automático de fuera de especificación; se ignora)
+    function textoObsTecnico(v) {
+      v = String(v || '').trim();
+      if (v.indexOf('VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:') === 0) v = '';
+      return v || 'N.A.';
+    }
+
+    // En el PDF hay un solo recuadro de OBSERVACIONES (el formato impreso no cambia):
+    // primero lo fuera de especificación (si hay) y después lo que agregó el técnico (o N.A.)
+    function textoObsPdf() {
+      var tec = textoObsTecnico(document.getElementById('observaciones').value);
+      var auto = document.getElementById('obs-auto');
+      if (!auto || auto.classList.contains('hidden') || !auto.textContent.trim()) return tec;
+      var lineas = [];
+      auto.querySelectorAll('div').forEach(function(d) { lineas.push(d.textContent); });
+      return 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n' + lineas.join('\n') + '\nAdicional: ' + tec;
+    }
+
     async function generarPdfBase64(fechaAdmTexto) {
       var pdfArea = document.getElementById('pdf-area');
       document.body.classList.add('is-generating-pdf');
@@ -1089,13 +1360,36 @@
         restaurar.push(function() { faEl.innerHTML = faPrev; });
       }
 
+      var vb = document.getElementById('verif-box');
+      if (codigoVerifActual && idVerifActual && vb) {
+        try {
+          var qrImg = document.getElementById('verif-qr');
+          qrImg.src = qrDataUrl(urlVerificarBase() + '?id=' + idVerifActual, 260);
+          try { await qrImg.decode(); } catch (eq) {}
+          document.getElementById('verif-codigo').textContent = codigoVerifActual;
+          document.getElementById('verif-id').textContent = idVerifActual;
+          document.getElementById('verif-url').textContent = urlVerificarBase().replace(/^https?:\/\//, '');
+          vb.classList.remove('hidden');
+          restaurar.push(function() { vb.classList.add('hidden'); });
+        } catch (ev) { console.error('Recuadro de verificación:', ev); }
+      }
+
       var nombrePdf = obtenerNombrePDF();
+
+      ['obs-auto', 'obs-label'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var prev = el.style.display;
+        el.style.display = 'none';
+        restaurar.push(function() { el.style.display = prev; });
+      });
 
       var inputs = pdfArea.querySelectorAll('input, select, textarea');
       var reponer = [];
 
       inputs.forEach(function(inp) {
         var valText = (inp.tagName === 'SELECT') ? inp.options[inp.selectedIndex].text : inp.value;
+        if (inp.id === 'observaciones') valText = textoObsPdf();
         var span = document.createElement('span');
         span.style.fontWeight = 'bold';
         span.style.color = '#000';
@@ -1120,8 +1414,12 @@
         filename: nombrePdf,
         image: { type: 'jpeg', quality: 0.9 },
         html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        jsPDF: (function() {
+          var j = { unit: 'mm', format: 'a4', orientation: 'portrait' };
+          if (PROTEGER_PDF) j.encryption = { userPassword: '', ownerPassword: claveAleatoria(), userPermissions: ['print'] };
+          return j;
+        })(),
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['.verif-box'] }
       };
 
       try {
@@ -1136,6 +1434,7 @@
             pdfObj.setTextColor(100, 116, 139);
 
             pdfObj.text(nombrePdf, 10, pageHeight - 6);
+            if (codigoVerifActual) pdfObj.text('Cód. ' + codigoVerifActual, pageWidth / 2, pageHeight - 6, { align: 'center' });
             var textoPagina = "Página " + i + " de " + totalPages;
             pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
           }
@@ -1152,9 +1451,15 @@
         document.body.classList.remove('is-generating-pdf');
         
         // Extraer unicamente el string en Base64
+        var b64Pdf = pdfDataUri.split(',')[1];
+        var protegido = false;
+        if (PROTEGER_PDF) {
+          try { protegido = atob(b64Pdf).indexOf('/Encrypt') >= 0; } catch (ep) {}
+        }
         return {
-          base64: pdfDataUri.split(',')[1],
-          filename: nombrePdf
+          base64: b64Pdf,
+          filename: nombrePdf,
+          protegido: protegido
         };
       } catch(err) {
         reponer.forEach(function(item) {
@@ -1218,7 +1523,7 @@
 
       var diag = document.getElementById('diag');
       if (diag) {
-        diag.innerText = "v9 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
+        diag.innerText = "v11 DP | firma: " + (window.SignaturePad ? "ok" : "NO") +
           " | pdf: " + (window.html2pdf ? "ok" : "NO") +
           " | xlsx: " + (window.ExcelJS ? "ok" : "NO") +
           " | red: " + (navigator.onLine ? "ok" : "NO");
@@ -1276,7 +1581,7 @@
           }
         });
 
-        document.getElementById('observaciones').value = d.observaciones || '';
+        document.getElementById('observaciones').value = (textoObsTecnico(d.observaciones) === 'N.A.') ? '' : textoObsTecnico(d.observaciones);
 
         evaluarRangos();
 
@@ -1321,6 +1626,7 @@
       }
 
       function mostrarParaFirmar(d) {
+        vistaFinal = false;
         ponerDatosTecnico(d);
         badge.innerText = "Modo Coordinador";
         titulo.innerText = "Aprobación de Servicio";
@@ -1394,6 +1700,7 @@
         homeCoord.classList.add('hidden');
         mainScreen.classList.remove('hidden');
         document.getElementById('btn-logout').classList.toggle('hidden', !(modoAprobar || modoVer));
+        vistaFinal = false;
         userDisplay.innerText = "Cargando reporte...";
         badge.innerText = "Cargando...";
         btnSubmit.disabled = true;
@@ -1448,8 +1755,25 @@
         return (datosReporte && datosReporte.fechaFirmaAdm) || '';
       }
 
+      function textoExtras(rs) {
+        var t = '';
+        if (rs && rs.carpetaUrl) t += "\n\nPDF y Excel guardados en Drive.";
+        if (rs && rs.historial) t += "\nAgregado al historial.";
+        if (rs && rs.avisos && rs.avisos.length) t += "\n\nOJO:\n- " + rs.avisos.join("\n- ");
+        return t;
+      }
+
       async function enviarCorreoConPdf(reenviar) {
+        await prepararVerificacion();
         var pdf = await generarPdfBase64(fechaAdmActual());
+        var verifError = '';
+        try {
+          if (!codigoVerifActual) throw new Error('no se pudo calcular el código');
+          await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdf.base64)));
+        } catch (e) {
+          verifError = (e && e.message) || String(e);
+          console.error('Ficha de verificación:', e);
+        }
         var xlsx = null, excelError = '', pdfUrl = '', pdfUrlError = '';
         try {
           var gp = await enviarPorAppsScript({
@@ -1478,15 +1802,31 @@
           pdfBase64: pdf.base64,
           pdfFileName: pdf.filename,
           xlsxBase64: xlsx ? xlsx.base64 : '',
-          xlsxFileName: xlsx ? xlsx.filename : ''
+          xlsxFileName: xlsx ? xlsx.filename : '',
+          histCols: xlsx ? xlsx.histCols : undefined,
+          histVals: xlsx ? xlsx.histVals : undefined,
+          histFuera: xlsx ? xlsx.histFuera : undefined
         });
         if (excelError) res.excelError = excelError;
         if (pdfUrlError) res.pdfUrlError = pdfUrlError;
+        if (verifError) res.verifError = verifError;
+        if (PROTEGER_PDF && !pdf.protegido) res.sinBloqueo = true;
+        res.codigoVerif = codigoVerifActual;
         return res;
       }
 
       btnClearTech.onclick = function() { if (padTech) padTech.clear(); };
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
+
+      async function prepararVerificacion() {
+        codigoVerifActual = ''; idVerifActual = '';
+        try {
+          if (datosReporte && datosReporte.estado === 'aprobado' && reporteId) {
+            codigoVerifActual = await calcularCodigoVerif(reporteId, datosReporte);
+            idVerifActual = reporteId;
+          }
+        } catch (e) { console.error('Código de verificación:', e); }
+      }
 
       async function descargarPDF() {
         btnSubmit.disabled = true;
@@ -1494,7 +1834,12 @@
         btnSubmit.innerText = "Generando PDF...";
 
         try {
+          await prepararVerificacion();
           var pdfObj = await generarPdfBase64(fechaAdmActual());
+          if (esCoordSesion && codigoVerifActual) {
+            // si el coordinador baja una copia, también queda registrada como original válido
+            try { await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdfObj.base64))); } catch (e) { console.error('Ficha de verificación:', e); }
+          }
           var link = document.createElement('a');
           link.href = "data:application/pdf;base64," + pdfObj.base64;
           link.download = pdfObj.filename;
@@ -1606,6 +1951,9 @@
             if (rs && rs.adjuntos && rs.adjuntos.length) msg += "\n\nAdjuntos: " + rs.adjuntos.join(", ");
             if (rs && rs.pdfUrlError) msg += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
             if (rs && rs.excelError) msg += "\n\nOJO: el Excel no se pudo generar (" + rs.excelError + "). Se envió solo el PDF.";
+            if (rs && rs.sinBloqueo) msg += "\n\nOJO: el PDF salió SIN bloqueo de edición (la librería de PDF no lo aplicó). Avísale a Jorge.";
+            if (rs && rs.verifError) msg += "\n\nOJO: el código de verificación va impreso, pero no quedó registrado (" + rs.verifError + "). Revisa que las reglas de Firestore estén publicadas.";
+            msg += textoExtras(rs);
             alert(msg);
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
             mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
@@ -1638,7 +1986,7 @@
       };
 
       document.getElementById('btn-resend').onclick = async function() {
-        if (!confirm("¿Reenviar el correo con el PDF a los destinatarios?")) return;
+        if (!confirm("¿Reenviar el correo con el PDF y el Excel a los destinatarios?")) return;
         var b = this;
         var textoBtn = b.innerText;
         b.disabled = true;
@@ -1651,6 +1999,9 @@
           if (rs2 && rs2.adjuntos && rs2.adjuntos.length) m2 += "\n\nAdjuntos: " + rs2.adjuntos.join(", ");
           if (rs2 && rs2.pdfUrlError) m2 += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs2.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
           if (rs2 && rs2.excelError) m2 += "\n\nOJO: el Excel no se pudo generar (" + rs2.excelError + "). Se envió solo el PDF.";
+          if (rs2 && rs2.sinBloqueo) m2 += "\n\nOJO: el PDF salió SIN bloqueo de edición.";
+          if (rs2 && rs2.verifError) m2 += "\n\nOJO: no se pudo registrar la verificación (" + rs2.verifError + ").";
+          m2 += textoExtras(rs2);
           alert(m2);
         } catch (e) {
           alert("No se pudo enviar el correo: " + textoError(e));
