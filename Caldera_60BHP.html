@@ -272,7 +272,35 @@
     <h2 style="margin-top:0;">Sesión de coordinador</h2>
     <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
     <p style="font-size:14px; color:#6b7280;">Tu sesión sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
+    <button type="button" id="btn-bitacora" class="btn" style="background:#374151;margin-bottom:10px;" onclick="abrirBitacora()">📋 Bitácora de auditoría</button>
     <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
+  </div>
+
+  <!-- BITÁCORA DE AUDITORÍA (solo coordinador) -->
+  <div id="bitacora-screen" class="card hidden">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <button type="button" class="btn" style="width:auto;padding:8px 14px;background:#6b7280;" onclick="cerrarBitacora()">← Volver</button>
+      <h2 style="margin:0;font-size:18px;">Bitácora de auditoría</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <select id="bit-periodo" class="input-field" style="margin:0;" onchange="pintarBitacora()">
+        <option value="hoy">Hoy</option><option value="7" selected>Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="todo">Todo</option>
+      </select>
+      <select id="bit-formato" class="input-field" style="margin:0;" onchange="pintarBitacora()">
+        <option value="">Todos los formatos</option><option value="PAP">Planta de Agua</option><option value="DPV">DP Ventilación</option>
+      </select>
+      <select id="bit-usuario" class="input-field" style="margin:0;" onchange="pintarBitacora()"><option value="">Todos los usuarios</option></select>
+      <input type="text" id="bit-buscar" class="input-field" style="margin:0;" placeholder="Buscar por ID de reporte" oninput="pintarBitacora()">
+    </div>
+    <p id="bit-estado" style="font-size:12px;color:#6b7280;margin:10px 0 0;"></p>
+    <div id="bit-lista"></div>
+    <button type="button" id="bit-excel" class="btn" style="background:#16a34a;margin-top:12px;" onclick="descargarBitacoraExcel()">⬇ Descargar bitácora en Excel (protegido)</button>
+    <div style="margin-top:14px;font-size:12px;text-align:left;">
+      <b>Comprobar un Excel de bitácora</b><br>
+      <input type="file" accept=".xlsx" onchange="if(this.files[0]) comprobarExcelBitacora(this.files[0]); this.value='';">
+      <p id="bit-verif-res" style="margin:6px 0 0;"></p>
+    </div>
+    <p style="font-size:11px;color:#6b7280;text-align:center;margin-top:14px;">🔒 Los registros solo se pueden agregar. Nadie puede cambiarlos ni borrarlos desde la app.</p>
   </div>
 
   <!-- PANTALLA 2: FORMULARIO PRINCIPAL CVSAG005-F001 -->
@@ -818,7 +846,7 @@
           update: { name: FS_RAIZ + "/" + COLECCION + "/" + id, fields: aCampos(datos) },
           updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
           currentDocument: { exists: false }
-        }] })
+        }, escrituraBit('CREO_REPORTE', id, 'Reporte creado, pendiente de aprobación', perfil.nombre)] })
       });
       var tr = r && r.writeResults && r.writeResults[0] && r.writeResults[0].transformResults;
       datos.creadoEn = (tr && tr[0] && tr[0].timestampValue) || (r && r.commitTime) || '';
@@ -848,11 +876,260 @@
           updateMask: { fieldPaths: campos },
           updateTransforms: [{ fieldPath: 'aprobadoEn', setToServerValue: 'REQUEST_TIME' }],
           currentDocument: { exists: true }
-        }] })
+        }, escrituraBit('FIRMO_APROBO', id, 'Reporte firmado y aprobado', perfil.nombre)] })
       });
       var tr = r && r.writeResults && r.writeResults[0] && r.writeResults[0].transformResults;
       datos.aprobadoEn = (tr && tr[0] && tr[0].timestampValue) || (r && r.commitTime) || '';
       return datos;
+    }
+
+    // ===== BITÁCORA DE AUDITORÍA =====
+    // Cada acción importante agrega un renglón en la colección "bitacora" (solo se puede agregar; hora del servidor).
+    var FORMATO_BIT = 'PAP';
+    var NOMBRE_FORMATO_BIT = { PAP: 'Planta de Agua', DPV: 'DP Ventilación' };
+    var ETIQ_BIT = {
+      CREO_REPORTE: ['CREÓ REPORTE', '#2563eb'], FIRMO_APROBO: ['FIRMÓ Y APROBÓ', '#16a34a'],
+      GENERO_PDF: ['GENERÓ PDF', '#7c3aed'], DESCARGO_PDF: ['DESCARGÓ PDF', '#d97706'],
+      ENVIO_CORREO: ['ENVIÓ CORREO', '#0891b2'], REENVIO_CORREO: ['REENVIÓ CORREO', '#db2777']
+    };
+
+    function escrituraBit(evento, rid, detalle, nombre) {
+      return {
+        update: {
+          name: FS_RAIZ + "/bitacora/" + nuevoId(),
+          fields: aCampos({
+            evento: evento, usuario: ((sesion && sesion.email) || '').toLowerCase(), nombre: nombre,
+            formato: FORMATO_BIT, reporteId: rid, detalle: String(detalle || '').slice(0, 400)
+          })
+        },
+        updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
+        currentDocument: { exists: false }
+      };
+    }
+
+    // Eventos sueltos (PDF, descarga, correo): si falla, no interrumpe el trabajo; solo avisa en consola.
+    async function registrarEvento(evento, rid, detalle) {
+      try {
+        var token = await tokenValido();
+        var perfil = await perfilUsuario();
+        await pedir(FS_COMMIT + "?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ writes: [escrituraBit(evento, rid, detalle, perfil.nombre)] })
+        });
+        return true;
+      } catch (e) { console.error('Bitácora:', e); return false; }
+    }
+
+    var bitDatos = [];
+    var bitFiltradas = [];
+
+    function bitEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+    function bitFila(r) {
+      var s = sellosBogota(r.creadoEn);
+      return [r.id, s ? s.fecha + ' ' + s.hora : '', (ETIQ_BIT[r.evento] || [r.evento])[0], r.usuario, r.nombre,
+              NOMBRE_FORMATO_BIT[r.formato] || r.formato, r.reporteId, r.detalle || '', r.creadoEn];
+    }
+    var BIT_COLS = ['ID registro', 'Fecha y hora (Bogotá)', 'Evento', 'Usuario (correo)', 'Nombre', 'Formato', 'ID reporte', 'Detalle', 'Marca de tiempo UTC (servidor)'];
+
+    async function huellaBit(filas) {
+      var txt = filas.map(function(f) {
+        return f.map(function(x) { return String(x == null ? '' : x).replace(/[\r\n|]/g, ' ').trim(); }).join('|');
+      }).join('\n');
+      return await sha256Hex(new TextEncoder().encode(txt));
+    }
+
+    async function cargarBitacora() {
+      var est = document.getElementById('bit-estado');
+      est.innerText = 'Cargando…';
+      try {
+        var token = await tokenValido();
+        var r = await pedir(FS_BASE + ":runQuery?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ structuredQuery: {
+            from: [{ collectionId: 'bitacora' }],
+            orderBy: [{ field: { fieldPath: 'creadoEn' }, direction: 'DESCENDING' }],
+            limit: 5000
+          } })
+        }, 40000);
+        bitDatos = (Array.isArray(r) ? r : []).filter(function(x) { return x.document; }).map(function(x) {
+          var d = deCampos(x.document.fields);
+          d.id = x.document.name.split('/').pop();
+          return d;
+        });
+        var us = {};
+        bitDatos.forEach(function(d) { us[d.usuario] = d.nombre || d.usuario; });
+        var sel = document.getElementById('bit-usuario'), actual = sel.value;
+        sel.innerHTML = '<option value="">Todos los usuarios</option>' + Object.keys(us).sort().map(function(u) {
+          return '<option value="' + bitEsc(u) + '">' + bitEsc(us[u]) + '</option>';
+        }).join('');
+        sel.value = actual;
+        pintarBitacora();
+      } catch (e) {
+        est.innerText = 'No se pudo cargar la bitácora: ' + ((e && e.message) || e);
+      }
+    }
+
+    function pintarBitacora() {
+      var per = document.getElementById('bit-periodo').value;
+      var fmt = document.getElementById('bit-formato').value;
+      var usu = document.getElementById('bit-usuario').value;
+      var q = document.getElementById('bit-buscar').value.trim().toLowerCase();
+      var hoy = sellosBogota(new Date(Date.now() + ajusteReloj).toISOString()).fecha;
+      var limite = null;
+      if (per !== 'todo') limite = Date.now() + ajusteReloj - (per === 'hoy' ? 0 : parseInt(per, 10) * 86400000);
+      bitFiltradas = bitDatos.filter(function(d) {
+        var t = Date.parse(d.creadoEn);
+        if (per === 'hoy') { var s = sellosBogota(d.creadoEn); if (!s || s.fecha !== hoy) return false; }
+        else if (limite !== null && t < limite) return false;
+        if (fmt && d.formato !== fmt) return false;
+        if (usu && d.usuario !== usu) return false;
+        if (q && (d.reporteId || '').toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+      var html = '', ultimo = '';
+      bitFiltradas.forEach(function(d) {
+        var s = sellosBogota(d.creadoEn);
+        var dia = s ? new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(Date.parse(d.creadoEn))) : '';
+        if (dia !== ultimo) { html += '<div style="margin:14px 0 6px;font-weight:bold;color:#374151;font-size:13px;">' + bitEsc(dia.charAt(0).toUpperCase() + dia.slice(1)) + '</div>'; ultimo = dia; }
+        var et = ETIQ_BIT[d.evento] || [d.evento, '#6b7280'];
+        html += '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px;text-align:left;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;"><b>' + bitEsc(s ? s.hora : '') + '</b>' +
+          '<span style="background:' + et[1] + ';color:#fff;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:bold;">' + bitEsc(et[0]) + '</span></div>' +
+          '<div style="margin-top:3px;">' + bitEsc(d.nombre || d.usuario) + '</div>' +
+          '<div style="color:#6b7280;">' + bitEsc(NOMBRE_FORMATO_BIT[d.formato] || d.formato) + ' · ' + bitEsc(d.reporteId) + '</div>' +
+          (d.detalle ? '<div style="color:#6b7280;">' + bitEsc(d.detalle) + '</div>' : '') + '</div>';
+      });
+      document.getElementById('bit-lista').innerHTML = html;
+      document.getElementById('bit-estado').innerText = bitFiltradas.length ? (bitFiltradas.length + ' registro(s)') : 'Sin registros con estos filtros.';
+    }
+
+    async function descargarBitacoraExcel() {
+      if (typeof ExcelJS === 'undefined') { alert('La librería de Excel no cargó (revisa tu internet).'); return; }
+      if (!bitFiltradas.length) { alert('No hay registros para descargar con estos filtros.'); return; }
+      var clave = prompt('Escribe una clave para proteger el Excel (solo tú la sabrás).\nSi la dejas vacía, queda protegido sin clave.');
+      if (clave === null) return;
+      var btn = document.getElementById('bit-excel'), txt0 = btn.innerText;
+      btn.disabled = true; btn.innerText = 'Generando…';
+      try {
+        // el Excel va de la más antigua a la más reciente
+        var filas = bitFiltradas.slice().reverse().map(bitFila);
+        var huella = await huellaBit(filas);
+        var desde = filas[0][1], hasta = filas[filas.length - 1][1];
+        var perfil = await perfilUsuario();
+        var token = await tokenValido();
+        var okReg = true;
+        try {
+          await pedir(FS_COMMIT + "?key=" + API_KEY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ writes: [{
+              update: { name: FS_RAIZ + "/bitacoraHuellas/" + nuevoId(), fields: aCampos({
+                huella: huella, desde: desde, hasta: hasta, cantidad: filas.length, generadoPor: ((sesion && sesion.email) || '').toLowerCase()
+              }) },
+              updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
+              currentDocument: { exists: false }
+            }] })
+          });
+        } catch (e) { okReg = false; console.error('Huella:', e); }
+
+        var wb = new ExcelJS.Workbook();
+        wb.creator = perfil.nombre;
+        var ws = wb.addWorksheet('Bitácora');
+        ws.addRow(BIT_COLS);
+        filas.forEach(function(f) { ws.addRow(f.map(function(x) { return String(x == null ? '' : x); })); });
+        ws.columns = [{ width: 22 }, { width: 22 }, { width: 18 }, { width: 30 }, { width: 28 }, { width: 16 }, { width: 24 }, { width: 50 }, { width: 28 }];
+        var h = ws.getRow(1);
+        h.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        h.eachCell(function(c) { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1D4ED8' } }; });
+        ws.views = [{ state: 'frozen', ySplit: 1 }];
+        var wv = wb.addWorksheet('Verificación');
+        wv.columns = [{ width: 30 }, { width: 90 }];
+        var ahoraS = sellosBogota(new Date(Date.now() + ajusteReloj).toISOString());
+        wv.addRow(['Huella SHA-256 de la hoja Bitácora', huella]);
+        wv.addRow(['Registros', String(filas.length)]);
+        wv.addRow(['Desde', desde]);
+        wv.addRow(['Hasta', hasta]);
+        wv.addRow(['Generado por', perfil.nombre + ' (' + perfil.email + ')']);
+        wv.addRow(['Fecha de generación (Bogotá)', ahoraS.fecha + ' ' + ahoraS.hora]);
+        wv.addRow(['Cómo comprobar', 'En la app, pantalla Bitácora de auditoría > "Comprobar un Excel", elige este archivo. Si alguien cambió una sola celda, la huella no coincide.']);
+        wv.getColumn(1).font = { bold: true };
+        var opc = { selectLockedCells: true, selectUnlockedCells: true };
+        await ws.protect(clave, opc);
+        await wv.protect(clave, opc);
+        var buf = await wb.xlsx.writeBuffer();
+        var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Bitacora_' + ahoraS.fecha.replace(/-/g, '') + ahoraS.hora.replace(/:/g, '') + '_' + huella.slice(0, 8) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function() { URL.revokeObjectURL(a.href); }, 5000);
+        if (!okReg) alert('OJO: el Excel se generó, pero su huella NO quedó registrada en Firebase (revisa que las reglas estén publicadas). Sin ese registro no se podrá comprobar contra Firebase.');
+      } catch (e) {
+        alert('No se pudo generar el Excel: ' + ((e && e.message) || e));
+      }
+      btn.disabled = false; btn.innerText = txt0;
+    }
+
+    async function comprobarExcelBitacora(archivo) {
+      var out = document.getElementById('bit-verif-res');
+      out.style.color = '#374151';
+      out.innerText = 'Comprobando…';
+      try {
+        var wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(await archivo.arrayBuffer());
+        var ws = wb.getWorksheet('Bitácora'), wv = wb.getWorksheet('Verificación');
+        if (!ws || !wv) throw new Error('El archivo no tiene las hojas Bitácora y Verificación.');
+        var txt = function(c) { return String(c && c.text !== undefined ? c.text : (c && c.value != null ? c.value : '')); };
+        var filas = [];
+        ws.eachRow(function(row, n) {
+          if (n === 1) return;
+          var f = [];
+          for (var i = 1; i <= BIT_COLS.length; i++) f.push(txt(row.getCell(i)));
+          filas.push(f);
+        });
+        var calc = await huellaBit(filas);
+        var escrita = txt(wv.getCell('B1')).trim().toLowerCase();
+        if (calc !== escrita) {
+          out.style.color = '#dc2626';
+          out.innerText = '✖ ARCHIVO ALTERADO. El contenido de la bitácora ya no coincide con la huella que trae el archivo.';
+          return;
+        }
+        var token = await tokenValido();
+        var r = await pedir(FS_BASE + ":runQuery?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ structuredQuery: {
+            from: [{ collectionId: 'bitacoraHuellas' }],
+            where: { fieldFilter: { field: { fieldPath: 'huella' }, op: 'EQUAL', value: { stringValue: calc } } },
+            limit: 1
+          } })
+        });
+        var reg = (Array.isArray(r) ? r : []).filter(function(x) { return x.document; })[0];
+        if (reg) {
+          var d = deCampos(reg.document.fields), s = sellosBogota(d.creadoEn);
+          out.style.color = '#16a34a';
+          out.innerText = '✔ AUTÉNTICO. El contenido coincide con la huella registrada en Firebase el ' + (s ? s.fecha + ' ' + s.hora : '') + ' por ' + d.generadoPor + ' (' + filas.length + ' registros).';
+        } else {
+          out.style.color = '#d97706';
+          out.innerText = '⚠ El archivo es coherente consigo mismo, pero su huella NO está registrada en Firebase. No se puede garantizar que lo haya emitido la app.';
+        }
+      } catch (e) {
+        out.style.color = '#dc2626';
+        out.innerText = 'No se pudo comprobar: ' + ((e && e.message) || e);
+      }
+    }
+
+    function abrirBitacora() {
+      document.getElementById('home-coord').classList.add('hidden');
+      document.getElementById('bitacora-screen').classList.remove('hidden');
+      cargarBitacora();
+    }
+    function cerrarBitacora() {
+      document.getElementById('bitacora-screen').classList.add('hidden');
+      document.getElementById('home-coord').classList.remove('hidden');
     }
 
     var urlParams = new URLSearchParams(window.location.search);
@@ -2178,6 +2455,9 @@
       async function enviarCorreoConPdf(reenviar) {
         await prepararVerificacion();
         var pdf = await generarPdfBase64(fechaAdmActual());
+        var hashPdfBit = '';
+        try { hashPdfBit = await sha256Hex(base64ABytes(pdf.base64)); } catch (e) {}
+        await registrarEvento('GENERO_PDF', reporteId, 'Archivo: ' + pdf.filename + ' | SHA-256 PDF: ' + hashPdfBit.slice(0, 16));
         var verifError = '';
         try {
           if (!codigoVerifActual) throw new Error('no se pudo calcular el código');
@@ -2222,6 +2502,8 @@
         if (excelError) res.excelError = excelError;
         if (pdfUrlError) res.pdfUrlError = pdfUrlError;
         if (verifError) res.verifError = verifError;
+        await registrarEvento(reenviar ? 'REENVIO_CORREO' : 'ENVIO_CORREO', reporteId,
+          (res && res.duplicado) ? 'El sistema indicó que ya se había enviado' : ('Destinatarios: ' + ((res && res.enviadoA && res.enviadoA.join(', ')) || 'sin confirmar') + (res && res.fallaron && res.fallaron.length ? ' | Fallaron: ' + res.fallaron.join(', ') : '')));
         if (PROTEGER_PDF && !pdf.protegido) res.sinBloqueo = true;
         res.codigoVerif = codigoVerifActual;
         return res;
@@ -2257,6 +2539,8 @@
           link.href = "data:application/pdf;base64," + pdfObj.base64;
           link.download = pdfObj.filename;
           link.click();
+          var hdl = ''; try { hdl = await sha256Hex(base64ABytes(pdfObj.base64)); } catch (e) {}
+          registrarEvento('DESCARGO_PDF', reporteId, 'Archivo: ' + pdfObj.filename + ' | SHA-256 PDF: ' + hdl.slice(0, 16));
         } catch (e) {
           alert("No se pudo generar el PDF: " + (e.message || e));
         }
