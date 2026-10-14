@@ -228,6 +228,8 @@
     .verif-txt { font-size:9.5px; line-height:1.55; color:#334155; word-break:break-all; }
     .verif-txt b { color:#111; }
     .verif-cod { font-family:'Courier New',monospace !important; font-weight:bold; font-size:13px; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:1px 6px; border-radius:3px; }
+    .sello-firma { font-size:10.5px; color:#475569; line-height:1.4; margin:0 0 8px; }
+    .verif-hash { font-family:'Courier New',monospace; font-size:7.5px; letter-spacing:.2px; word-break:break-all; }
   </style>
 
   <!-- LIBRERÍAS EXTERNAS -->
@@ -330,26 +332,28 @@
         <!-- BLOQUE TÉCNICO -->
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
           <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
-          <b>Cargo:</b> Técnico de Mantenimiento<br><br>
+          <b>Cargo:</b> <span id="tec-cargo">Técnico de Mantenimiento</span><br><br>
           <label style="font-weight: bold; font-size: 14px;">Firma del Responsable</label>
           <div class="canvas-container" id="container-canvas-tech">
             <canvas id="signature-tech"></canvas>
             <img id="img-tech-sig" class="hidden firma-img" alt="Firma del Responsable">
           </div>
-          <div id="fecha-tec" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
+          <div id="fecha-tec" style="font-size:12px; color:#374151; margin:4px 0 4px;"></div>
+          <div id="sello-tec" class="sello-firma"></div>
           <button type="button" id="btn-clear-tech" class="btn-clear">Borrar Firma</button>
         </div>
 
         <!-- BLOQUE COORDINADOR -->
         <div id="block-admin-sig" class="sig-col hidden" style="width: 100%;">
-          <b>Aprobado por:</b> Jorge Alberto Mendoza Ospina<br>
-          <b>Cargo:</b> Coordinador de Mantenimiento<br><br>
+          <b>Aprobado por:</b> <span id="adm-nombre">Jorge Alberto Mendoza Ospina</span><br>
+          <b>Cargo:</b> <span id="adm-cargo">Coordinador de Mantenimiento</span><br><br>
           <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
           <div class="canvas-container">
             <canvas id="signature-admin"></canvas>
             <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
           </div>
-          <div id="fecha-adm" style="font-size:12px; color:#374151; margin:4px 0 8px;"></div>
+          <div id="fecha-adm" style="font-size:12px; color:#374151; margin:4px 0 4px;"></div>
+          <div id="sello-adm" class="sello-firma"></div>
           <button type="button" id="btn-clear-admin" class="btn-clear">Borrar Firma</button>
         </div>
       </div>
@@ -361,6 +365,7 @@
         <div class="verif-txt">
           <b>VERIFICACIÓN DEL REPORTE</b><br>
           Código: <span id="verif-codigo" class="verif-cod"></span><br>
+          Huella SHA-256: <span id="verif-huella" class="verif-hash"></span><br>
           ID del reporte: <span id="verif-id"></span><br>
           Verifica en: <span id="verif-url"></span><br>
           Si el código no coincide, el reporte fue modificado.
@@ -396,6 +401,11 @@
     var FS_BASE = "https://firestore.googleapis.com/v1/projects/" + PROYECTO + "/databases/(default)/documents";
     var COLECCION = "chequeosDPVentilacion";
     var sesion = null;
+    var datosReporte = null;      // reporte abierto (lo usan el PDF, el nombre del archivo y las firmas)
+    var APP_VERSION = '1.2';
+    var FS_COMMIT = FS_BASE + ":commit";
+    var FS_RAIZ = "projects/" + PROYECTO + "/databases/(default)/documents";
+    var ajusteReloj = 0;          // diferencia (ms) entre el reloj del servidor y el del celular
 
     var listaEquipos = [
       { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
@@ -481,6 +491,7 @@
         var cfg = Object.assign({}, opciones || {});
         if (ctrl) cfg.signal = ctrl.signal;
         var r = await fetch(url, cfg);
+        try { var dh = r.headers.get('date'); if (dh) { var tsv = Date.parse(dh); if (!isNaN(tsv)) ajusteReloj = tsv - Date.now(); } } catch (eh) {}
         var data = {};
         try { data = await r.json(); } catch (e) {}
         if (!r.ok) {
@@ -517,7 +528,7 @@
       var o = {};
       Object.keys(fields || {}).forEach(function(k) {
         var v = fields[k];
-        o[k] = (v && v.stringValue !== undefined) ? v.stringValue : '';
+        o[k] = (v && v.stringValue !== undefined) ? v.stringValue : ((v && v.timestampValue) ? v.timestampValue : '');
       });
       return o;
     }
@@ -578,12 +589,21 @@
 
     async function crearReporte(datos) {
       var token = await tokenValido();
+      var perfil = await perfilUsuario();
+      datos.nombreTec = perfil.nombre;
+      datos.cargoTec = perfil.cargo;
       var id = nuevoId();
-      await pedir(FS_BASE + "/" + COLECCION + "?documentId=" + id + "&key=" + API_KEY, {
+      var r = await pedir(FS_COMMIT + "?key=" + API_KEY, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ fields: aCampos(datos) })
+        body: JSON.stringify({ writes: [{
+          update: { name: FS_RAIZ + "/" + COLECCION + "/" + id, fields: aCampos(datos) },
+          updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
+          currentDocument: { exists: false }
+        }] })
       });
+      var tr = r && r.writeResults && r.writeResults[0] && r.writeResults[0].transformResults;
+      datos.creadoEn = (tr && tr[0] && tr[0].timestampValue) || (r && r.commitTime) || '';
       return id;
     }
 
@@ -597,13 +617,24 @@
 
     async function firmarReporte(id, datos) {
       var token = await tokenValido();
-      var mascara = ['firmaAdm', 'fechaFirmaAdm', 'estado']
-        .map(function(k) { return "updateMask.fieldPaths=" + k; }).join("&");
-      await pedir(FS_BASE + "/" + COLECCION + "/" + encodeURIComponent(id) + "?" + mascara + "&key=" + API_KEY, {
-        method: 'PATCH',
+      var perfil = await perfilUsuario();
+      datos.nombreAdm = perfil.nombre;
+      datos.cargoAdm = perfil.cargo;
+      datos.aprobadoPor = ((sesion && sesion.email) || '').toLowerCase();
+      var campos = ['firmaAdm', 'fechaFirmaAdm', 'estado', 'nombreAdm', 'cargoAdm', 'aprobadoPor'];
+      var r = await pedir(FS_COMMIT + "?key=" + API_KEY, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ fields: aCampos(datos) })
+        body: JSON.stringify({ writes: [{
+          update: { name: FS_RAIZ + "/" + COLECCION + "/" + id, fields: aCampos(datos) },
+          updateMask: { fieldPaths: campos },
+          updateTransforms: [{ fieldPath: 'aprobadoEn', setToServerValue: 'REQUEST_TIME' }],
+          currentDocument: { exists: true }
+        }] })
       });
+      var tr = r && r.writeResults && r.writeResults[0] && r.writeResults[0].transformResults;
+      datos.aprobadoEn = (tr && tr[0] && tr[0].timestampValue) || (r && r.commitTime) || '';
+      return datos;
     }
 
     var urlParams = new URLSearchParams(window.location.search);
@@ -767,6 +798,8 @@
       return o;
     }
     var codigoVerifActual = '';
+    var huellaVerifActual = '';
+    var NUEVOS_VERIF = ['creadoEn','aprobadoEn','nombreTec','cargoTec','nombreAdm','cargoAdm','aprobadoPor'];
     var idVerifActual = '';
 
     function urlVerificarBase() { return baseUrl.replace(/[^\/]*$/, '') + 'verificar.html'; }
@@ -778,12 +811,16 @@
       return o;
     }
 
-    async function calcularCodigoVerif(id, d) {
+    // Huella SHA-256 de los datos del reporte (64 hex). El código impreso son sus primeros 16 caracteres.
+    async function calcularHuellaVerif(id, d) {
       var partes = [id, FORMATO_VERIF];
       camposVerif().forEach(function(k) { partes.push(k + '=' + String(d[k] == null ? '' : d[k])); });
-      var hex = await sha256Hex(new TextEncoder().encode(JSON.stringify(partes)));
-      return hex.slice(0, 16).toUpperCase().match(/.{4}/g).join('-');
+      // campos nuevos: solo entran si existen, así los códigos de reportes anteriores siguen siendo válidos
+      NUEVOS_VERIF.forEach(function(k) { if (d[k]) partes.push(k + '=' + String(d[k])); });
+      return await sha256Hex(new TextEncoder().encode(JSON.stringify(partes)));
     }
+    function codigoDeHuella(hex) { return hex.slice(0, 16).toUpperCase().match(/.{4}/g).join('-'); }
+    async function calcularCodigoVerif(id, d) { return codigoDeHuella(await calcularHuellaVerif(id, d)); }
 
     function base64ABytes(b64) {
       var bin = atob(b64), u = new Uint8Array(bin.length);
@@ -806,8 +843,9 @@
             coleccion: COLECCION,
             formato: FORMATO_VERIF,
             codigo: codigo,
-            fechaReporte: (d.fecha || '') + ' ' + horaCompleta(d.hora),
-            fechaAprobacion: String(d.fechaFirmaAdm || '').slice(0, 19),
+            fechaReporte: fechaReporteTxt(d),
+            fechaAprobacion: fechaAprobTxt(d),
+            huella: huellaVerifActual,
             pdfHashes: hashPdf
           }) })
         });
@@ -823,12 +861,59 @@
       });
     }
 
+    // ===== Hora del servidor y datos del firmante =====
+    // La hora oficial del reporte es la que pone Firestore al guardar (campos creadoEn / aprobadoEn);
+    // el celular no la puede cambiar. Aquí se pasa a hora de Colombia.
+    function sellosBogota(iso) {
+      var t = Date.parse(iso);
+      if (!iso || isNaN(t)) return null;
+      var p = {};
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+      }).formatToParts(new Date(t)).forEach(function(x) { p[x.type] = x.value; });
+      return { fecha: p.year + '-' + p.month + '-' + p.day, hora: p.hour + ':' + p.minute + ':' + p.second };
+    }
+    function fechaReporteTxt(d) {
+      var s = d && d.creadoEn ? sellosBogota(d.creadoEn) : null;
+      if (s) return s.fecha + ' ' + s.hora;
+      return d ? ((d.fecha || '') + ' ' + horaCompleta(d.hora)) : '';
+    }
+    function fechaAprobTxt(d) {
+      var s = d && d.aprobadoEn ? sellosBogota(d.aprobadoEn) : null;
+      if (s) return s.fecha + ' ' + s.hora;
+      return d ? String(d.fechaFirmaAdm || '').slice(0, 19) : '';
+    }
+
+    var perfilCache = null;
+    async function perfilUsuario() {
+      var email = ((sesion && sesion.email) || '').toLowerCase();
+      if (perfilCache && perfilCache.email === email) return perfilCache;
+      var token = await tokenValido();
+      var f = null;
+      try {
+        var d = await pedir(FS_BASE + "/usuarios/" + encodeURIComponent(email) + "?key=" + API_KEY, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        f = deCampos(d.fields);
+      } catch (e) {
+        if (e.status !== 404 && e.status !== 403) throw e;
+      }
+      if (!f || !f.nombre) {
+        var er = new Error("Tu usuario (" + email + ") no tiene nombre registrado en el sistema. Avisa a Jorge para que lo registre.");
+        er.code = 'sin-perfil';
+        throw er;
+      }
+      perfilCache = { email: email, nombre: f.nombre, cargo: f.cargo || '' };
+      return perfilCache;
+    }
+
     function ahora() {
       var p = {};
       new Intl.DateTimeFormat('en-GB', {
         timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
-      }).formatToParts(new Date()).forEach(function(x) { p[x.type] = x.value; });
+      }).formatToParts(new Date(Date.now() + ajusteReloj)).forEach(function(x) { p[x.type] = x.value; });
       return {
         fecha: p.year + "-" + p.month + "-" + p.day,
         hora: p.hour + ":" + p.minute + ":" + p.second,
@@ -852,8 +937,26 @@
         el.appendChild(b);
         el.appendChild(document.createTextNode(texto));
       }
-      poner('fecha-tec', 'Fecha del reporte:', repFecha ? (repFecha + ' ' + horaCompleta(repHora)) : '');
-      poner('fecha-adm', 'Visto bueno:', aprFechaTexto ? String(aprFechaTexto).slice(0, 19) : '');
+      var srvTec = (datosReporte && datosReporte.creadoEn) ? fechaReporteTxt(datosReporte) : '';
+      var srvAdm = (datosReporte && datosReporte.aprobadoEn) ? fechaAprobTxt(datosReporte) : '';
+      poner('fecha-tec', 'Fecha del reporte:', srvTec || (repFecha ? (repFecha + ' ' + horaCompleta(repHora)) : ''));
+      poner('fecha-adm', 'Visto bueno:', srvAdm || (aprFechaTexto ? String(aprFechaTexto).slice(0, 19) : ''));
+      pintarSellos();
+    }
+
+    // Constancia de quién firmó y con qué sentido (texto plano)
+    function pintarSellos() {
+      var d = datosReporte;
+      var t = document.getElementById('sello-tec'), a = document.getElementById('sello-adm');
+      if (!t || !a) return;
+      t.textContent = ''; a.textContent = '';
+      if (!d) return;
+      var nomT = d.nombreTec || d.tecnico || '';
+      if (nomT) t.textContent = 'Firmado electrónicamente por ' + nomT + ((d.nombreTec && d.tecnico) ? ' (' + d.tecnico + ')' : '') + ' · Elaboró y ejecutó el chequeo.';
+      if (d.firmaAdm || d.estado === 'aprobado') {
+        var nomA = d.nombreAdm || 'Jorge Alberto Mendoza Ospina';
+        a.textContent = 'Firmado electrónicamente por ' + nomA + (d.aprobadoPor ? ' (' + d.aprobadoPor + ')' : '') + ' · Aprobó el reporte.';
+      }
     }
 
     // Solo acepta imágenes en base64 como firma
@@ -912,7 +1015,7 @@
 
     function textoError(e) {
       if (!e) return "desconocido";
-      if (e.code === 'script-red') return e.message;
+      if (e.code === 'script-red' || e.code === 'sin-perfil') return e.message;
       if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
       if (e.code === 'red') return "sin conexión a internet";
       if (e.status === 403) return "tu usuario no tiene permiso para esta acción";
@@ -1002,10 +1105,19 @@
       return true;
     }
 
+    // CODIGO_vVERSION_aaaammddhhmmss_ID.pdf  (la hora es la de aprobación puesta por el servidor)
     function obtenerNombrePDF() {
-      var f = (document.getElementById('fecha-auto').value || '').replace(/\D/g, '');
-      var h = (document.getElementById('hora-auto').value || '').replace(/\D/g, '');
-      return f + (h + '000000').slice(0, 6) + "_CVSAI018-F001.pdf";
+      var d = datosReporte || {};
+      var t = '';
+      var ap = d.aprobadoEn ? sellosBogota(d.aprobadoEn) : null;
+      if (ap) t = (ap.fecha + ap.hora).replace(/\D/g, '');
+      else if (d.fechaFirmaAdm) t = String(d.fechaFirmaAdm).replace(/\D/g, '');
+      else {
+        var cr = d.creadoEn ? sellosBogota(d.creadoEn) : null;
+        t = cr ? (cr.fecha + cr.hora).replace(/\D/g, '') : ((d.fecha || '') + (d.hora || '')).replace(/\D/g, '');
+      }
+      t = (t + '00000000000000').slice(0, 14);
+      return FORMATO_XLSX.codigo + '_v' + FORMATO_XLSX.version + '_' + t + '_' + (reporteId || 'SIN-ID') + '.pdf';
     }
 
     // Solo decide qué pantalla se muestra. Quien realmente puede aprobar lo deciden las reglas de Firestore.
@@ -1174,7 +1286,7 @@
 
       // Valores de la fila
       var fuera = items.filter(function(i) { return i.fuera; });
-      var pAdm = String(d.fechaFirmaAdm || '').split(' ');
+      var pAdm = fechaAprobTxt(d).split(' ');
       var aprobado = (d.estado === 'aprobado') || !!d.firmaAdm;
       var idRep = (typeof reporteId !== 'undefined' && reporteId) ? reporteId : '';
       // Firmas en texto base64 (cada celda de Excel admite máx. 32.767 caracteres: se reduce la imagen hasta que quepa)
@@ -1204,11 +1316,11 @@
         F.version,
         aFechaExcel(document.getElementById('fecha-auto').value || d.fechaInicio || d.fecha,
                     document.getElementById('hora-auto').value || d.horaInicio || d.hora),
-        aFechaExcel(d.fecha, d.hora),
+        aFechaExcel(fechaReporteTxt(d).split(' ')[0], fechaReporteTxt(d).split(' ')[1]),
         (document.getElementById('tec-nombre').textContent || d.tecnico || '').trim(),
         String(d.tecnicoUid || ''),
         aprobado ? 'Aprobado' : 'Pendiente',
-        'Jorge Alberto Mendoza Ospina',
+        (d.nombreAdm || 'Jorge Alberto Mendoza Ospina'),
         aFechaExcel(pAdm[0], pAdm.slice(1).join(' ')),
         fuera.length ? 'Con desviaciones' : 'Cumple',
         fuera.length,
@@ -1367,6 +1479,7 @@
           qrImg.src = qrDataUrl(urlVerificarBase() + '?id=' + idVerifActual, 260);
           try { await qrImg.decode(); } catch (eq) {}
           document.getElementById('verif-codigo').textContent = codigoVerifActual;
+          document.getElementById('verif-huella').textContent = huellaVerifActual.toLowerCase();
           document.getElementById('verif-id').textContent = idVerifActual;
           document.getElementById('verif-url').textContent = urlVerificarBase().replace(/^https?:\/\//, '');
           vb.classList.remove('hidden');
@@ -1433,10 +1546,24 @@
             pdfObj.setFontSize(8);
             pdfObj.setTextColor(100, 116, 139);
 
-            pdfObj.text(nombrePdf, 10, pageHeight - 6);
-            if (codigoVerifActual) pdfObj.text('Cód. ' + codigoVerifActual, pageWidth / 2, pageHeight - 6, { align: 'center' });
+            var yL1 = codigoVerifActual ? pageHeight - 9.5 : pageHeight - 6;
             var textoPagina = "Página " + i + " de " + totalPages;
-            pdfObj.text(textoPagina, pageWidth - 10, pageHeight - 6, { align: 'right' });
+            // el nombre del archivo es largo: se achica lo justo para no pisar el código del centro
+            var fs = 8;
+            pdfObj.setFontSize(fs);
+            if (codigoVerifActual && typeof pdfObj.getTextWidth === 'function') {
+              var anchoCod = pdfObj.getTextWidth('Cód. ' + codigoVerifActual);
+              while (fs > 5.5 && (10 + pdfObj.getTextWidth(nombrePdf) + 4 > pageWidth / 2 - anchoCod / 2)) { fs -= 0.5; pdfObj.setFontSize(fs); }
+            }
+            pdfObj.text(nombrePdf, 10, yL1);
+            pdfObj.setFontSize(8);
+            if (codigoVerifActual) pdfObj.text('Cód. ' + codigoVerifActual, pageWidth / 2, yL1, { align: 'center' });
+            pdfObj.text(textoPagina, pageWidth - 10, yL1, { align: 'right' });
+            if (codigoVerifActual) {
+              var hh = huellaVerifActual.toLowerCase();
+              pdfObj.setFontSize(6.5);
+              pdfObj.text('Documento firmado electrónicamente (Ley 527/1999). Huella SHA-256: ' + hh.slice(0, 4) + '…' + hh.slice(-4) + '. ID: ' + idVerifActual + '. App v' + APP_VERSION, 10, pageHeight - 5.5);
+            }
           }
           return pdfObj.output('datauristring');
         });
@@ -1546,7 +1673,6 @@
       var blockAdmin = document.getElementById('block-admin-sig');
       var homeCoord = document.getElementById('home-coord');
 
-      var datosReporte = null;
       var esCoordSesion = false;
       var vistaFinal = false;
       var reporteEnviado = false;
@@ -1568,7 +1694,10 @@
       }
 
       function ponerDatosTecnico(d) {
-        document.getElementById('tec-nombre').innerText = d.tecnico || (sesion ? sesion.email : 'Técnico de Mantenimiento');
+        document.getElementById('tec-nombre').innerText = d.nombreTec || d.tecnico || (sesion ? sesion.email : 'Técnico de Mantenimiento');
+        if (d.cargoTec) document.getElementById('tec-cargo').innerText = d.cargoTec;
+        if (d.nombreAdm) document.getElementById('adm-nombre').innerText = d.nombreAdm;
+        if (d.cargoAdm) document.getElementById('adm-cargo').innerText = d.cargoAdm;
 
         document.getElementById('fecha-auto').value = d.fechaInicio || d.fecha;
         document.getElementById('hora-auto').value = d.horaInicio || d.hora;
@@ -1627,6 +1756,10 @@
 
       function mostrarParaFirmar(d) {
         vistaFinal = false;
+        perfilUsuario().then(function(p) {
+          document.getElementById('adm-nombre').innerText = p.nombre;
+          if (p.cargo) document.getElementById('adm-cargo').innerText = p.cargo;
+        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrás firmar."); });
         ponerDatosTecnico(d);
         badge.innerText = "Modo Coordinador";
         titulo.innerText = "Aprobación de Servicio";
@@ -1688,6 +1821,10 @@
         mainScreen.classList.remove('hidden');
         userDisplay.innerText = sesion ? sesion.email : '';
         document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
+        perfilUsuario().then(function(p) {
+          document.getElementById('tec-nombre').innerText = p.nombre;
+          if (p.cargo) document.getElementById('tec-cargo').innerText = p.cargo;
+        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrás enviar el reporte."); });
         
         blockTech.classList.remove('hidden');
         blockAdmin.classList.add('hidden');
@@ -1751,6 +1888,7 @@
       }
 
       function fechaAdmActual() {
+        if (datosReporte && datosReporte.aprobadoEn) return fechaAprobTxt(datosReporte);
         if (infoAprobacion) return infoAprobacion.fecha + " " + infoAprobacion.hora;
         return (datosReporte && datosReporte.fechaFirmaAdm) || '';
       }
@@ -1819,10 +1957,11 @@
       btnClearAdmin.onclick = function() { if (padAdmin) padAdmin.clear(); };
 
       async function prepararVerificacion() {
-        codigoVerifActual = ''; idVerifActual = '';
+        codigoVerifActual = ''; idVerifActual = ''; huellaVerifActual = '';
         try {
           if (datosReporte && datosReporte.estado === 'aprobado' && reporteId) {
-            codigoVerifActual = await calcularCodigoVerif(reporteId, datosReporte);
+            huellaVerifActual = await calcularHuellaVerif(reporteId, datosReporte);
+            codigoVerifActual = codigoDeHuella(huellaVerifActual);
             idVerifActual = reporteId;
           }
         } catch (e) { console.error('Código de verificación:', e); }
@@ -1923,7 +2062,7 @@
               var fechaFirmaAdmTexto = a.fecha + " " + a.hora;
               var firmaFinal = firmaImagen(canvasAdmin, 400, 0.7);
 
-              await firmarReporte(reporteId, {
+              var datosFirma = await firmarReporte(reporteId, {
                 firmaAdm: firmaFinal,
                 fechaFirmaAdm: fechaFirmaAdmTexto,
                 estado: 'aprobado'
@@ -1933,6 +2072,7 @@
               datosReporte.firmaAdm = firmaFinal;
               datosReporte.fechaFirmaAdm = fechaFirmaAdmTexto;
               datosReporte.estado = 'aprobado';
+              ['nombreAdm', 'cargoAdm', 'aprobadoPor', 'aprobadoEn'].forEach(function(k) { datosReporte[k] = datosFirma[k]; });
               pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
 
               // La imagen mostrada (y usada en el PDF) es exactamente la que quedó guardada
