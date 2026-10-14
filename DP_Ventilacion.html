@@ -10,7 +10,7 @@
   style-src 'self' 'unsafe-inline'; 
   img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none';
 ">
-  <title>CVSAI018-F001 - Lista de Chequeo DP Ventilación</title>
+  <title>CVSAI018-F001 - Lista de Chequeo DP VentilaciÃ³n</title>
 
   <style>
     body {
@@ -214,7 +214,7 @@
       width: 50% !important;
     }
 
-    /* Fuente explícita en el área del PDF: con system-ui el PDF salía con letras encimadas y sin espacios */
+    /* Fuente explÃ­cita en el Ã¡rea del PDF: con system-ui el PDF salÃ­a con letras encimadas y sin espacios */
     #pdf-area, #pdf-area * {
       font-family: Arial, Helvetica, sans-serif !important;
       letter-spacing: normal !important;
@@ -232,37 +232,65 @@
     .verif-hash { font-family:'Courier New',monospace; font-size:7.5px; letter-spacing:.2px; word-break:break-all; }
   </style>
 
-  <!-- LIBRERÍAS EXTERNAS -->
+  <!-- LIBRERÃAS EXTERNAS -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
 <body>
 
-  <!-- PANTALLA 1: INICIO DE SESIÓN -->
+  <!-- PANTALLA 1: INICIO DE SESIÃ“N -->
   <div id="login-screen" class="card">
-    <h2 id="login-title" style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
+    <h2 id="login-title" style="text-align: center; margin-bottom: 20px;">Acceso de TÃ©cnicos</h2>
     <p id="login-nota" style="text-align:center; font-size:14px; color:#6b7280; margin:-10px 0 14px;"></p>
     <div id="error-message" class="error-msg"></div>
 
     <div>
-      <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
-      <input type="email" id="email" autocomplete="username" autocapitalize="none" class="input-field" placeholder="Ingrese su correo electrónico" value="">
+      <label style="font-weight: bold; font-size: 14px;">Correo ElectrÃ³nico</label>
+      <input type="email" id="email" autocomplete="username" autocapitalize="none" class="input-field" placeholder="Ingrese su correo electrÃ³nico" value="">
 
-      <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
-      <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
+      <label style="font-weight: bold; font-size: 14px;">ContraseÃ±a</label>
+      <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" value="">
 
-      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar SesiÃ³n</button>
       <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v11 DP | CVSAI018-F001</p>
     </div>
   </div>
 
-  <!-- PANTALLA DEL COORDINADOR (SESIÓN ACTIVA) -->
+  <!-- PANTALLA DEL COORDINADOR (SESIÃ“N ACTIVA) -->
   <div id="home-coord" class="card hidden" style="text-align:center;">
-    <h2 style="margin-top:0;">Sesión de coordinador</h2>
+    <h2 style="margin-top:0;">SesiÃ³n de coordinador</h2>
     <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
-    <p style="font-size:14px; color:#6b7280;">Tu sesión sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
-    <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
+    <p style="font-size:14px; color:#6b7280;">Tu sesiÃ³n sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
+    <button type="button" id="btn-bitacora" class="btn" style="background:#374151;margin-bottom:10px;" onclick="abrirBitacora()">ðŸ“‹ BitÃ¡cora de auditorÃ­a</button>
+    <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesiÃ³n</button>
+  </div>
+
+  <!-- BITÃCORA DE AUDITORÃA (solo coordinador) -->
+  <div id="bitacora-screen" class="card hidden">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <button type="button" class="btn" style="width:auto;padding:8px 14px;background:#6b7280;" onclick="cerrarBitacora()">â† Volver</button>
+      <h2 style="margin:0;font-size:18px;">BitÃ¡cora de auditorÃ­a</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <select id="bit-periodo" class="input-field" style="margin:0;" onchange="pintarBitacora()">
+        <option value="hoy">Hoy</option><option value="7" selected>Ãšltimos 7 dÃ­as</option><option value="30">Ãšltimos 30 dÃ­as</option><option value="todo">Todo</option>
+      </select>
+      <select id="bit-formato" class="input-field" style="margin:0;" onchange="pintarBitacora()">
+        <option value="">Todos los formatos</option><option value="PAP">Planta de Agua</option><option value="DPV">DP VentilaciÃ³n</option>
+      </select>
+      <select id="bit-usuario" class="input-field" style="margin:0;" onchange="pintarBitacora()"><option value="">Todos los usuarios</option></select>
+      <input type="text" id="bit-buscar" class="input-field" style="margin:0;" placeholder="Buscar por ID de reporte" oninput="pintarBitacora()">
+    </div>
+    <p id="bit-estado" style="font-size:12px;color:#6b7280;margin:10px 0 0;"></p>
+    <div id="bit-lista"></div>
+    <button type="button" id="bit-excel" class="btn" style="background:#16a34a;margin-top:12px;" onclick="descargarBitacoraExcel()">â¬‡ Descargar bitÃ¡cora en Excel (protegido)</button>
+    <div style="margin-top:14px;font-size:12px;text-align:left;">
+      <b>Comprobar un Excel de bitÃ¡cora</b><br>
+      <input type="file" accept=".xlsx" onchange="if(this.files[0]) comprobarExcelBitacora(this.files[0]); this.value='';">
+      <p id="bit-verif-res" style="margin:6px 0 0;"></p>
+    </div>
+    <p style="font-size:11px;color:#6b7280;text-align:center;margin-top:14px;">ðŸ”’ Los registros solo se pueden agregar. Nadie puede cambiarlos ni borrarlos desde la app.</p>
   </div>
 
   <!-- PANTALLA 2: FORMULARIO PRINCIPAL CVSAI018-F001 -->
@@ -272,8 +300,8 @@
       <button id="btn-logout" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: bold; cursor: pointer;">Salir</button>
     </div>
 
-    <div id="view-badge" class="badge">Modo Técnico</div>
-    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo DP Ventilación</h2>
+    <div id="view-badge" class="badge">Modo TÃ©cnico</div>
+    <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo DP VentilaciÃ³n</h2>
 
     <div id="pdf-area" style="padding: 10px; background: white;">
       
@@ -282,12 +310,12 @@
         <tr>
           <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
           <td style="width: 58%; text-align: center; font-weight: bold; font-size: 11px;">
-            LISTA DE CHEQUEO PARA MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN UMAS, VENTILADORES DE INYECCIÓN, EXTRACCIÓN Y COLECTORES DE POLVO
+            LISTA DE CHEQUEO PARA MEDICIÃ“N DE DIFERENCIALES DE PRESIÃ“N EN UMAS, VENTILADORES DE INYECCIÃ“N, EXTRACCIÃ“N Y COLECTORES DE POLVO
           </td>
           <td style="width: 22%; font-size: 10px;">
-            <b>Código:</b> CVSAI018-F001<br>
-            <b>Versión:</b> 18<br>
-            <b>Fecha emisión:</b> 2026<br>
+            <b>CÃ³digo:</b> CVSAI018-F001<br>
+            <b>VersiÃ³n:</b> 18<br>
+            <b>Fecha emisiÃ³n:</b> 2026<br>
             <b>Estado:</b> Vigente
           </td>
         </tr>
@@ -305,34 +333,34 @@
         </div>
       </div>
 
-      <div class="sec-title">MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN EQUIPOS</div>
+      <div class="sec-title">MEDICIÃ“N DE DIFERENCIALES DE PRESIÃ“N EN EQUIPOS</div>
 
-      <!-- TABLA DE CONTROL DE PARÁMETROS -->
+      <!-- TABLA DE CONTROL DE PARÃMETROS -->
       <table class="param-table">
         <thead>
           <tr>
             <th class="col-desc">Equipo</th>
-            <th class="col-rango">Rango de Operación</th>
-            <th class="col-ind">Indicación</th>
+            <th class="col-rango">Rango de OperaciÃ³n</th>
+            <th class="col-ind">IndicaciÃ³n</th>
           </tr>
         </thead>
         <tbody id="tabla-equipos-body">
-          <!-- Generado dinámicamente -->
+          <!-- Generado dinÃ¡micamente -->
         </tbody>
       </table>
 
       <!-- OBSERVACIONES -->
       <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
       <div id="obs-auto" class="hidden" style="border:1px solid #fca5a5;background:#fef2f2;border-radius:6px;padding:8px 10px;margin:4px 0 8px;font-size:12px;color:#991b1b;line-height:1.5;"></div>
-      <label id="obs-label" style="font-weight: bold; font-size: 12px; color:#334155;">Observaciones adicionales del técnico:</label>
-      <textarea id="observaciones" class="input-field" rows="3" placeholder="Escribe aquí si quieres agregar algo (si no, déjalo vacío)"></textarea>
+      <label id="obs-label" style="font-weight: bold; font-size: 12px; color:#334155;">Observaciones adicionales del tÃ©cnico:</label>
+      <textarea id="observaciones" class="input-field" rows="3" placeholder="Escribe aquÃ­ si quieres agregar algo (si no, dÃ©jalo vacÃ­o)"></textarea>
 
-      <!-- SECCIÓN DE FIRMAS DUALES -->
+      <!-- SECCIÃ“N DE FIRMAS DUALES -->
       <div class="signatures-grid">
-        <!-- BLOQUE TÉCNICO -->
+        <!-- BLOQUE TÃ‰CNICO -->
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
           <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
-          <b>Cargo:</b> <span id="tec-cargo">Técnico de Mantenimiento</span><br><br>
+          <b>Cargo:</b> <span id="tec-cargo">TÃ©cnico de Mantenimiento</span><br><br>
           <label style="font-weight: bold; font-size: 14px;">Firma del Responsable</label>
           <div class="canvas-container" id="container-canvas-tech">
             <canvas id="signature-tech"></canvas>
@@ -347,7 +375,7 @@
         <div id="block-admin-sig" class="sig-col hidden" style="width: 100%;">
           <b>Aprobado por:</b> <span id="adm-nombre">Jorge Alberto Mendoza Ospina</span><br>
           <b>Cargo:</b> <span id="adm-cargo">Coordinador de Mantenimiento</span><br><br>
-          <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
+          <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de AprobaciÃ³n (Coordinador)</label>
           <div class="canvas-container">
             <canvas id="signature-admin"></canvas>
             <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
@@ -359,16 +387,16 @@
       </div>
 
 
-      <!-- RECUADRO DE VERIFICACIÓN (solo sale en el PDF) -->
+      <!-- RECUADRO DE VERIFICACIÃ“N (solo sale en el PDF) -->
       <div id="verif-box" class="verif-box hidden">
-        <img id="verif-qr" alt="QR de verificación" width="74" height="74">
+        <img id="verif-qr" alt="QR de verificaciÃ³n" width="74" height="74">
         <div class="verif-txt">
-          <b>VERIFICACIÓN DEL REPORTE</b><br>
-          Código: <span id="verif-codigo" class="verif-cod"></span><br>
+          <b>VERIFICACIÃ“N DEL REPORTE</b><br>
+          CÃ³digo: <span id="verif-codigo" class="verif-cod"></span><br>
           Huella SHA-256: <span id="verif-huella" class="verif-hash"></span><br>
           ID del reporte: <span id="verif-id"></span><br>
           Verifica en: <span id="verif-url"></span><br>
-          Si el código no coincide, el reporte fue modificado.
+          Si el cÃ³digo no coincide, el reporte fue modificado.
         </div>
       </div>
     </div>
@@ -379,20 +407,20 @@
 
   <script>
     window.onerror = function(message, source, lineno) {
-      alert("Error en ejecución: " + message + "\nLínea: " + lineno);
+      alert("Error en ejecuciÃ³n: " + message + "\nLÃ­nea: " + lineno);
       return false;
     };
 
-    // Anti-clickjacking: si la página queda dentro de otra, se saca o se vacía
+    // Anti-clickjacking: si la pÃ¡gina queda dentro de otra, se saca o se vacÃ­a
     if (window.top !== window.self) {
       try { window.top.location = window.self.location; } catch (e) { document.body.innerHTML = ''; }
     }
 
-    // ---------- CONFIGURACIÓN GENERAL ----------
+    // ---------- CONFIGURACIÃ“N GENERAL ----------
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
-    var DURACION_MAX_SESION = 12 * 60 * 60 * 1000; // la sesión se cierra sola a las 12 horas
+    var DURACION_MAX_SESION = 12 * 60 * 60 * 1000; // la sesiÃ³n se cierra sola a las 12 horas
     
     // URL DE GOOGLE APPS SCRIPT
     var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy67b_K5kbB9q6YFGsrgyNMGaYt-Nys3lUxwOsnvTTh--MSOUywMHd0qmYmDpE5Cc/exec";
@@ -408,49 +436,49 @@
     var ajusteReloj = 0;          // diferencia (ms) entre el reloj del servidor y el del celular
 
     var listaEquipos = [
-      { id: "e1", nombre: "Ventilador de Inyección Oficina # 2 de Supervisión, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e2", nombre: "UMA # 1 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e3", nombre: "UMA # 2 Granulación", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e4", nombre: "UMA Proceso Granulación   60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e4_b", nombre: "UMA Proceso Granulación   99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e5", nombre: "Colector de Polvos Proceso Granulación", min: 0.2, max: 20.0, unit: "inH2O" },
-      { id: "e6", nombre: "UMA Acondicionamiento de Sólidos Solubles, Acondicionamiento de Líquidos Orales, Envase Granulación, Etiquetado y Codificado", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e7", nombre: "UMA Envase de Sólidos Solubles", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e8", nombre: "Ventilador de Inyección Esclusa Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e1", nombre: "Ventilador de InyecciÃ³n Oficina # 2 de SupervisiÃ³n, I&D, Cuarto de Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e2", nombre: "UMA # 1 GranulaciÃ³n", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e3", nombre: "UMA # 2 GranulaciÃ³n", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e4", nombre: "UMA Proceso GranulaciÃ³n   60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e4_b", nombre: "UMA Proceso GranulaciÃ³n   99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e5", nombre: "Colector de Polvos Proceso GranulaciÃ³n", min: 0.2, max: 20.0, unit: "inH2O" },
+      { id: "e6", nombre: "UMA Acondicionamiento de SÃ³lidos Solubles, Acondicionamiento de LÃ­quidos Orales, Envase GranulaciÃ³n, Etiquetado y Codificado", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e7", nombre: "UMA Envase de SÃ³lidos Solubles", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e8", nombre: "Ventilador de InyecciÃ³n Esclusa Alistamiento", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e9", nombre: "UMA Envase Orales   60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e9_b", nombre: "UMA Envase Orales   99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e10", nombre: "Colector de Polvos Fraccionamiento", min: 0.2, max: 6.0, unit: "inH2O" },
-      { id: "e11", nombre: "Colector de Polvos Envase de Sólidos Solubles", min: 0.2, max: 6.0, unit: "inH2O" },
-      { id: "e12", nombre: "Colector de Polvos Granulación", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e11", nombre: "Colector de Polvos Envase de SÃ³lidos Solubles", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e12", nombre: "Colector de Polvos GranulaciÃ³n", min: 0.2, max: 6.0, unit: "inH2O" },
       { id: "e13", nombre: "UMA Mezclas 2", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e14", nombre: "Ventilador de Inyección Pasillo Fraccionamiento", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e14", nombre: "Ventilador de InyecciÃ³n Pasillo Fraccionamiento", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e15", nombre: "UMA Fraccionamiento", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e16", nombre: "UMA # 1 Control de Calidad", min: 1.0, max: 2.5, unit: "inH2O" },
       { id: "e17", nombre: "UMA # 2 Control de Calidad", min: 1.0, max: 2.5, unit: "inH2O" },
-      { id: "e18", nombre: "UMA Fabricación Orales   60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e18_b", nombre: "UMA Fabricación Orales   99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e18", nombre: "UMA FabricaciÃ³n Orales   60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e18_b", nombre: "UMA FabricaciÃ³n Orales   99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e19", nombre: "Colector de Polvos Mezclas 2", min: 0.2, max: 6.0, unit: "inH2O" },
-      { id: "e20", nombre: "Ventilador de Extracción Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e21", nombre: "Ventilador de Extracción Fabricación Envase Desinfectantes", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e22", nombre: "UMA Fabricación Envase Volúmenes Bajos 1", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e23", nombre: "UMA Fabricación Envase Desinfectantes", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e24", nombre: "Ventilador de Inyección Agua Purificada", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e25", nombre: "Ventilador de Inyección Pasillo Volúmenes Bajos 2 y Mezclas 2", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e20", nombre: "Ventilador de ExtracciÃ³n FabricaciÃ³n Envase VolÃºmenes Bajos 1", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e21", nombre: "Ventilador de ExtracciÃ³n FabricaciÃ³n Envase Desinfectantes", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e22", nombre: "UMA FabricaciÃ³n Envase VolÃºmenes Bajos 1", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e23", nombre: "UMA FabricaciÃ³n Envase Desinfectantes", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e24", nombre: "Ventilador de InyecciÃ³n Agua Purificada", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e25", nombre: "Ventilador de InyecciÃ³n Pasillo VolÃºmenes Bajos 2 y Mezclas 2", min: 0.1, max: 2.5, unit: "inH2O" },
       { id: "e26", nombre: "UMA Lavado de Equipos y Equipo Limpio", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e27", nombre: "Ventilador de Inyección Vestieres", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e28", nombre: "UMA Fabricación Envase Volúmenes Bajos 2   60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e28_b", nombre: "UMA Fabricación Envase Volúmenes Bajos 2   99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e29", nombre: "Colector de Polvos Volúmenes Bajos 2", min: 0.2, max: 6.0, unit: "inH2O" },
-      { id: "e30", nombre: "Ventilador de Inyección Bodega Materia Prima", min: 0.1, max: 2.5, unit: "inH2O" },
-      { id: "e31", nombre: "Ventilador de Extracción Fraccionamiento", min: 0.01, max: 1.0, unit: "inH2O" },
-      { id: "e32", nombre: "Ventilador de Extracción Alistamiento", min: 0.01, max: 1.0, unit: "inH2O" },
-      { id: "e33", nombre: "Ventilador de Extracción Envase de Sólidos Solubles", min: 0.01, max: 1.0, unit: "inH2O" },
-      { id: "e34", nombre: "Ventilador de Extracción Volúmenes Bajos 2", min: 0.01, max: 1.0, unit: "inH2O" },
-      { id: "e35", nombre: "Ventilador de Extracción Mueble de Reactivos en Uso", min: 1.0, max: 2.5, unit: "inH2O" },
-      { id: "e36", nombre: "Ventilador de Extracción Control de Calidad", min: 0.02, max: 0.15, unit: "inH2O" },
-      { id: "e37", nombre: "Ventilador de Extracción Mueble Almacén de Reactivos", min: 1.0, max: 2.5, unit: "inH2O" },
-      { id: "e38", nombre: "Ventilador de Extracción Mezclas 2", min: 0.01, max: 1.0, unit: "inH2O" },
-      { id: "e39", nombre: "UMA Granulación 2", min: 0.1, max: 2.5, unit: "inH2O" }
+      { id: "e27", nombre: "Ventilador de InyecciÃ³n Vestieres", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e28", nombre: "UMA FabricaciÃ³n Envase VolÃºmenes Bajos 2   60% al 95%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e28_b", nombre: "UMA FabricaciÃ³n Envase VolÃºmenes Bajos 2   99.99%", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e29", nombre: "Colector de Polvos VolÃºmenes Bajos 2", min: 0.2, max: 6.0, unit: "inH2O" },
+      { id: "e30", nombre: "Ventilador de InyecciÃ³n Bodega Materia Prima", min: 0.1, max: 2.5, unit: "inH2O" },
+      { id: "e31", nombre: "Ventilador de ExtracciÃ³n Fraccionamiento", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e32", nombre: "Ventilador de ExtracciÃ³n Alistamiento", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e33", nombre: "Ventilador de ExtracciÃ³n Envase de SÃ³lidos Solubles", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e34", nombre: "Ventilador de ExtracciÃ³n VolÃºmenes Bajos 2", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e35", nombre: "Ventilador de ExtracciÃ³n Mueble de Reactivos en Uso", min: 1.0, max: 2.5, unit: "inH2O" },
+      { id: "e36", nombre: "Ventilador de ExtracciÃ³n Control de Calidad", min: 0.02, max: 0.15, unit: "inH2O" },
+      { id: "e37", nombre: "Ventilador de ExtracciÃ³n Mueble AlmacÃ©n de Reactivos", min: 1.0, max: 2.5, unit: "inH2O" },
+      { id: "e38", nombre: "Ventilador de ExtracciÃ³n Mezclas 2", min: 0.01, max: 1.0, unit: "inH2O" },
+      { id: "e39", nombre: "UMA GranulaciÃ³n 2", min: 0.1, max: 2.5, unit: "inH2O" }
     ];
 
 
@@ -462,7 +490,7 @@
       } catch (e) {}
     }
 
-    // UID de Firebase de quien tiene la sesión (viene dentro del token; no cambia nunca)
+    // UID de Firebase de quien tiene la sesiÃ³n (viene dentro del token; no cambia nunca)
     function uidDeSesion() {
       try {
         var p = String(sesion && sesion.idToken || '').split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
@@ -508,7 +536,7 @@
           throw t;
         }
         if (e && e.name === 'TypeError') {
-          var n = new Error("Sin conexión");
+          var n = new Error("Sin conexiÃ³n");
           n.code = 'red';
           throw n;
         }
@@ -559,10 +587,10 @@
     }
 
     async function tokenValido() {
-      if (!sesion) { var e0 = new Error("Sesión cerrada"); e0.code = 'sin-sesion'; throw e0; }
+      if (!sesion) { var e0 = new Error("SesiÃ³n cerrada"); e0.code = 'sin-sesion'; throw e0; }
       if (Date.now() - (sesion.inicio || 0) > DURACION_MAX_SESION) {
         guardarSesion(null);
-        var e1 = new Error("Sesión vencida"); e1.code = 'sin-sesion'; throw e1;
+        var e1 = new Error("SesiÃ³n vencida"); e1.code = 'sin-sesion'; throw e1;
       }
       if (Date.now() < sesion.expira) return sesion.idToken;
       var d;
@@ -600,7 +628,7 @@
           update: { name: FS_RAIZ + "/" + COLECCION + "/" + id, fields: aCampos(datos) },
           updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
           currentDocument: { exists: false }
-        }] })
+        }, escrituraBit('CREO_REPORTE', id, 'Reporte creado, pendiente de aprobaciÃ³n', perfil.nombre)] })
       });
       var tr = r && r.writeResults && r.writeResults[0] && r.writeResults[0].transformResults;
       datos.creadoEn = (tr && tr[0] && tr[0].timestampValue) || (r && r.commitTime) || '';
@@ -630,11 +658,260 @@
           updateMask: { fieldPaths: campos },
           updateTransforms: [{ fieldPath: 'aprobadoEn', setToServerValue: 'REQUEST_TIME' }],
           currentDocument: { exists: true }
-        }] })
+        }, escrituraBit('FIRMO_APROBO', id, 'Reporte firmado y aprobado', perfil.nombre)] })
       });
       var tr = r && r.writeResults && r.writeResults[0] && r.writeResults[0].transformResults;
       datos.aprobadoEn = (tr && tr[0] && tr[0].timestampValue) || (r && r.commitTime) || '';
       return datos;
+    }
+
+    // ===== BITÃCORA DE AUDITORÃA =====
+    // Cada acciÃ³n importante agrega un renglÃ³n en la colecciÃ³n "bitacora" (solo se puede agregar; hora del servidor).
+    var FORMATO_BIT = 'DPV';
+    var NOMBRE_FORMATO_BIT = { PAP: 'Planta de Agua', DPV: 'DP VentilaciÃ³n' };
+    var ETIQ_BIT = {
+      CREO_REPORTE: ['CREÃ“ REPORTE', '#2563eb'], FIRMO_APROBO: ['FIRMÃ“ Y APROBÃ“', '#16a34a'],
+      GENERO_PDF: ['GENERÃ“ PDF', '#7c3aed'], DESCARGO_PDF: ['DESCARGÃ“ PDF', '#d97706'],
+      ENVIO_CORREO: ['ENVIÃ“ CORREO', '#0891b2'], REENVIO_CORREO: ['REENVIÃ“ CORREO', '#db2777']
+    };
+
+    function escrituraBit(evento, rid, detalle, nombre) {
+      return {
+        update: {
+          name: FS_RAIZ + "/bitacora/" + nuevoId(),
+          fields: aCampos({
+            evento: evento, usuario: ((sesion && sesion.email) || '').toLowerCase(), nombre: nombre,
+            formato: FORMATO_BIT, reporteId: rid, detalle: String(detalle || '').slice(0, 400)
+          })
+        },
+        updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
+        currentDocument: { exists: false }
+      };
+    }
+
+    // Eventos sueltos (PDF, descarga, correo): si falla, no interrumpe el trabajo; solo avisa en consola.
+    async function registrarEvento(evento, rid, detalle) {
+      try {
+        var token = await tokenValido();
+        var perfil = await perfilUsuario();
+        await pedir(FS_COMMIT + "?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ writes: [escrituraBit(evento, rid, detalle, perfil.nombre)] })
+        });
+        return true;
+      } catch (e) { console.error('BitÃ¡cora:', e); return false; }
+    }
+
+    var bitDatos = [];
+    var bitFiltradas = [];
+
+    function bitEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+    function bitFila(r) {
+      var s = sellosBogota(r.creadoEn);
+      return [r.id, s ? s.fecha + ' ' + s.hora : '', (ETIQ_BIT[r.evento] || [r.evento])[0], r.usuario, r.nombre,
+              NOMBRE_FORMATO_BIT[r.formato] || r.formato, r.reporteId, r.detalle || '', r.creadoEn];
+    }
+    var BIT_COLS = ['ID registro', 'Fecha y hora (BogotÃ¡)', 'Evento', 'Usuario (correo)', 'Nombre', 'Formato', 'ID reporte', 'Detalle', 'Marca de tiempo UTC (servidor)'];
+
+    async function huellaBit(filas) {
+      var txt = filas.map(function(f) {
+        return f.map(function(x) { return String(x == null ? '' : x).replace(/[\r\n|]/g, ' ').trim(); }).join('|');
+      }).join('\n');
+      return await sha256Hex(new TextEncoder().encode(txt));
+    }
+
+    async function cargarBitacora() {
+      var est = document.getElementById('bit-estado');
+      est.innerText = 'Cargandoâ€¦';
+      try {
+        var token = await tokenValido();
+        var r = await pedir(FS_BASE + ":runQuery?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ structuredQuery: {
+            from: [{ collectionId: 'bitacora' }],
+            orderBy: [{ field: { fieldPath: 'creadoEn' }, direction: 'DESCENDING' }],
+            limit: 5000
+          } })
+        }, 40000);
+        bitDatos = (Array.isArray(r) ? r : []).filter(function(x) { return x.document; }).map(function(x) {
+          var d = deCampos(x.document.fields);
+          d.id = x.document.name.split('/').pop();
+          return d;
+        });
+        var us = {};
+        bitDatos.forEach(function(d) { us[d.usuario] = d.nombre || d.usuario; });
+        var sel = document.getElementById('bit-usuario'), actual = sel.value;
+        sel.innerHTML = '<option value="">Todos los usuarios</option>' + Object.keys(us).sort().map(function(u) {
+          return '<option value="' + bitEsc(u) + '">' + bitEsc(us[u]) + '</option>';
+        }).join('');
+        sel.value = actual;
+        pintarBitacora();
+      } catch (e) {
+        est.innerText = 'No se pudo cargar la bitÃ¡cora: ' + ((e && e.message) || e);
+      }
+    }
+
+    function pintarBitacora() {
+      var per = document.getElementById('bit-periodo').value;
+      var fmt = document.getElementById('bit-formato').value;
+      var usu = document.getElementById('bit-usuario').value;
+      var q = document.getElementById('bit-buscar').value.trim().toLowerCase();
+      var hoy = sellosBogota(new Date(Date.now() + ajusteReloj).toISOString()).fecha;
+      var limite = null;
+      if (per !== 'todo') limite = Date.now() + ajusteReloj - (per === 'hoy' ? 0 : parseInt(per, 10) * 86400000);
+      bitFiltradas = bitDatos.filter(function(d) {
+        var t = Date.parse(d.creadoEn);
+        if (per === 'hoy') { var s = sellosBogota(d.creadoEn); if (!s || s.fecha !== hoy) return false; }
+        else if (limite !== null && t < limite) return false;
+        if (fmt && d.formato !== fmt) return false;
+        if (usu && d.usuario !== usu) return false;
+        if (q && (d.reporteId || '').toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+      var html = '', ultimo = '';
+      bitFiltradas.forEach(function(d) {
+        var s = sellosBogota(d.creadoEn);
+        var dia = s ? new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(Date.parse(d.creadoEn))) : '';
+        if (dia !== ultimo) { html += '<div style="margin:14px 0 6px;font-weight:bold;color:#374151;font-size:13px;">' + bitEsc(dia.charAt(0).toUpperCase() + dia.slice(1)) + '</div>'; ultimo = dia; }
+        var et = ETIQ_BIT[d.evento] || [d.evento, '#6b7280'];
+        html += '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px;text-align:left;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;"><b>' + bitEsc(s ? s.hora : '') + '</b>' +
+          '<span style="background:' + et[1] + ';color:#fff;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:bold;">' + bitEsc(et[0]) + '</span></div>' +
+          '<div style="margin-top:3px;">' + bitEsc(d.nombre || d.usuario) + '</div>' +
+          '<div style="color:#6b7280;">' + bitEsc(NOMBRE_FORMATO_BIT[d.formato] || d.formato) + ' Â· ' + bitEsc(d.reporteId) + '</div>' +
+          (d.detalle ? '<div style="color:#6b7280;">' + bitEsc(d.detalle) + '</div>' : '') + '</div>';
+      });
+      document.getElementById('bit-lista').innerHTML = html;
+      document.getElementById('bit-estado').innerText = bitFiltradas.length ? (bitFiltradas.length + ' registro(s)') : 'Sin registros con estos filtros.';
+    }
+
+    async function descargarBitacoraExcel() {
+      if (typeof ExcelJS === 'undefined') { alert('La librerÃ­a de Excel no cargÃ³ (revisa tu internet).'); return; }
+      if (!bitFiltradas.length) { alert('No hay registros para descargar con estos filtros.'); return; }
+      var clave = prompt('Escribe una clave para proteger el Excel (solo tÃº la sabrÃ¡s).\nSi la dejas vacÃ­a, queda protegido sin clave.');
+      if (clave === null) return;
+      var btn = document.getElementById('bit-excel'), txt0 = btn.innerText;
+      btn.disabled = true; btn.innerText = 'Generandoâ€¦';
+      try {
+        // el Excel va de la mÃ¡s antigua a la mÃ¡s reciente
+        var filas = bitFiltradas.slice().reverse().map(bitFila);
+        var huella = await huellaBit(filas);
+        var desde = filas[0][1], hasta = filas[filas.length - 1][1];
+        var perfil = await perfilUsuario();
+        var token = await tokenValido();
+        var okReg = true;
+        try {
+          await pedir(FS_COMMIT + "?key=" + API_KEY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ writes: [{
+              update: { name: FS_RAIZ + "/bitacoraHuellas/" + nuevoId(), fields: aCampos({
+                huella: huella, desde: desde, hasta: hasta, cantidad: filas.length, generadoPor: ((sesion && sesion.email) || '').toLowerCase()
+              }) },
+              updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
+              currentDocument: { exists: false }
+            }] })
+          });
+        } catch (e) { okReg = false; console.error('Huella:', e); }
+
+        var wb = new ExcelJS.Workbook();
+        wb.creator = perfil.nombre;
+        var ws = wb.addWorksheet('BitÃ¡cora');
+        ws.addRow(BIT_COLS);
+        filas.forEach(function(f) { ws.addRow(f.map(function(x) { return String(x == null ? '' : x); })); });
+        ws.columns = [{ width: 22 }, { width: 22 }, { width: 18 }, { width: 30 }, { width: 28 }, { width: 16 }, { width: 24 }, { width: 50 }, { width: 28 }];
+        var h = ws.getRow(1);
+        h.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        h.eachCell(function(c) { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1D4ED8' } }; });
+        ws.views = [{ state: 'frozen', ySplit: 1 }];
+        var wv = wb.addWorksheet('VerificaciÃ³n');
+        wv.columns = [{ width: 30 }, { width: 90 }];
+        var ahoraS = sellosBogota(new Date(Date.now() + ajusteReloj).toISOString());
+        wv.addRow(['Huella SHA-256 de la hoja BitÃ¡cora', huella]);
+        wv.addRow(['Registros', String(filas.length)]);
+        wv.addRow(['Desde', desde]);
+        wv.addRow(['Hasta', hasta]);
+        wv.addRow(['Generado por', perfil.nombre + ' (' + perfil.email + ')']);
+        wv.addRow(['Fecha de generaciÃ³n (BogotÃ¡)', ahoraS.fecha + ' ' + ahoraS.hora]);
+        wv.addRow(['CÃ³mo comprobar', 'En la app, pantalla BitÃ¡cora de auditorÃ­a > "Comprobar un Excel", elige este archivo. Si alguien cambiÃ³ una sola celda, la huella no coincide.']);
+        wv.getColumn(1).font = { bold: true };
+        var opc = { selectLockedCells: true, selectUnlockedCells: true };
+        await ws.protect(clave, opc);
+        await wv.protect(clave, opc);
+        var buf = await wb.xlsx.writeBuffer();
+        var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Bitacora_' + ahoraS.fecha.replace(/-/g, '') + ahoraS.hora.replace(/:/g, '') + '_' + huella.slice(0, 8) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function() { URL.revokeObjectURL(a.href); }, 5000);
+        if (!okReg) alert('OJO: el Excel se generÃ³, pero su huella NO quedÃ³ registrada en Firebase (revisa que las reglas estÃ©n publicadas). Sin ese registro no se podrÃ¡ comprobar contra Firebase.');
+      } catch (e) {
+        alert('No se pudo generar el Excel: ' + ((e && e.message) || e));
+      }
+      btn.disabled = false; btn.innerText = txt0;
+    }
+
+    async function comprobarExcelBitacora(archivo) {
+      var out = document.getElementById('bit-verif-res');
+      out.style.color = '#374151';
+      out.innerText = 'Comprobandoâ€¦';
+      try {
+        var wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(await archivo.arrayBuffer());
+        var ws = wb.getWorksheet('BitÃ¡cora'), wv = wb.getWorksheet('VerificaciÃ³n');
+        if (!ws || !wv) throw new Error('El archivo no tiene las hojas BitÃ¡cora y VerificaciÃ³n.');
+        var txt = function(c) { return String(c && c.text !== undefined ? c.text : (c && c.value != null ? c.value : '')); };
+        var filas = [];
+        ws.eachRow(function(row, n) {
+          if (n === 1) return;
+          var f = [];
+          for (var i = 1; i <= BIT_COLS.length; i++) f.push(txt(row.getCell(i)));
+          filas.push(f);
+        });
+        var calc = await huellaBit(filas);
+        var escrita = txt(wv.getCell('B1')).trim().toLowerCase();
+        if (calc !== escrita) {
+          out.style.color = '#dc2626';
+          out.innerText = 'âœ– ARCHIVO ALTERADO. El contenido de la bitÃ¡cora ya no coincide con la huella que trae el archivo.';
+          return;
+        }
+        var token = await tokenValido();
+        var r = await pedir(FS_BASE + ":runQuery?key=" + API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ structuredQuery: {
+            from: [{ collectionId: 'bitacoraHuellas' }],
+            where: { fieldFilter: { field: { fieldPath: 'huella' }, op: 'EQUAL', value: { stringValue: calc } } },
+            limit: 1
+          } })
+        });
+        var reg = (Array.isArray(r) ? r : []).filter(function(x) { return x.document; })[0];
+        if (reg) {
+          var d = deCampos(reg.document.fields), s = sellosBogota(d.creadoEn);
+          out.style.color = '#16a34a';
+          out.innerText = 'âœ” AUTÃ‰NTICO. El contenido coincide con la huella registrada en Firebase el ' + (s ? s.fecha + ' ' + s.hora : '') + ' por ' + d.generadoPor + ' (' + filas.length + ' registros).';
+        } else {
+          out.style.color = '#d97706';
+          out.innerText = 'âš  El archivo es coherente consigo mismo, pero su huella NO estÃ¡ registrada en Firebase. No se puede garantizar que lo haya emitido la app.';
+        }
+      } catch (e) {
+        out.style.color = '#dc2626';
+        out.innerText = 'No se pudo comprobar: ' + ((e && e.message) || e);
+      }
+    }
+
+    function abrirBitacora() {
+      document.getElementById('home-coord').classList.add('hidden');
+      document.getElementById('bitacora-screen').classList.remove('hidden');
+      cargarBitacora();
+    }
+    function cerrarBitacora() {
+      document.getElementById('bitacora-screen').classList.add('hidden');
+      document.getElementById('home-coord').classList.remove('hidden');
     }
 
     var urlParams = new URLSearchParams(window.location.search);
@@ -646,7 +923,7 @@
     var baseUrl = window.location.origin + window.location.pathname;
 
     var padTech, padAdmin;
-    /* ===== Generador de QR propio (modo byte, corrección M, versiones 1 a 10) ===== */
+    /* ===== Generador de QR propio (modo byte, correcciÃ³n M, versiones 1 a 10) ===== */
     function qrMatriz(texto) {
       var bytes = Array.prototype.slice.call(new TextEncoder().encode(texto));
       var EC = {1:[10,[[1,16]]],2:[16,[[1,28]]],3:[26,[[1,44]]],4:[18,[[2,32]]],5:[24,[[2,43]]],6:[16,[[4,27]]],7:[18,[[4,31]]],8:[22,[[2,38],[2,39]]],9:[22,[[3,36],[2,37]]],10:[26,[[4,43],[1,44]]]};
@@ -781,15 +1058,15 @@
       return cv.toDataURL('image/png');
     }
 
-    /* ===== VERIFICACIÓN DEL REPORTE ===== */
-    var FORMATO_VERIF = "CVSAI018-F001 DP Ventilación";
+    /* ===== VERIFICACIÃ“N DEL REPORTE ===== */
+    var FORMATO_VERIF = "CVSAI018-F001 DP VentilaciÃ³n";
     var CAMPOS_FIJOS_VERIF = ['fechaInicio','horaInicio','fecha','hora','tecnico','observaciones'];
     var CAMPOS_FINALES_VERIF = ['firmaTec','firmaAdm','fechaFirmaAdm'];
     function camposVerif() {
       return CAMPOS_FIJOS_VERIF.concat(listaEquipos.map(function(e) { return e.id; }), CAMPOS_FINALES_VERIF);
     }
     // Bloqueo del PDF: se abre e imprime normal, pero Adobe/Chrome/celular no dejan editar, copiar ni anotar.
-    // Si algún día da problema, cambia true por false y el PDF sale como antes.
+    // Si algÃºn dÃ­a da problema, cambia true por false y el PDF sale como antes.
     var PROTEGER_PDF = true;
     function claveAleatoria() {
       var a = new Uint8Array(16), o = '';
@@ -811,11 +1088,11 @@
       return o;
     }
 
-    // Huella SHA-256 de los datos del reporte (64 hex). El código impreso son sus primeros 16 caracteres.
+    // Huella SHA-256 de los datos del reporte (64 hex). El cÃ³digo impreso son sus primeros 16 caracteres.
     async function calcularHuellaVerif(id, d) {
       var partes = [id, FORMATO_VERIF];
       camposVerif().forEach(function(k) { partes.push(k + '=' + String(d[k] == null ? '' : d[k])); });
-      // campos nuevos: solo entran si existen, así los códigos de reportes anteriores siguen siendo válidos
+      // campos nuevos: solo entran si existen, asÃ­ los cÃ³digos de reportes anteriores siguen siendo vÃ¡lidos
       NUEVOS_VERIF.forEach(function(k) { if (d[k]) partes.push(k + '=' + String(d[k])); });
       return await sha256Hex(new TextEncoder().encode(JSON.stringify(partes)));
     }
@@ -828,7 +1105,7 @@
       return u;
     }
 
-    // Registra (o agrega) la huella del PDF en la ficha pública mínima del reporte
+    // Registra (o agrega) la huella del PDF en la ficha pÃºblica mÃ­nima del reporte
     async function guardarFichaVerif(id, d, codigo, hashPdf) {
       var token = await tokenValido();
       var url = FS_BASE + "/verificaciones/" + encodeURIComponent(id);
@@ -863,7 +1140,7 @@
 
     // ===== Hora del servidor y datos del firmante =====
     // La hora oficial del reporte es la que pone Firestore al guardar (campos creadoEn / aprobadoEn);
-    // el celular no la puede cambiar. Aquí se pasa a hora de Colombia.
+    // el celular no la puede cambiar. AquÃ­ se pasa a hora de Colombia.
     function sellosBogota(iso) {
       var t = Date.parse(iso);
       if (!iso || isNaN(t)) return null;
@@ -944,7 +1221,7 @@
       pintarSellos();
     }
 
-    // Constancia de quién firmó y con qué sentido (texto plano)
+    // Constancia de quiÃ©n firmÃ³ y con quÃ© sentido (texto plano)
     function pintarSellos() {
       var d = datosReporte;
       var t = document.getElementById('sello-tec'), a = document.getElementById('sello-adm');
@@ -952,14 +1229,14 @@
       t.textContent = ''; a.textContent = '';
       if (!d) return;
       var nomT = d.nombreTec || d.tecnico || '';
-      if (nomT) t.textContent = 'Firmado electrónicamente por ' + nomT + ((d.nombreTec && d.tecnico) ? ' (' + d.tecnico + ')' : '') + ' · Elaboró y ejecutó el chequeo.';
+      if (nomT) t.textContent = 'Firmado electrÃ³nicamente por ' + nomT + ((d.nombreTec && d.tecnico) ? ' (' + d.tecnico + ')' : '') + ' Â· ElaborÃ³ y ejecutÃ³ el chequeo.';
       if (d.firmaAdm || d.estado === 'aprobado') {
         var nomA = d.nombreAdm || 'Jorge Alberto Mendoza Ospina';
-        a.textContent = 'Firmado electrónicamente por ' + nomA + (d.aprobadoPor ? ' (' + d.aprobadoPor + ')' : '') + ' · Aprobó el reporte.';
+        a.textContent = 'Firmado electrÃ³nicamente por ' + nomA + (d.aprobadoPor ? ' (' + d.aprobadoPor + ')' : '') + ' Â· AprobÃ³ el reporte.';
       }
     }
 
-    // Solo acepta imágenes en base64 como firma
+    // Solo acepta imÃ¡genes en base64 como firma
     function srcSeguro(s) {
       return /^data:image\/(jpeg|png);base64,[A-Za-z0-9+\/=]+$/.test(s || '') ? s : '';
     }
@@ -976,9 +1253,9 @@
       return c.toDataURL('image/jpeg', calidad);
     }
 
-    // ENVÍO DE PDF Y NOTIFICACIÓN MEDIANTE GOOGLE APPS SCRIPT
+    // ENVÃO DE PDF Y NOTIFICACIÃ“N MEDIANTE GOOGLE APPS SCRIPT
     async function enviarPorAppsScript(payloadData) {
-      // El script comprueba que quien envía es el coordinador usando su sesión de Firebase
+      // El script comprueba que quien envÃ­a es el coordinador usando su sesiÃ³n de Firebase
       payloadData.idToken = await tokenValido();
 
       var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -994,7 +1271,7 @@
         resp = await fetch(APPS_SCRIPT_URL, cfg);
       } catch (e) {
         var er = new Error((e && e.name === 'AbortError')
-          ? "el servicio de correo tardó demasiado en responder"
+          ? "el servicio de correo tardÃ³ demasiado en responder"
           : "no se pudo contactar el servicio de correo (revisa tu internet)");
         er.code = 'script-red';
         throw er;
@@ -1005,7 +1282,7 @@
       var txt = await resp.text();
       var res;
       try { res = JSON.parse(txt); } catch (e) {
-        throw new Error("respuesta inesperada del servicio de correo (¿publicaste la nueva versión del script?)");
+        throw new Error("respuesta inesperada del servicio de correo (Â¿publicaste la nueva versiÃ³n del script?)");
       }
       if (res.status !== 'success') {
         throw new Error(res.message || "error al procesar la solicitud en Apps Script");
@@ -1016,25 +1293,25 @@
     function textoError(e) {
       if (!e) return "desconocido";
       if (e.code === 'script-red' || e.code === 'sin-perfil') return e.message;
-      if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
-      if (e.code === 'red') return "sin conexión a internet";
-      if (e.status === 403) return "tu usuario no tiene permiso para esta acción";
-      if (e.status === 404) return "no se encontró en la base de datos";
+      if (e.code === 'timeout') return "el servidor no respondiÃ³, revisa tu internet";
+      if (e.code === 'red') return "sin conexiÃ³n a internet";
+      if (e.status === 403) return "tu usuario no tiene permiso para esta acciÃ³n";
+      if (e.status === 404) return "no se encontrÃ³ en la base de datos";
       return e.text || e.apiMessage || e.message || String(e);
     }
 
     function mensajeLogin(e) {
-      if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
-      if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
+      if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e intÃ©ntalo de nuevo.";
+      if (e.code === 'red') return "Sin conexiÃ³n a internet. IntÃ©ntalo de nuevo.";
       var m = (e.apiMessage || e.message || "").toUpperCase();
       if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0 || m.indexOf("EMAIL_NOT_FOUND") >= 0)
-        return "Correo o contraseña incorrectos.";
+        return "Correo o contraseÃ±a incorrectos.";
       if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos fallidos. Espera unos minutos.";
-      if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
-      return "No se pudo iniciar sesión. Inténtalo de nuevo.";
+      if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario estÃ¡ deshabilitado.";
+      return "No se pudo iniciar sesiÃ³n. IntÃ©ntalo de nuevo.";
     }
 
-    // FORMATEA EL VALOR A 2 DECIMALES AUTOMÁTICAMENTE CUANDO EL TÉCNICO TERMINA DE DIGITAR
+    // FORMATEA EL VALOR A 2 DECIMALES AUTOMÃTICAMENTE CUANDO EL TÃ‰CNICO TERMINA DE DIGITAR
     function formatearInputDecimal(input) {
       var v = parseFloat(input.value);
       if (!isNaN(v)) {
@@ -1058,10 +1335,10 @@
         if (!isNaN(v)) {
           if (v < eq.min) {
             fuera = true;
-            msgDesc = eq.nombre + " bajo especificación (Valor: " + v.toFixed(2) + " " + eq.unit + " | Mín: " + eq.min.toFixed(2) + ")";
+            msgDesc = eq.nombre + " bajo especificaciÃ³n (Valor: " + v.toFixed(2) + " " + eq.unit + " | MÃ­n: " + eq.min.toFixed(2) + ")";
           } else if (v > eq.max) {
             fuera = true;
-            msgDesc = eq.nombre + " sobre especificación (Valor: " + v.toFixed(2) + " " + eq.unit + " | Máx: " + eq.max.toFixed(2) + ")";
+            msgDesc = eq.nombre + " sobre especificaciÃ³n (Valor: " + v.toFixed(2) + " " + eq.unit + " | MÃ¡x: " + eq.max.toFixed(2) + ")";
           }
         }
 
@@ -1073,13 +1350,13 @@
         }
       });
 
-      // Lo fuera de especificación se muestra aparte (se calcula solo); el texto del técnico no se toca
+      // Lo fuera de especificaciÃ³n se muestra aparte (se calcula solo); el texto del tÃ©cnico no se toca
       var obsAuto = document.getElementById('obs-auto');
       if (obsAuto) {
         obsAuto.textContent = '';
         if (desviaciones.length > 0) {
           var tt = document.createElement('b');
-          tt.textContent = 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:';
+          tt.textContent = 'VALORES FUERA DE ESPECIFICACIÃ“N DETECTADOS:';
           obsAuto.appendChild(tt);
           desviaciones.forEach(function(t) {
             var ln = document.createElement('div');
@@ -1105,7 +1382,7 @@
       return true;
     }
 
-    // CODIGO_vVERSION_aaaammddhhmmss_ID.pdf  (la hora es la de aprobación puesta por el servidor)
+    // CODIGO_vVERSION_aaaammddhhmmss_ID.pdf  (la hora es la de aprobaciÃ³n puesta por el servidor)
     function obtenerNombrePDF() {
       var d = datosReporte || {};
       var t = '';
@@ -1120,7 +1397,7 @@
       return FORMATO_XLSX.codigo + '_v' + FORMATO_XLSX.version + '_' + t + '_' + (reporteId || 'SIN-ID') + '.pdf';
     }
 
-    // Solo decide qué pantalla se muestra. Quien realmente puede aprobar lo deciden las reglas de Firestore.
+    // Solo decide quÃ© pantalla se muestra. Quien realmente puede aprobar lo deciden las reglas de Firestore.
     var HASH_COORDINADORES = [
       "dce01c2a945ed722800ca953b71c98dd35e8f70af7a2fade0ff10a3d0be8bf8e",
       "d83282cf900f7e8cb54bfb730ff71687966d5c91786bfa2f4622525645b641f5"
@@ -1151,7 +1428,7 @@
       }
 
       if (!emailValue || !passwordValue) {
-        errorDiv.innerText = "Ingrese correo y contraseña para continuar.";
+        errorDiv.innerText = "Ingrese correo y contraseÃ±a para continuar.";
         return;
       }
 
@@ -1172,14 +1449,14 @@
         console.log(e);
       }
       btn.disabled = false;
-      btn.innerText = "Iniciar Sesión";
+      btn.innerText = "Iniciar SesiÃ³n";
     }
 
-    var FORMATO_XLSX = { nombre: 'DP Ventilación', codigo: 'CVSAI018-F001', version: '18' };
+    var FORMATO_XLSX = { nombre: 'DP VentilaciÃ³n', codigo: 'CVSAI018-F001', version: '18' };
 
     // ---------- EXCEL PARA LA LISTA DE MICROSOFT ----------
-    // Una fila por reporte y una columna por cada ítem del formato, dentro de una tabla de Excel.
-    // Sin títulos ni celdas combinadas, para que Power Automate / Listas la lea directo.
+    // Una fila por reporte y una columna por cada Ã­tem del formato, dentro de una tabla de Excel.
+    // Sin tÃ­tulos ni celdas combinadas, para que Power Automate / Listas la lea directo.
     function bufferABase64(buf) {
       var bytes = new Uint8Array(buf), bin = '', chunk = 0x8000;
       for (var i = 0; i < bytes.length; i += chunk) {
@@ -1197,7 +1474,7 @@
       });
     }
 
-    // Texto de una celda respetando los <br> (innerText los pierde si la pantalla no está visible)
+    // Texto de una celda respetando los <br> (innerText los pierde si la pantalla no estÃ¡ visible)
     function textoCelda(td) {
       var cl = td.cloneNode(true);
       cl.querySelectorAll('br').forEach(function(b) { b.replaceWith('\n'); });
@@ -1221,7 +1498,7 @@
       return new Date(Date.UTC(+f[1], +f[2] - 1, +f[3], h, mi, s));
     }
 
-    // Lee los ítems tal como están en pantalla (la misma fuente del PDF)
+    // Lee los Ã­tems tal como estÃ¡n en pantalla (la misma fuente del PDF)
     function leerItemsParaExcel() {
       var area = document.getElementById('pdf-area');
       var heads = Array.prototype.map.call(
@@ -1229,7 +1506,7 @@
         function(t) { return t.textContent.trim(); });
       var iRango = -1;
       heads.forEach(function(h, i) { if (iRango < 0 && h.indexOf('Rango') === 0) iRango = i; });
-      if (iRango < 1) throw new Error('no se encontró la columna de rango');
+      if (iRango < 1) throw new Error('no se encontrÃ³ la columna de rango');
       var items = [];
       area.querySelectorAll('table.param-table:not(.pdf-header-repeat) > tbody > tr').forEach(function(tr) {
         if (tr.classList.contains('page-break') || tr.children.length < 3) return;
@@ -1264,15 +1541,15 @@
     }
 
     async function generarXlsxBase64(d) {
-      if (typeof ExcelJS === 'undefined') throw new Error('la librería de Excel no cargó (revisa tu internet)');
+      if (typeof ExcelJS === 'undefined') throw new Error('la librerÃ­a de Excel no cargÃ³ (revisa tu internet)');
       d = d || {};
       var F = FORMATO_XLSX;
       var items = leerItemsParaExcel();
 
-      // Nombres de columna (únicos)
-      var fijas = ['ID del reporte', 'Formato', 'Código del formato', 'Versión del formato', 'Inicio del chequeo',
-                   'Fecha del reporte', 'Técnico', 'UID del técnico', 'Estado', 'Aprobado por', 'Visto bueno',
-                   'Resultado general', 'Cantidad fuera de rango', 'Parámetros fuera de rango'];
+      // Nombres de columna (Ãºnicos)
+      var fijas = ['ID del reporte', 'Formato', 'CÃ³digo del formato', 'VersiÃ³n del formato', 'Inicio del chequeo',
+                   'Fecha del reporte', 'TÃ©cnico', 'UID del tÃ©cnico', 'Estado', 'Aprobado por', 'Visto bueno',
+                   'Resultado general', 'Cantidad fuera de rango', 'ParÃ¡metros fuera de rango'];
       var finales = ['Observaciones', 'Enlace al reporte', 'Enlace al PDF', 'Firma del responsable (base64)', 'Firma del coordinador (base64)'];
       var usados = {};
       fijas.concat(finales).forEach(function(n) { usados[n] = 1; });
@@ -1289,7 +1566,7 @@
       var pAdm = fechaAprobTxt(d).split(' ');
       var aprobado = (d.estado === 'aprobado') || !!d.firmaAdm;
       var idRep = (typeof reporteId !== 'undefined' && reporteId) ? reporteId : '';
-      // Firmas en texto base64 (cada celda de Excel admite máx. 32.767 caracteres: se reduce la imagen hasta que quepa)
+      // Firmas en texto base64 (cada celda de Excel admite mÃ¡x. 32.767 caracteres: se reduce la imagen hasta que quepa)
       async function firmaComoTexto(src) {
         var ok = (typeof srcSeguro === 'function') ? srcSeguro(src) : '';
         if (!ok) return '';
@@ -1326,7 +1603,7 @@
         fuera.length,
         fuera.map(function(i) { return i.nombre + ' = ' + i.valor + (i.unidad ? ' ' + i.unidad : ''); }).join('; ')
       ].concat(items.map(function(i) { return i.valor; })).concat([
-        textoObsTecnico(document.getElementById('observaciones').value || d.observaciones || '').split(/\r?\n/).map(function(t) { return t.trim(); }).filter(Boolean).join(' • '),
+        textoObsTecnico(document.getElementById('observaciones').value || d.observaciones || '').split(/\r?\n/).map(function(t) { return t.trim(); }).filter(Boolean).join(' â€¢ '),
         idRep ? (baseUrl + '?mode=ver&id=' + idRep) : '',
         d.pdfUrl || '',
         firmaTecTxt,
@@ -1354,10 +1631,10 @@
         if (n.length > maxCab) maxCab = n.length;
         ws.getColumn(c).width = (i < nF) ? anchosFijos[i] : (i < nF + items.length ? 20 : (n === 'Observaciones' ? 60 : 50));
         ws.getCell(1, c).alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' };
-        ws.getCell(2, c).alignment = { vertical: 'top', horizontal: 'left', wrapText: (n === 'Observaciones' || n === 'Parámetros fuera de rango') };
+        ws.getCell(2, c).alignment = { vertical: 'top', horizontal: 'left', wrapText: (n === 'Observaciones' || n === 'ParÃ¡metros fuera de rango') };
       });
       ws.getRow(1).height = Math.min(210, Math.max(45, Math.ceil(maxCab / 17) * 15 + 6));
-      // Altura de la fila de datos: que se vea completo el texto de Observaciones y de Parámetros fuera de rango
+      // Altura de la fila de datos: que se vea completo el texto de Observaciones y de ParÃ¡metros fuera de rango
       var altObs = Math.ceil(String(fila[nF + items.length] || '').length / 55), altPar = Math.ceil(String(fila[13] || '').length / 38);
       ws.getRow(2).height = Math.min(400, Math.max(30, Math.max(altObs, altPar) * 15 + 4));
       [5, 6, 11].forEach(function(c) { ws.getCell(2, c).numFmt = 'yyyy-mm-dd hh:mm:ss'; });
@@ -1371,7 +1648,7 @@
         }
       });
 
-      // ---- Hoja 2: Firmas (imágenes; las Listas no las importan desde Excel) ----
+      // ---- Hoja 2: Firmas (imÃ¡genes; las Listas no las importan desde Excel) ----
       var wf = wb.addWorksheet('Firmas');
       wf.getColumn(1).width = 26; wf.getColumn(2).width = 40; wf.getColumn(3).width = 40;
       ['ID del reporte', 'Firma del responsable', 'Firma del coordinador'].forEach(function(t, i) {
@@ -1399,7 +1676,7 @@
       cols.forEach(function(n, i) {
         if (/\(base64\)$/.test(n)) return;
         var v = fila[i];
-        if (v instanceof Date) v = v.toISOString().slice(0, 19).replace('T', ' ');   // la hora local se guardó como si fuera UTC
+        if (v instanceof Date) v = v.toISOString().slice(0, 19).replace('T', ' ');   // la hora local se guardÃ³ como si fuera UTC
         histCols.push(n);
         histVals.push(v === null || v === undefined ? '' : v);
       });
@@ -1410,23 +1687,23 @@
     }
 
     // GENERAR PDF EN MEMORIA BASE64
-    // Observaciones que escribe el técnico: si no hay nada, "N.A."
-    // (los reportes viejos guardaban ahí el bloque automático de fuera de especificación; se ignora)
+    // Observaciones que escribe el tÃ©cnico: si no hay nada, "N.A."
+    // (los reportes viejos guardaban ahÃ­ el bloque automÃ¡tico de fuera de especificaciÃ³n; se ignora)
     function textoObsTecnico(v) {
       v = String(v || '').trim();
-      if (v.indexOf('VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:') === 0) v = '';
+      if (v.indexOf('VALORES FUERA DE ESPECIFICACIÃ“N DETECTADOS:') === 0) v = '';
       return v || 'N.A.';
     }
 
     // En el PDF hay un solo recuadro de OBSERVACIONES (el formato impreso no cambia):
-    // primero lo fuera de especificación (si hay) y después lo que agregó el técnico (o N.A.)
+    // primero lo fuera de especificaciÃ³n (si hay) y despuÃ©s lo que agregÃ³ el tÃ©cnico (o N.A.)
     function textoObsPdf() {
       var tec = textoObsTecnico(document.getElementById('observaciones').value);
       var auto = document.getElementById('obs-auto');
       if (!auto || auto.classList.contains('hidden') || !auto.textContent.trim()) return tec;
       var lineas = [];
       auto.querySelectorAll('div').forEach(function(d) { lineas.push(d.textContent); });
-      return 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n' + lineas.join('\n') + '\nAdicional: ' + tec;
+      return 'VALORES FUERA DE ESPECIFICACIÃ“N DETECTADOS:\n' + lineas.join('\n') + '\nAdicional: ' + tec;
     }
 
     async function generarPdfBase64(fechaAdmTexto) {
@@ -1437,8 +1714,8 @@
       document.getElementById('block-tech-sig').classList.remove('hidden');
       document.getElementById('block-admin-sig').classList.remove('hidden');
 
-      // Estado final consistente para el PDF, sin importar cómo se llegó aquí:
-      // toda firma dibujada en un canvas se convierte en imagen (mismo tamaño que la otra firma)
+      // Estado final consistente para el PDF, sin importar cÃ³mo se llegÃ³ aquÃ­:
+      // toda firma dibujada en un canvas se convierte en imagen (mismo tamaÃ±o que la otra firma)
       pdfArea.querySelectorAll('canvas').forEach(function(cv) {
         if (cv.classList.contains('hidden')) return;
         var im = cv.parentNode.querySelector('img.firma-img');
@@ -1460,7 +1737,7 @@
         });
       });
 
-      // El "Visto bueno" siempre debe salir si el reporte ya está aprobado
+      // El "Visto bueno" siempre debe salir si el reporte ya estÃ¡ aprobado
       var faEl = document.getElementById('fecha-adm');
       if (fechaAdmTexto && faEl && !faEl.textContent.trim()) {
         var faPrev = faEl.innerHTML;
@@ -1484,7 +1761,7 @@
           document.getElementById('verif-url').textContent = urlVerificarBase().replace(/^https?:\/\//, '');
           vb.classList.remove('hidden');
           restaurar.push(function() { vb.classList.add('hidden'); });
-        } catch (ev) { console.error('Recuadro de verificación:', ev); }
+        } catch (ev) { console.error('Recuadro de verificaciÃ³n:', ev); }
       }
 
       var nombrePdf = obtenerNombrePDF();
@@ -1547,22 +1824,22 @@
             pdfObj.setTextColor(100, 116, 139);
 
             var yL1 = codigoVerifActual ? pageHeight - 9.5 : pageHeight - 6;
-            var textoPagina = "Página " + i + " de " + totalPages;
-            // el nombre del archivo es largo: se achica lo justo para no pisar el código del centro
+            var textoPagina = "PÃ¡gina " + i + " de " + totalPages;
+            // el nombre del archivo es largo: se achica lo justo para no pisar el cÃ³digo del centro
             var fs = 8;
             pdfObj.setFontSize(fs);
             if (codigoVerifActual && typeof pdfObj.getTextWidth === 'function') {
-              var anchoCod = pdfObj.getTextWidth('Cód. ' + codigoVerifActual);
+              var anchoCod = pdfObj.getTextWidth('CÃ³d. ' + codigoVerifActual);
               while (fs > 5.5 && (10 + pdfObj.getTextWidth(nombrePdf) + 4 > pageWidth / 2 - anchoCod / 2)) { fs -= 0.5; pdfObj.setFontSize(fs); }
             }
             pdfObj.text(nombrePdf, 10, yL1);
             pdfObj.setFontSize(8);
-            if (codigoVerifActual) pdfObj.text('Cód. ' + codigoVerifActual, pageWidth / 2, yL1, { align: 'center' });
+            if (codigoVerifActual) pdfObj.text('CÃ³d. ' + codigoVerifActual, pageWidth / 2, yL1, { align: 'center' });
             pdfObj.text(textoPagina, pageWidth - 10, yL1, { align: 'right' });
             if (codigoVerifActual) {
               var hh = huellaVerifActual.toLowerCase();
               pdfObj.setFontSize(6.5);
-              pdfObj.text('Documento firmado electrónicamente (Ley 527/1999). Huella SHA-256: ' + hh.slice(0, 4) + '…' + hh.slice(-4) + '. ID: ' + idVerifActual + '. App v' + APP_VERSION, 10, pageHeight - 5.5);
+              pdfObj.text('Documento firmado electrÃ³nicamente (Ley 527/1999). Huella SHA-256: ' + hh.slice(0, 4) + 'â€¦' + hh.slice(-4) + '. ID: ' + idVerifActual + '. App v' + APP_VERSION, 10, pageHeight - 5.5);
             }
           }
           return pdfObj.output('datauristring');
@@ -1629,16 +1906,16 @@
               <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
                 <tr>
                   <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
-                  <td style="width: 58%; text-align: center; font-weight: bold; font-size: 11px;">LISTA DE CHEQUEO PARA MEDICIÓN DE DIFERENCIALES DE PRESIÓN EN UMAS, VENTILADORES DE INYECCIÓN, EXTRACCIÓN Y COLECTORES DE POLVO</td>
-                  <td style="width: 22%; font-size: 10px;"><b>Código:</b> CVSAI018-F001<br><b>Versión:</b> 18<br><b>Fecha emisión:</b> 2026<br><b>Estado:</b> Vigente</td>
+                  <td style="width: 58%; text-align: center; font-weight: bold; font-size: 11px;">LISTA DE CHEQUEO PARA MEDICIÃ“N DE DIFERENCIALES DE PRESIÃ“N EN UMAS, VENTILADORES DE INYECCIÃ“N, EXTRACCIÃ“N Y COLECTORES DE POLVO</td>
+                  <td style="width: 22%; font-size: 10px;"><b>CÃ³digo:</b> CVSAI018-F001<br><b>VersiÃ³n:</b> 18<br><b>Fecha emisiÃ³n:</b> 2026<br><b>Estado:</b> Vigente</td>
                 </tr>
               </table>
               <table class="param-table pdf-header-repeat" style="margin-bottom:0;">
                 <thead>
                   <tr>
                     <th class="col-desc">Equipo</th>
-                    <th class="col-rango">Rango de Operación</th>
-                    <th class="col-ind">Indicación</th>
+                    <th class="col-rango">Rango de OperaciÃ³n</th>
+                    <th class="col-ind">IndicaciÃ³n</th>
                   </tr>
                 </thead>
               </table>
@@ -1694,7 +1971,7 @@
       }
 
       function ponerDatosTecnico(d) {
-        document.getElementById('tec-nombre').innerText = d.nombreTec || d.tecnico || (sesion ? sesion.email : 'Técnico de Mantenimiento');
+        document.getElementById('tec-nombre').innerText = d.nombreTec || d.tecnico || (sesion ? sesion.email : 'TÃ©cnico de Mantenimiento');
         if (d.cargoTec) document.getElementById('tec-cargo').innerText = d.cargoTec;
         if (d.nombreAdm) document.getElementById('adm-nombre').innerText = d.nombreAdm;
         if (d.cargoAdm) document.getElementById('adm-cargo').innerText = d.cargoAdm;
@@ -1728,7 +2005,7 @@
         vistaFinal = true;
         ponerDatosTecnico(d);
         badge.innerText = "Reporte Aprobado";
-        titulo.innerText = "Lista de Chequeo DP Ventilación";
+        titulo.innerText = "Lista de Chequeo DP VentilaciÃ³n";
         
         blockTech.classList.remove('hidden');
         blockAdmin.classList.remove('hidden');
@@ -1747,7 +2024,7 @@
         ponerDatosTecnico(d);
         pintarFechas(d.fecha, d.hora, '');
         badge.innerText = "Reporte enviado (solo lectura)";
-        titulo.innerText = "Lista de Chequeo DP Ventilación";
+        titulo.innerText = "Lista de Chequeo DP VentilaciÃ³n";
         blockTech.classList.remove('hidden');
         blockAdmin.classList.add('hidden');
         btnSubmit.classList.add('hidden');
@@ -1759,10 +2036,10 @@
         perfilUsuario().then(function(p) {
           document.getElementById('adm-nombre').innerText = p.nombre;
           if (p.cargo) document.getElementById('adm-cargo').innerText = p.cargo;
-        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrás firmar."); });
+        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrÃ¡s firmar."); });
         ponerDatosTecnico(d);
         badge.innerText = "Modo Coordinador";
-        titulo.innerText = "Aprobación de Servicio";
+        titulo.innerText = "AprobaciÃ³n de Servicio";
         
         blockTech.classList.remove('hidden');
         blockAdmin.classList.remove('hidden');
@@ -1790,7 +2067,7 @@
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-title').innerText = "Acceso de Técnicos";
+        document.getElementById('login-title').innerText = "Acceso de TÃ©cnicos";
         document.getElementById('login-nota').innerText = "";
       }
 
@@ -1798,8 +2075,8 @@
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-title').innerText = "Iniciar sesión";
-        document.getElementById('login-nota').innerText = "Inicia sesión para ver el reporte.";
+        document.getElementById('login-title').innerText = "Iniciar sesiÃ³n";
+        document.getElementById('login-nota').innerText = "Inicia sesiÃ³n para ver el reporte.";
       }
 
       function mostrarHomeCoord(mensaje) {
@@ -1820,11 +2097,11 @@
         loginScreen.classList.add('hidden');
         mainScreen.classList.remove('hidden');
         userDisplay.innerText = sesion ? sesion.email : '';
-        document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
+        document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'TÃ©cnico de Mantenimiento';
         perfilUsuario().then(function(p) {
           document.getElementById('tec-nombre').innerText = p.nombre;
           if (p.cargo) document.getElementById('tec-cargo').innerText = p.cargo;
-        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrás enviar el reporte."); });
+        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrÃ¡s enviar el reporte."); });
         
         blockTech.classList.remove('hidden');
         blockAdmin.classList.add('hidden');
@@ -1845,7 +2122,7 @@
         btnSubmit.style.background = "#6b7280";
 
         if (!reporteId) {
-          fallaCarga("Enlace no válido", "Este enlace no es válido. Pide al técnico que reenvíe la notificación.");
+          fallaCarga("Enlace no vÃ¡lido", "Este enlace no es vÃ¡lido. Pide al tÃ©cnico que reenvÃ­e la notificaciÃ³n.");
           return;
         }
         leerReporte(reporteId).then(async function(d) {
@@ -1856,7 +2133,7 @@
           userDisplay.innerText = sesion ? sesion.email : "Reporte firmado";
           btnSubmit.classList.remove('hidden');
           if ((modoAprobar && !esCoord) || (modoVer && d.estado !== 'aprobado')) {
-            // Técnico (o cualquiera que no sea coordinador): solo ve hasta su firma
+            // TÃ©cnico (o cualquiera que no sea coordinador): solo ve hasta su firma
             mostrarSoloTecnico(d);
           } else if (modoVer || d.estado === 'aprobado') {
             mostrarSoloLectura(d);
@@ -1904,13 +2181,16 @@
       async function enviarCorreoConPdf(reenviar) {
         await prepararVerificacion();
         var pdf = await generarPdfBase64(fechaAdmActual());
+        var hashPdfBit = '';
+        try { hashPdfBit = await sha256Hex(base64ABytes(pdf.base64)); } catch (e) {}
+        await registrarEvento('GENERO_PDF', reporteId, 'Archivo: ' + pdf.filename + ' | SHA-256 PDF: ' + hashPdfBit.slice(0, 16));
         var verifError = '';
         try {
-          if (!codigoVerifActual) throw new Error('no se pudo calcular el código');
+          if (!codigoVerifActual) throw new Error('no se pudo calcular el cÃ³digo');
           await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdf.base64)));
         } catch (e) {
           verifError = (e && e.message) || String(e);
-          console.error('Ficha de verificación:', e);
+          console.error('Ficha de verificaciÃ³n:', e);
         }
         var xlsx = null, excelError = '', pdfUrl = '', pdfUrlError = '';
         try {
@@ -1948,6 +2228,8 @@
         if (excelError) res.excelError = excelError;
         if (pdfUrlError) res.pdfUrlError = pdfUrlError;
         if (verifError) res.verifError = verifError;
+        await registrarEvento(reenviar ? 'REENVIO_CORREO' : 'ENVIO_CORREO', reporteId,
+          (res && res.duplicado) ? 'El sistema indicÃ³ que ya se habÃ­a enviado' : ('Destinatarios: ' + ((res && res.enviadoA && res.enviadoA.join(', ')) || 'sin confirmar') + (res && res.fallaron && res.fallaron.length ? ' | Fallaron: ' + res.fallaron.join(', ') : '')));
         if (PROTEGER_PDF && !pdf.protegido) res.sinBloqueo = true;
         res.codigoVerif = codigoVerifActual;
         return res;
@@ -1964,7 +2246,7 @@
             codigoVerifActual = codigoDeHuella(huellaVerifActual);
             idVerifActual = reporteId;
           }
-        } catch (e) { console.error('Código de verificación:', e); }
+        } catch (e) { console.error('CÃ³digo de verificaciÃ³n:', e); }
       }
 
       async function descargarPDF() {
@@ -1976,13 +2258,15 @@
           await prepararVerificacion();
           var pdfObj = await generarPdfBase64(fechaAdmActual());
           if (esCoordSesion && codigoVerifActual) {
-            // si el coordinador baja una copia, también queda registrada como original válido
-            try { await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdfObj.base64))); } catch (e) { console.error('Ficha de verificación:', e); }
+            // si el coordinador baja una copia, tambiÃ©n queda registrada como original vÃ¡lido
+            try { await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdfObj.base64))); } catch (e) { console.error('Ficha de verificaciÃ³n:', e); }
           }
           var link = document.createElement('a');
           link.href = "data:application/pdf;base64," + pdfObj.base64;
           link.download = pdfObj.filename;
           link.click();
+          var hdl = ''; try { hdl = await sha256Hex(base64ABytes(pdfObj.base64)); } catch (e) {}
+          registrarEvento('DESCARGO_PDF', reporteId, 'Archivo: ' + pdfObj.filename + ' | SHA-256 PDF: ' + hdl.slice(0, 16));
         } catch (e) {
           alert("No se pudo generar el PDF: " + (e.message || e));
         }
@@ -2021,12 +2305,12 @@
 
             var id = await crearReporte(payload);
             var link = baseUrl + "?mode=aprobar&id=" + id;
-            var texto = "*LISTA DE CHEQUEO DP VENTILACIÓN*\nCódigo: CVSAI018-F001\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
-                        "\nEnlace de aprobación: " + link;
+            var texto = "*LISTA DE CHEQUEO DP VENTILACIÃ“N*\nCÃ³digo: CVSAI018-F001\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
+                        "\nEnlace de aprobaciÃ³n: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
 
-            // El reporte ya quedó guardado: la pantalla pasa a solo lectura con lo que se diligenció
-            // (campos bloqueados y firma del técnico visible). Para otro reporte se recarga la página.
+            // El reporte ya quedÃ³ guardado: la pantalla pasa a solo lectura con lo que se diligenciÃ³
+            // (campos bloqueados y firma del tÃ©cnico visible). Para otro reporte se recarga la pÃ¡gina.
             reporteEnviado = true;
             datosReporte = payload;
             mostrarSoloTecnico(payload);
@@ -2038,7 +2322,7 @@
             if (!w) window.location.href = waUrl;
           } catch (e) {
             if (e.code === 'sin-sesion' || e.status === 401) {
-              alert("Tu sesión venció. Inicia sesión otra vez.");
+              alert("Tu sesiÃ³n venciÃ³. Inicia sesiÃ³n otra vez.");
               guardarSesion(null);
               mostrarLogin();
             } else {
@@ -2052,7 +2336,7 @@
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Generando PDF y Enviando...";
 
-          // La firma se congela desde el momento en que se toca el botón
+          // La firma se congela desde el momento en que se toca el botÃ³n
           if (padAdmin) padAdmin.off();
           btnClearAdmin.classList.add('hidden');
 
@@ -2075,7 +2359,7 @@
               ['nombreAdm', 'cargoAdm', 'aprobadoPor', 'aprobadoEn'].forEach(function(k) { datosReporte[k] = datosFirma[k]; });
               pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
 
-              // La imagen mostrada (y usada en el PDF) es exactamente la que quedó guardada
+              // La imagen mostrada (y usada en el PDF) es exactamente la que quedÃ³ guardada
               canvasAdmin.classList.add('hidden');
               imgAdminSig.src = firmaFinal;
               imgAdminSig.classList.remove('hidden');
@@ -2084,28 +2368,28 @@
             // Generar PDF y enviarlo por correo (Apps Script)
             var rs = await enviarCorreoConPdf(false);
 
-            var msg = "¡Reporte aprobado y correo enviado!";
-            if (rs && rs.duplicado) msg = "Este reporte ya se había enviado antes.";
+            var msg = "Â¡Reporte aprobado y correo enviado!";
+            if (rs && rs.duplicado) msg = "Este reporte ya se habÃ­a enviado antes.";
             if (rs && rs.enviadoA && rs.enviadoA.length) msg += "\n\nEnviado a:\n" + rs.enviadoA.join("\n");
             if (rs && rs.fallaron && rs.fallaron.length) msg += "\n\nNO se pudo enviar a:\n" + rs.fallaron.join("\n");
             if (rs && rs.adjuntos && rs.adjuntos.length) msg += "\n\nAdjuntos: " + rs.adjuntos.join(", ");
-            if (rs && rs.pdfUrlError) msg += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
-            if (rs && rs.excelError) msg += "\n\nOJO: el Excel no se pudo generar (" + rs.excelError + "). Se envió solo el PDF.";
-            if (rs && rs.sinBloqueo) msg += "\n\nOJO: el PDF salió SIN bloqueo de edición (la librería de PDF no lo aplicó). Avísale a Jorge.";
-            if (rs && rs.verifError) msg += "\n\nOJO: el código de verificación va impreso, pero no quedó registrado (" + rs.verifError + "). Revisa que las reglas de Firestore estén publicadas.";
+            if (rs && rs.pdfUrlError) msg += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs.pdfUrlError+"). La columna Enlace al PDF del Excel va vacÃ­a.";
+            if (rs && rs.excelError) msg += "\n\nOJO: el Excel no se pudo generar (" + rs.excelError + "). Se enviÃ³ solo el PDF.";
+            if (rs && rs.sinBloqueo) msg += "\n\nOJO: el PDF saliÃ³ SIN bloqueo de ediciÃ³n (la librerÃ­a de PDF no lo aplicÃ³). AvÃ­sale a Jorge.";
+            if (rs && rs.verifError) msg += "\n\nOJO: el cÃ³digo de verificaciÃ³n va impreso, pero no quedÃ³ registrado (" + rs.verifError + "). Revisa que las reglas de Firestore estÃ©n publicadas.";
             msg += textoExtras(rs);
             alert(msg);
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
-            mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
+            mostrarHomeCoord("âœ” Reporte aprobado y enviado con Ã©xito.");
             btnSubmit.disabled = false;
           } catch (err) {
             if (!aprobadoGuardado) {
-              // La firma NO quedó guardada: se puede volver a firmar
+              // La firma NO quedÃ³ guardada: se puede volver a firmar
               if (padAdmin) padAdmin.on();
               btnClearAdmin.classList.remove('hidden');
             }
             if (!aprobadoGuardado && (err.code === 'sin-sesion' || err.status === 401)) {
-              alert("Tu sesión venció. Inicia sesión otra vez.");
+              alert("Tu sesiÃ³n venciÃ³. Inicia sesiÃ³n otra vez.");
               guardarSesion(null);
               pedirLoginCoordinador();
               btnSubmit.disabled = false;
@@ -2113,9 +2397,9 @@
               return;
             }
             if (aprobadoGuardado) {
-              alert("Tu firma quedó guardada y ya no se puede cambiar, pero el correo no salió: " + textoError(err) +
-                    "\n\nToca el botón para reintentar el envío del correo.");
-              btnSubmit.innerText = "Reintentar envío de correo";
+              alert("Tu firma quedÃ³ guardada y ya no se puede cambiar, pero el correo no saliÃ³: " + textoError(err) +
+                    "\n\nToca el botÃ³n para reintentar el envÃ­o del correo.");
+              btnSubmit.innerText = "Reintentar envÃ­o de correo";
             } else {
               alert("No se pudo guardar la firma: " + textoError(err));
               btnSubmit.innerText = "Firmar y Enviar a Correo";
@@ -2126,7 +2410,7 @@
       };
 
       document.getElementById('btn-resend').onclick = async function() {
-        if (!confirm("¿Reenviar el correo con el PDF y el Excel a los destinatarios?")) return;
+        if (!confirm("Â¿Reenviar el correo con el PDF y el Excel a los destinatarios?")) return;
         var b = this;
         var textoBtn = b.innerText;
         b.disabled = true;
@@ -2137,10 +2421,10 @@
           if (rs2 && rs2.enviadoA && rs2.enviadoA.length) m2 += "\n\nEnviado a:\n" + rs2.enviadoA.join("\n");
           if (rs2 && rs2.fallaron && rs2.fallaron.length) m2 += "\n\nNO se pudo enviar a:\n" + rs2.fallaron.join("\n");
           if (rs2 && rs2.adjuntos && rs2.adjuntos.length) m2 += "\n\nAdjuntos: " + rs2.adjuntos.join(", ");
-          if (rs2 && rs2.pdfUrlError) m2 += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs2.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
-          if (rs2 && rs2.excelError) m2 += "\n\nOJO: el Excel no se pudo generar (" + rs2.excelError + "). Se envió solo el PDF.";
-          if (rs2 && rs2.sinBloqueo) m2 += "\n\nOJO: el PDF salió SIN bloqueo de edición.";
-          if (rs2 && rs2.verifError) m2 += "\n\nOJO: no se pudo registrar la verificación (" + rs2.verifError + ").";
+          if (rs2 && rs2.pdfUrlError) m2 += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs2.pdfUrlError+"). La columna Enlace al PDF del Excel va vacÃ­a.";
+          if (rs2 && rs2.excelError) m2 += "\n\nOJO: el Excel no se pudo generar (" + rs2.excelError + "). Se enviÃ³ solo el PDF.";
+          if (rs2 && rs2.sinBloqueo) m2 += "\n\nOJO: el PDF saliÃ³ SIN bloqueo de ediciÃ³n.";
+          if (rs2 && rs2.verifError) m2 += "\n\nOJO: no se pudo registrar la verificaciÃ³n (" + rs2.verifError + ").";
           m2 += textoExtras(rs2);
           alert(m2);
         } catch (e) {
