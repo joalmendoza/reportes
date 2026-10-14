@@ -224,12 +224,12 @@
     }
     .is-generating-pdf .btn-clear { display: none !important; }
     .verif-box { display:flex; gap:12px; align-items:center; border-top:2px solid #1e3a8a; margin-top:16px; padding-top:10px; page-break-inside:avoid; break-inside:avoid; }
-    .verif-box img { width:74px; height:74px; flex:none; }
-    .verif-txt { font-size:9.5px; line-height:1.55; color:#334155; word-break:break-all; }
+    .verif-box img { width:92px; height:92px; flex:none; }
+    .verif-txt { font-size:11.5px; line-height:1.6; color:#0f172a; word-break:break-all; }
     .verif-txt b { color:#111; }
-    .verif-cod { font-family:'Courier New',monospace !important; font-weight:bold; font-size:13px; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:1px 6px; border-radius:3px; }
+    .verif-cod { font-family:'Courier New',monospace !important; font-weight:bold; font-size:16px; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:1px 6px; border-radius:3px; }
     .sello-firma { font-size:10.5px; color:#475569; line-height:1.4; margin:0 0 8px; }
-    .verif-hash { font-family:'Courier New',monospace; font-size:7.5px; letter-spacing:.2px; word-break:break-all; }
+    .verif-hash { font-family:'Courier New',monospace; font-weight:bold; font-size:10.5px; letter-spacing:0; word-break:break-all; color:#000; }
   </style>
 
   <!-- LIBRER&#205;AS EXTERNAS -->
@@ -1756,7 +1756,7 @@
           qrImg.src = qrDataUrl(urlVerificarBase() + '?id=' + idVerifActual, 260);
           try { await qrImg.decode(); } catch (eq) {}
           document.getElementById('verif-codigo').textContent = codigoVerifActual;
-          document.getElementById('verif-huella').textContent = huellaVerifActual.toLowerCase();
+          var hv = huellaVerifActual.toLowerCase(); document.getElementById('verif-huella').innerHTML = '<br>' + hv.slice(0, 32) + '<br>' + hv.slice(32);
           document.getElementById('verif-id').textContent = idVerifActual;
           document.getElementById('verif-url').textContent = urlVerificarBase().replace(/^https?:\/\//, '');
           vb.classList.remove('hidden');
@@ -1799,11 +1799,20 @@
         reponer.push({ inp: inp, span: span, unitLabel: unitLabel });
       });
 
+      // Resolucion: hasta 3x (nitido al imprimir) y se baja sola si el documento es muy largo,
+      // porque los celulares no soportan imagenes de mas de ~16 millones de pixeles.
+      function escalaPdf(el) {
+        try {
+          var w = el.scrollWidth || 794, h = el.scrollHeight || 1123;
+          var sc = Math.sqrt(14000000 / (w * h));
+          return Math.max(2, Math.min(3, Math.floor(sc * 10) / 10));
+        } catch (e) { return 2; }
+      }
       var opt = {
         margin: [8, 8, 12, 8],
         filename: nombrePdf,
-        image: { type: 'jpeg', quality: 0.9 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: escalaPdf(pdfArea), useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
         jsPDF: (function() {
           var j = { unit: 'mm', format: 'a4', orientation: 'portrait' };
           if (PROTEGER_PDF) j.encryption = { userPassword: '', ownerPassword: claveAleatoria(), userPermissions: ['print'] };
@@ -1820,26 +1829,29 @@
 
           for (var i = 1; i <= totalPages; i++) {
             pdfObj.setPage(i);
-            pdfObj.setFontSize(8);
-            pdfObj.setTextColor(100, 116, 139);
+            pdfObj.setFontSize(9);
+            pdfObj.setTextColor(15, 23, 42);
 
-            var yL1 = codigoVerifActual ? pageHeight - 9.5 : pageHeight - 6;
+            var yL1 = codigoVerifActual ? pageHeight - 9 : pageHeight - 6;
             var textoPagina = "P\u00e1gina " + i + " de " + totalPages;
             // el nombre del archivo es largo: se achica lo justo para no pisar el c\u00f3digo del centro
-            var fs = 8;
+            var fs = 9;
             pdfObj.setFontSize(fs);
             if (codigoVerifActual && typeof pdfObj.getTextWidth === 'function') {
               var anchoCod = pdfObj.getTextWidth('C\u00f3d. ' + codigoVerifActual);
-              while (fs > 5.5 && (10 + pdfObj.getTextWidth(nombrePdf) + 4 > pageWidth / 2 - anchoCod / 2)) { fs -= 0.5; pdfObj.setFontSize(fs); }
+              while (fs > 6 && (10 + pdfObj.getTextWidth(nombrePdf) + 4 > pageWidth / 2 - anchoCod / 2)) { fs -= 0.5; pdfObj.setFontSize(fs); }
             }
             pdfObj.text(nombrePdf, 10, yL1);
-            pdfObj.setFontSize(8);
+            pdfObj.setFontSize(9);
             if (codigoVerifActual) pdfObj.text('C\u00f3d. ' + codigoVerifActual, pageWidth / 2, yL1, { align: 'center' });
             pdfObj.text(textoPagina, pageWidth - 10, yL1, { align: 'right' });
             if (codigoVerifActual) {
               var hh = huellaVerifActual.toLowerCase();
-              pdfObj.setFontSize(6.5);
-              pdfObj.text('Documento firmado electr\u00f3nicamente (Ley 527/1999). Huella SHA-256: ' + hh.slice(0, 4) + '\u2026' + hh.slice(-4) + '. ID: ' + idVerifActual + '. App v' + APP_VERSION, 10, pageHeight - 5.5);
+              var tl2 = 'Documento firmado electr\u00f3nicamente (Ley 527/1999). Huella SHA-256: ' + hh.slice(0, 8) + '\u2026' + hh.slice(-8) + '. ID: ' + idVerifActual + '. App v' + APP_VERSION;
+              var fs2 = 7.5;
+              pdfObj.setFontSize(fs2);
+              if (typeof pdfObj.getTextWidth === 'function') { while (fs2 > 6 && pdfObj.getTextWidth(tl2) > pageWidth - 20) { fs2 -= 0.25; pdfObj.setFontSize(fs2); } }
+              pdfObj.text(tl2, 10, pageHeight - 5);
             }
           }
           return pdfObj.output('datauristring');
