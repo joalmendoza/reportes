@@ -106,7 +106,7 @@
       margin-bottom: 12px;
     }
     
-    /* TABLAS DE ENCABEZADO Y PARÁMETROS */
+    /* TABLAS DE ENCABEZADO Y PAR\c1 METROS */
     .header-table, .param-table {
       width: 100%;
       border-collapse: collapse;
@@ -129,7 +129,7 @@
       color: #1e293b;
     }
 
-    /* CASILLA DE INDICACIÓN CON ANCHO Y ESPACIO OPTIMIZADO PARA MÓVIL */
+    /* CASILLA DE INDICACI\d3 N CON ANCHO Y ESPACIO OPTIMIZADO PARA M\d3 VIL */
     .input-unit-cell {
       display: flex;
       align-items: center;
@@ -152,13 +152,13 @@
       white-space: nowrap;
     }
 
-    /* ANCHOS PREDETERMINADOS PARA PANTALLA (MÓVIL) */
+    /* ANCHOS PREDETERMINADOS PARA PANTALLA (M\d3 VIL) */
     .col-pc { width: 12%; }
     .col-desc { width: 36%; }
     .col-rango { width: 22%; }
     .col-ind { width: 30%; }
 
-    /* REAJUSTE DE ANCHOS EXCLUSIVO EN LA GENERACIÓN DEL PDF */
+    /* REAJUSTE DE ANCHOS EXCLUSIVO EN LA GENERACI\d3 N DEL PDF */
     .is-generating-pdf .col-pc { width: 10% !important; }
     .is-generating-pdf .col-desc { width: 52% !important; }
     .is-generating-pdf .col-rango { width: 22% !important; }
@@ -193,7 +193,7 @@
       text-align: center;
     }
 
-    /* REGLAS PARA SALTO DE PÁGINA EN PDF Y REPETICIÓN DE ENCABEZADOS */
+    /* REGLAS PARA SALTO DE P\c1 GINA EN PDF Y REPETICI\d3 N DE ENCABEZADOS */
     .page-break {
       page-break-before: always;
       break-before: page;
@@ -224,7 +224,7 @@
       width: 50% !important;
     }
 
-    /* Fuente explícita en el área del PDF: con system-ui el PDF salía con letras encimadas y sin espacios */
+    /* Fuente expl\ed cita en el \e1 rea del PDF: con system-ui el PDF sal\ed a con letras encimadas y sin espacios */
     #pdf-area, #pdf-area * {
       font-family: Arial, Helvetica, sans-serif !important;
       letter-spacing: normal !important;
@@ -234,73 +234,73 @@
     }
     .is-generating-pdf .btn-clear { display: none !important; }
     .verif-box { display:flex; gap:12px; align-items:center; border-top:2px solid #1e3a8a; margin-top:16px; padding-top:10px; page-break-inside:avoid; break-inside:avoid; }
-    .verif-box img { width:74px; height:74px; flex:none; }
-    .verif-txt { font-size:9.5px; line-height:1.55; color:#334155; word-break:break-all; }
+    .verif-box img { width:92px; height:92px; flex:none; }
+    .verif-txt { font-size:11.5px; line-height:1.6; color:#0f172a; word-break:break-all; }
     .verif-txt b { color:#111; }
-    .verif-cod { font-family:'Courier New',monospace !important; font-weight:bold; font-size:13px; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:1px 6px; border-radius:3px; }
+    .verif-cod { font-family:'Courier New',monospace !important; font-weight:bold; font-size:16px; letter-spacing:1px; color:#1e3a8a; background:#eef2ff; padding:1px 6px; border-radius:3px; }
     .sello-firma { font-size:10.5px; color:#475569; line-height:1.4; margin:0 0 8px; }
-    .verif-hash { font-family:'Courier New',monospace; font-size:7.5px; letter-spacing:.2px; word-break:break-all; }
+    .verif-hash { font-family:'Courier New',monospace; font-weight:bold; font-size:10.5px; letter-spacing:0; word-break:break-all; color:#000; }
   </style>
 
-  <!-- LIBRERÍAS EXTERNAS -->
+  <!-- LIBRER&#205;AS EXTERNAS -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
 <body>
 
-  <!-- PANTALLA 1: INICIO DE SESIÓN -->
+  <!-- PANTALLA 1: INICIO DE SESI&#211;N -->
   <div id="login-screen" class="card">
-    <h2 id="login-title" style="text-align: center; margin-bottom: 20px;">Acceso de Técnicos</h2>
+    <h2 id="login-title" style="text-align: center; margin-bottom: 20px;">Acceso de T&#233;cnicos</h2>
     <p id="login-nota" style="text-align:center; font-size:14px; color:#6b7280; margin:-10px 0 14px;"></p>
     <div id="error-message" class="error-msg"></div>
 
     <div>
-      <label style="font-weight: bold; font-size: 14px;">Correo Electrónico</label>
-      <input type="email" id="email" autocomplete="username" autocapitalize="none" class="input-field" placeholder="Ingrese su correo electrónico" value="">
+      <label style="font-weight: bold; font-size: 14px;">Correo Electr&#243;nico</label>
+      <input type="email" id="email" autocomplete="username" autocapitalize="none" class="input-field" placeholder="Ingrese su correo electr&#243;nico" value="">
 
-      <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
-      <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="••••••••" value="">
+      <label style="font-weight: bold; font-size: 14px;">Contrase&#241;a</label>
+      <input type="password" id="password" autocomplete="current-password" class="input-field" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" value="">
 
-      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesión</button>
+      <button type="button" id="btn-submit-login" class="btn" onclick="procesarLogin()">Iniciar Sesi&#243;n</button>
       <p id="diag" style="text-align:center; font-size:11px; color:#9ca3af; margin:14px 0 0;">v19 | CVSAG005-F001</p>
     </div>
   </div>
 
-  <!-- PANTALLA DEL COORDINADOR (SESIÓN ACTIVA) -->
+  <!-- PANTALLA DEL COORDINADOR (SESI&#211;N ACTIVA) -->
   <div id="home-coord" class="card hidden" style="text-align:center;">
-    <h2 style="margin-top:0;">Sesión de coordinador</h2>
+    <h2 style="margin-top:0;">Sesi&#243;n de coordinador</h2>
     <p id="home-coord-msg" style="font-weight:bold; color:#16a34a;"></p>
-    <p style="font-size:14px; color:#6b7280;">Tu sesión sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
-    <button type="button" id="btn-bitacora" class="btn" style="background:#374151;margin-bottom:10px;" onclick="abrirBitacora()">📋 Bitácora de auditoría</button>
-    <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesión</button>
+    <p style="font-size:14px; color:#6b7280;">Tu sesi&#243;n sigue activa. Para aprobar otro reporte, abre su enlace desde WhatsApp.</p>
+    <button type="button" id="btn-bitacora" class="btn" style="background:#374151;margin-bottom:10px;" onclick="abrirBitacora()">&#128203; Bit&#225;cora de auditor&#237;a</button>
+    <button type="button" id="btn-logout-home" class="btn" style="background:#ef4444;">Cerrar sesi&#243;n</button>
   </div>
 
-  <!-- BITÁCORA DE AUDITORÍA (solo coordinador) -->
+  <!-- BIT&#193;CORA DE AUDITOR&#205;A (solo coordinador) -->
   <div id="bitacora-screen" class="card hidden">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <button type="button" class="btn" style="width:auto;padding:8px 14px;background:#6b7280;" onclick="cerrarBitacora()">← Volver</button>
-      <h2 style="margin:0;font-size:18px;">Bitácora de auditoría</h2>
+      <button type="button" class="btn" style="width:auto;padding:8px 14px;background:#6b7280;" onclick="cerrarBitacora()">&#8592; Volver</button>
+      <h2 style="margin:0;font-size:18px;">Bit&#225;cora de auditor&#237;a</h2>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       <select id="bit-periodo" class="input-field" style="margin:0;" onchange="pintarBitacora()">
-        <option value="hoy">Hoy</option><option value="7" selected>Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="todo">Todo</option>
+        <option value="hoy">Hoy</option><option value="7" selected>&#218;ltimos 7 d&#237;as</option><option value="30">&#218;ltimos 30 d&#237;as</option><option value="todo">Todo</option>
       </select>
       <select id="bit-formato" class="input-field" style="margin:0;" onchange="pintarBitacora()">
-        <option value="">Todos los formatos</option><option value="PAP">Planta de Agua</option><option value="DPV">DP Ventilación</option>
+        <option value="">Todos los formatos</option><option value="PAP">Planta de Agua</option><option value="DPV">DP Ventilaci&#243;n</option>
       </select>
       <select id="bit-usuario" class="input-field" style="margin:0;" onchange="pintarBitacora()"><option value="">Todos los usuarios</option></select>
       <input type="text" id="bit-buscar" class="input-field" style="margin:0;" placeholder="Buscar por ID de reporte" oninput="pintarBitacora()">
     </div>
     <p id="bit-estado" style="font-size:12px;color:#6b7280;margin:10px 0 0;"></p>
     <div id="bit-lista"></div>
-    <button type="button" id="bit-excel" class="btn" style="background:#16a34a;margin-top:12px;" onclick="descargarBitacoraExcel()">⬇ Descargar bitácora en Excel (protegido)</button>
+    <button type="button" id="bit-excel" class="btn" style="background:#16a34a;margin-top:12px;" onclick="descargarBitacoraExcel()">&#11015; Descargar bit&#225;cora en Excel (protegido)</button>
     <div style="margin-top:14px;font-size:12px;text-align:left;">
-      <b>Comprobar un Excel de bitácora</b><br>
+      <b>Comprobar un Excel de bit&#225;cora</b><br>
       <input type="file" accept=".xlsx" onchange="if(this.files[0]) comprobarExcelBitacora(this.files[0]); this.value='';">
       <p id="bit-verif-res" style="margin:6px 0 0;"></p>
     </div>
-    <p style="font-size:11px;color:#6b7280;text-align:center;margin-top:14px;">🔒 Los registros solo se pueden agregar. Nadie puede cambiarlos ni borrarlos desde la app.</p>
+    <p style="font-size:11px;color:#6b7280;text-align:center;margin-top:14px;">&#128274; Los registros solo se pueden agregar. Nadie puede cambiarlos ni borrarlos desde la app.</p>
   </div>
 
   <!-- PANTALLA 2: FORMULARIO PRINCIPAL CVSAG005-F001 -->
@@ -310,7 +310,7 @@
       <button id="btn-logout" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: bold; cursor: pointer;">Salir</button>
     </div>
 
-    <div id="view-badge" class="badge">Modo Técnico</div>
+    <div id="view-badge" class="badge">Modo T&#233;cnico</div>
     <h2 id="view-title" style="margin-top: 0; margin-bottom: 16px; color: #111827;">Lista de Chequeo Planta de Agua Purificada</h2>
 
     <div id="pdf-area" style="padding: 10px; background: white;">
@@ -321,9 +321,9 @@
           <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
           <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
           <td style="width: 22%; font-size: 10px;">
-            <b>Código:</b> CVSAG005-F001<br>
-            <b>Versión:</b> 04<br>
-            <b>Fecha emisión:</b> 2023<br>
+            <b>C&#243;digo:</b> CVSAG005-F001<br>
+            <b>Versi&#243;n:</b> 04<br>
+            <b>Fecha emisi&#243;n:</b> 2023<br>
             <b>Estado:</b> Vigente
           </td>
         </tr>
@@ -341,52 +341,52 @@
         </div>
       </div>
 
-      <div class="sec-title">PARÁMETROS A CONTROLAR EN LA PLANTA DE AGUA PURIFICADA</div>
+      <div class="sec-title">PAR&#193;METROS A CONTROLAR EN LA PLANTA DE AGUA PURIFICADA</div>
 
-      <!-- TABLA DE CONTROL DE PARÁMETROS -->
+      <!-- TABLA DE CONTROL DE PAR&#193;METROS -->
       <table class="param-table">
         <thead>
           <tr>
             <th class="col-pc">Punto de Control</th>
-            <th class="col-desc">Descripción</th>
-            <th class="col-rango">Rango de Operación</th>
-            <th class="col-ind">Indicación</th>
+            <th class="col-desc">Descripci&#243;n</th>
+            <th class="col-rango">Rango de Operaci&#243;n</th>
+            <th class="col-ind">Indicaci&#243;n</th>
           </tr>
         </thead>
         <tbody>
           <tr id="row_tag34">
             <td class="col-pc">TAG 34</td>
-            <td class="col-desc">Presión entrada microfiltro de 1 micra</td>
+            <td class="col-desc">Presi&#243;n entrada microfiltro de 1 micra</td>
             <td class="col-rango">1 bar a 4 bar</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag34" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag35">
             <td class="col-pc">TAG 35</td>
-            <td class="col-desc">Presión salida microfiltro de 1 micra</td>
+            <td class="col-desc">Presi&#243;n salida microfiltro de 1 micra</td>
             <td class="col-rango">1 bar a 4 bar</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag35" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_diff_micro1" class="calculated-val">
             <td class="diagonal-cell col-pc"></td>
-            <td class="col-desc">Diferencial de presión filtro 1 micra (TAG34 - TAG35)</td>
-            <td class="col-rango">Máximo 0,7 bar</td>
+            <td class="col-desc">Diferencial de presi&#243;n filtro 1 micra (TAG34 - TAG35)</td>
+            <td class="col-rango">M&#225;ximo 0,7 bar</td>
             <td class="col-ind"><span id="diff_micro1">0.00</span> bar</td>
           </tr>
           <tr id="row_tag39a">
             <td class="col-pc">TAG 39A</td>
-            <td class="col-desc">Presión entrada al EDIC</td>
+            <td class="col-desc">Presi&#243;n entrada al EDIC</td>
             <td class="col-rango">1 bar a 3 bar</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39a" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag39b">
             <td class="col-pc">TAG 39B</td>
-            <td class="col-desc">Presión entrada al EDIC</td>
+            <td class="col-desc">Presi&#243;n entrada al EDIC</td>
             <td class="col-rango">1 bar a 3 bar</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag39b" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag27">
             <td class="col-pc">TAG 27</td>
-            <td class="col-desc">Caudal rechazo membranas ósmosis inversa</td>
+            <td class="col-desc">Caudal rechazo membranas &#243;smosis inversa</td>
             <td class="col-rango">3 L/min a 25 L/min</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag27" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L/min</span></div></td>
           </tr>
@@ -404,51 +404,51 @@
           </tr>
           <tr id="row_tag29">
             <td class="col-pc">TAG 29</td>
-            <td class="col-desc">Presión salida del EDIC</td>
+            <td class="col-desc">Presi&#243;n salida del EDIC</td>
             <td class="col-rango">4 PSI a 9 PSI</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag29" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_tag43">
             <td class="col-pc">TAG 43</td>
-            <td class="col-desc">Presión rechazo membranas ósmosis inversa</td>
+            <td class="col-desc">Presi&#243;n rechazo membranas &#243;smosis inversa</td>
             <td class="col-rango">10 bar a 13,5 bar</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag43" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag38">
             <td class="col-pc">TAG 38</td>
-            <td class="col-desc">Presión de permeado</td>
+            <td class="col-desc">Presi&#243;n de permeado</td>
             <td class="col-rango">0,5 bar a 4 bar</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag38" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag37">
             <td class="col-pc">TAG 37</td>
-            <td class="col-desc">Presión entrada membranas ósmosis inversa</td>
+            <td class="col-desc">Presi&#243;n entrada membranas &#243;smosis inversa</td>
             <td class="col-rango">10 bar a 14 bar</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag37" class="input-field" oninput="evaluarRangos()"><span class="unit-label">bar</span></div></td>
           </tr>
           <tr id="row_tag33">
             <td class="col-pc">TAG 33</td>
             <td class="col-desc">Resistividad agua EDIC</td>
-            <td class="col-rango">1 MΩ*cm a 19 MΩ*cm</td>
-            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag33" class="input-field" oninput="evaluarRangos()"><span class="unit-label">MΩ*cm</span></div></td>
+            <td class="col-rango">1 M&#8486;*cm a 19 M&#8486;*cm</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag33" class="input-field" oninput="evaluarRangos()"><span class="unit-label">M&#8486;*cm</span></div></td>
           </tr>
           <tr id="row_tag53">
             <td class="col-pc">TAG 53</td>
-            <td class="col-desc">Tensión eléctrica en continua del EDIC</td>
+            <td class="col-desc">Tensi&#243;n el&#233;ctrica en continua del EDIC</td>
             <td class="col-rango">10 VDC a 95 VDC</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag53" class="input-field" oninput="evaluarRangos()"><span class="unit-label">VDC</span></div></td>
           </tr>
           <tr id="row_tag54">
             <td class="col-pc">TAG 54</td>
-            <td class="col-desc">Intensidad eléctrica en continua del EDIC</td>
+            <td class="col-desc">Intensidad el&#233;ctrica en continua del EDIC</td>
             <td class="col-rango">0,5 A hasta 6 A</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag54" class="input-field" oninput="evaluarRangos()"><span class="unit-label">A</span></div></td>
           </tr>
           <tr id="row_tag47">
             <td class="col-pc">TAG 47</td>
-            <td class="col-desc">Conductividad salida membranas ósmosis inversa</td>
-            <td class="col-rango">Máx. 10 µS/cm</td>
-            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag47" class="input-field" oninput="evaluarRangos()"><span class="unit-label">µS/cm</span></div></td>
+            <td class="col-desc">Conductividad salida membranas &#243;smosis inversa</td>
+            <td class="col-rango">M&#225;x. 10 &#181;S/cm</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag47" class="input-field" oninput="evaluarRangos()"><span class="unit-label">&#181;S/cm</span></div></td>
           </tr>
           <tr id="row_tag50">
             <td class="col-pc">TAG 50</td>
@@ -475,15 +475,15 @@
           </tr>
           <tr id="row_tag71_nivel">
             <td class="col-pc">TAG 71</td>
-            <td class="col-desc">Nivel solución tanque metabisulfito de sodio</td>
+            <td class="col-desc">Nivel soluci&#243;n tanque metabisulfito de sodio</td>
             <td class="col-rango">10 L hasta 50 L</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag71_nivel" class="input-field" oninput="evaluarRangos()"><span class="unit-label">L</span></div></td>
           </tr>
           <tr id="row_tag70">
             <td class="col-pc">TAG 70</td>
             <td class="col-desc">Temperatura tanque agua purificada #2</td>
-            <td class="col-rango">Menor a 34 ºC</td>
-            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag70" class="input-field" oninput="evaluarRangos()"><span class="unit-label">ºC</span></div></td>
+            <td class="col-rango">Menor a 34 &#186;C</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag70" class="input-field" oninput="evaluarRangos()"><span class="unit-label">&#186;C</span></div></td>
           </tr>
           <tr id="row_tag42">
             <td class="col-pc">TAG 42</td>
@@ -494,30 +494,30 @@
 
           <tr id="row_tag73">
             <td class="col-pc">TAG 73</td>
-            <td class="col-desc">Lámpara UV Tanque agua purificada #1</td>
-            <td class="col-rango">365 días a 30 días</td>
-            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag73" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+            <td class="col-desc">L&#225;mpara UV Tanque agua purificada #1</td>
+            <td class="col-rango">365 d&#237;as a 30 d&#237;as</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag73" class="input-field" oninput="evaluarRangos()"><span class="unit-label">d&#237;as</span></div></td>
           </tr>
           <tr id="row_tag110">
             <td class="col-pc">TAG 110</td>
-            <td class="col-desc">Lámpara UV Tanque agua purificada #2</td>
-            <td class="col-rango">365 días a 30 días</td>
-            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag110" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+            <td class="col-desc">L&#225;mpara UV Tanque agua purificada #2</td>
+            <td class="col-rango">365 d&#237;as a 30 d&#237;as</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag110" class="input-field" oninput="evaluarRangos()"><span class="unit-label">d&#237;as</span></div></td>
           </tr>
           <tr id="row_tag74">
             <td class="col-pc">TAG 74</td>
-            <td class="col-desc">Lámpara UV #1 salida EDIC</td>
-            <td class="col-rango">365 días a 30 días</td>
-            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag74" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+            <td class="col-desc">L&#225;mpara UV #1 salida EDIC</td>
+            <td class="col-rango">365 d&#237;as a 30 d&#237;as</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag74" class="input-field" oninput="evaluarRangos()"><span class="unit-label">d&#237;as</span></div></td>
           </tr>
           <tr id="row_tag75">
             <td class="col-pc">TAG 75</td>
-            <td class="col-desc">Lámpara UV #2 salida EDIC</td>
-            <td class="col-rango">365 días a 30 días</td>
-            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag75" class="input-field" oninput="evaluarRangos()"><span class="unit-label">días</span></div></td>
+            <td class="col-desc">L&#225;mpara UV #2 salida EDIC</td>
+            <td class="col-rango">365 d&#237;as a 30 d&#237;as</td>
+            <td class="col-ind"><div class="input-unit-cell"><input type="number" id="tag75" class="input-field" oninput="evaluarRangos()"><span class="unit-label">d&#237;as</span></div></td>
           </tr>
 
-          <!-- SALTO DE PÁGINA Y ENCABEZADOS DE REPETICIÓN -->
+          <!-- SALTO DE P&#193;GINA Y ENCABEZADOS DE REPETICI&#211;N -->
           <tr class="page-break">
             <td colspan="4" style="border:none; padding:0;">
               <table class="header-table pdf-header-repeat" style="margin-top: 10px;">
@@ -525,9 +525,9 @@
                   <td style="width: 20%; text-align: center; font-weight: bold; font-size: 16px; color: #1e3a8a;">Carval</td>
                   <td style="width: 58%; text-align: center; font-weight: bold; font-size: 13px;">LISTA DE CHEQUEO A PLANTA DE AGUA PURIFICADA</td>
                   <td style="width: 22%; font-size: 10px;">
-                    <b>Código:</b> CVSAG005-F001<br>
-                    <b>Versión:</b> 04<br>
-                    <b>Fecha emisión:</b> 2023<br>
+                    <b>C&#243;digo:</b> CVSAG005-F001<br>
+                    <b>Versi&#243;n:</b> 04<br>
+                    <b>Fecha emisi&#243;n:</b> 2023<br>
                     <b>Estado:</b> Vigente
                   </td>
                 </tr>
@@ -537,9 +537,9 @@
                 <thead>
                   <tr>
                     <th class="col-pc">Punto de Control</th>
-                    <th class="col-desc">Descripción</th>
-                    <th class="col-rango">Rango de Operación</th>
-                    <th class="col-ind">Indicación</th>
+                    <th class="col-desc">Descripci&#243;n</th>
+                    <th class="col-rango">Rango de Operaci&#243;n</th>
+                    <th class="col-ind">Indicaci&#243;n</th>
                   </tr>
                 </thead>
               </table>
@@ -548,60 +548,60 @@
 
           <tr id="row_tag52">
             <td class="col-pc">TAG 52</td>
-            <td class="col-desc">Presión agua acueducto</td>
+            <td class="col-desc">Presi&#243;n agua acueducto</td>
             <td class="col-rango">15 PSI a 60 PSI</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag52" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_tag80">
             <td class="col-pc">TAG 80</td>
-            <td class="col-desc">Presión salida agua filtro multimedia 1</td>
+            <td class="col-desc">Presi&#243;n salida agua filtro multimedia 1</td>
             <td class="col-rango">20 PSI a 60 PSI</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag80" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_m1" class="calculated-val">
             <td class="diagonal-cell col-pc"></td>
-            <td class="col-desc">Diferencial presión filtro multimedia 1 (TAG52 - TAG80)</td>
+            <td class="col-desc">Diferencial presi&#243;n filtro multimedia 1 (TAG52 - TAG80)</td>
             <td class="col-rango">Menor a 10 PSI</td>
             <td class="col-ind"><span id="diff_m1">0.00</span> PSI</td>
           </tr>
           <tr id="row_tag81">
             <td class="col-pc">TAG 81</td>
-            <td class="col-desc">Presión salida agua filtro multimedia 2</td>
+            <td class="col-desc">Presi&#243;n salida agua filtro multimedia 2</td>
             <td class="col-rango">20 PSI a 60 PSI</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag81" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_m2" class="calculated-val">
             <td class="diagonal-cell col-pc"></td>
-            <td class="col-desc">Diferencial presión filtro multimedia 2 (TAG80 - TAG81)</td>
+            <td class="col-desc">Diferencial presi&#243;n filtro multimedia 2 (TAG80 - TAG81)</td>
             <td class="col-rango">Menor a 10 PSI</td>
             <td class="col-ind"><span id="diff_m2">0.00</span> PSI</td>
           </tr>
           <tr id="row_tag82">
             <td class="col-pc">TAG 82</td>
-            <td class="col-desc">Presión salida filtro de 10 micras</td>
+            <td class="col-desc">Presi&#243;n salida filtro de 10 micras</td>
             <td class="col-rango">20 PSI a 60 PSI</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag82" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_f10" class="calculated-val">
             <td class="diagonal-cell col-pc"></td>
-            <td class="col-desc">Diferencial presión filtro 10 micras (TAG81 - TAG82)</td>
+            <td class="col-desc">Diferencial presi&#243;n filtro 10 micras (TAG81 - TAG82)</td>
             <td class="col-rango">Menor a 10 PSI</td>
             <td class="col-ind"><span id="diff_f10">0.00</span> PSI</td>
           </tr>
           <tr id="row_tag83">
             <td class="col-pc">TAG 83</td>
-            <td class="col-desc">Presión salida filtro de 5 micras</td>
+            <td class="col-desc">Presi&#243;n salida filtro de 5 micras</td>
             <td class="col-rango">20 PSI a 60 PSI</td>
             <td class="col-ind"><div class="input-unit-cell"><input type="number" step="0.1" id="tag83" class="input-field" oninput="evaluarRangos()"><span class="unit-label">PSI</span></div></td>
           </tr>
           <tr id="row_diff_f5" class="calculated-val">
             <td class="diagonal-cell col-pc"></td>
-            <td class="col-desc">Diferencial presión filtro 5 micras (TAG82 - TAG83)</td>
+            <td class="col-desc">Diferencial presi&#243;n filtro 5 micras (TAG82 - TAG83)</td>
             <td class="col-rango">Menor a 10 PSI</td>
             <td class="col-ind"><span id="diff_f5">0.00</span> PSI</td>
           </tr>
           <tr id="row_fugas">
-            <td class="col-pc">Inspección</td>
+            <td class="col-pc">Inspecci&#243;n</td>
             <td class="col-desc">Presencia de fuga de agua</td>
             <td class="col-rango">SI o NO</td>
             <td class="col-ind">
@@ -617,15 +617,15 @@
       <!-- OBSERVACIONES -->
       <label style="font-weight: bold; font-size: 13px;">OBSERVACIONES:</label>
       <div id="obs-auto" class="hidden" style="border:1px solid #fca5a5;background:#fef2f2;border-radius:6px;padding:8px 10px;margin:4px 0 8px;font-size:12px;color:#991b1b;line-height:1.5;"></div>
-      <label id="obs-label" style="font-weight: bold; font-size: 12px; color:#334155;">Observaciones adicionales del técnico:</label>
-      <textarea id="observaciones" class="input-field" rows="3" placeholder="Escribe aquí si quieres agregar algo (si no, déjalo vacío)"></textarea>
+      <label id="obs-label" style="font-weight: bold; font-size: 12px; color:#334155;">Observaciones adicionales del t&#233;cnico:</label>
+      <textarea id="observaciones" class="input-field" rows="3" placeholder="Escribe aqu&#237; si quieres agregar algo (si no, d&#233;jalo vac&#237;o)"></textarea>
 
-      <!-- SECCIÓN DE FIRMAS DUALES -->
+      <!-- SECCI&#211;N DE FIRMAS DUALES -->
       <div class="signatures-grid">
-        <!-- BLOQUE TÉCNICO -->
+        <!-- BLOQUE T&#201;CNICO -->
         <div id="block-tech-sig" class="sig-col" style="width: 100%;">
           <b>Responsable:</b> <span id="tec-nombre">Cargando...</span><br>
-          <b>Cargo:</b> <span id="tec-cargo">Técnico de Mantenimiento</span><br><br>
+          <b>Cargo:</b> <span id="tec-cargo">T&#233;cnico de Mantenimiento</span><br><br>
           <label style="font-weight: bold; font-size: 14px;">Firma del Responsable</label>
           <div class="canvas-container" id="container-canvas-tech">
             <canvas id="signature-tech"></canvas>
@@ -640,7 +640,7 @@
         <div id="block-admin-sig" class="sig-col hidden" style="width: 100%;">
           <b>Revisado por:</b> <span id="adm-nombre">Jorge Alberto Mendoza Ospina</span><br>
           <b>Cargo:</b> <span id="adm-cargo">Coordinador de Mantenimiento</span><br><br>
-          <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobación (Coordinador)</label>
+          <label style="font-weight: bold; font-size: 14px; color: #2563eb;">Firma de Aprobaci&#243;n (Coordinador)</label>
           <div class="canvas-container">
             <canvas id="signature-admin"></canvas>
             <img id="img-admin-sig" class="hidden firma-img" alt="Firma Coordinador">
@@ -652,16 +652,16 @@
       </div>
 
 
-      <!-- RECUADRO DE VERIFICACIÓN (solo sale en el PDF) -->
+      <!-- RECUADRO DE VERIFICACI&#211;N (solo sale en el PDF) -->
       <div id="verif-box" class="verif-box hidden">
-        <img id="verif-qr" alt="QR de verificación" width="74" height="74">
+        <img id="verif-qr" alt="QR de verificaci&#243;n" width="74" height="74">
         <div class="verif-txt">
-          <b>VERIFICACIÓN DEL REPORTE</b><br>
-          Código: <span id="verif-codigo" class="verif-cod"></span><br>
+          <b>VERIFICACI&#211;N DEL REPORTE</b><br>
+          C&#243;digo: <span id="verif-codigo" class="verif-cod"></span><br>
           Huella SHA-256: <span id="verif-huella" class="verif-hash"></span><br>
           ID del reporte: <span id="verif-id"></span><br>
           Verifica en: <span id="verif-url"></span><br>
-          Si el código no coincide, el reporte fue modificado.
+          Si el c&#243;digo no coincide, el reporte fue modificado.
         </div>
       </div>
     </div>
@@ -672,20 +672,20 @@
 
   <script>
     window.onerror = function(message, source, lineno) {
-      alert("Error en ejecución: " + message + "\nLínea: " + lineno);
+      alert("Error en ejecuci\u00f3n: " + message + "\nL\u00ednea: " + lineno);
       return false;
     };
 
-    // Anti-clickjacking: si la página queda dentro de otra, se saca o se vacía
+    // Anti-clickjacking: si la p\u00e1gina queda dentro de otra, se saca o se vac\u00eda
     if (window.top !== window.self) {
       try { window.top.location = window.self.location; } catch (e) { document.body.innerHTML = ''; }
     }
 
-    // ---------- CONFIGURACIÓN GENERAL ----------
+    // ---------- CONFIGURACI\u00d3N GENERAL ----------
     var API_KEY = "AIzaSyAWSDgj6gQjGyOYblCIBXKC15s7Y7qnnsA";
     var PROYECTO = "appformatosmtto";
     var WHATSAPP_COORDINADOR = "573105398897";
-    var DURACION_MAX_SESION = 12 * 60 * 60 * 1000; // la sesión se cierra sola a las 12 horas
+    var DURACION_MAX_SESION = 12 * 60 * 60 * 1000; // la sesi\u00f3n se cierra sola a las 12 horas
     
     // URL DE GOOGLE APPS SCRIPT
     var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy67b_K5kbB9q6YFGsrgyNMGaYt-Nys3lUxwOsnvTTh--MSOUywMHd0qmYmDpE5Cc/exec";
@@ -708,7 +708,7 @@
       } catch (e) {}
     }
 
-    // UID de Firebase de quien tiene la sesión (viene dentro del token; no cambia nunca)
+    // UID de Firebase de quien tiene la sesi\u00f3n (viene dentro del token; no cambia nunca)
     function uidDeSesion() {
       try {
         var p = String(sesion && sesion.idToken || '').split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
@@ -754,7 +754,7 @@
           throw t;
         }
         if (e && e.name === 'TypeError') {
-          var n = new Error("Sin conexión");
+          var n = new Error("Sin conexi\u00f3n");
           n.code = 'red';
           throw n;
         }
@@ -805,10 +805,10 @@
     }
 
     async function tokenValido() {
-      if (!sesion) { var e0 = new Error("Sesión cerrada"); e0.code = 'sin-sesion'; throw e0; }
+      if (!sesion) { var e0 = new Error("Sesi\u00f3n cerrada"); e0.code = 'sin-sesion'; throw e0; }
       if (Date.now() - (sesion.inicio || 0) > DURACION_MAX_SESION) {
         guardarSesion(null);
-        var e1 = new Error("Sesión vencida"); e1.code = 'sin-sesion'; throw e1;
+        var e1 = new Error("Sesi\u00f3n vencida"); e1.code = 'sin-sesion'; throw e1;
       }
       if (Date.now() < sesion.expira) return sesion.idToken;
       var d;
@@ -846,7 +846,7 @@
           update: { name: FS_RAIZ + "/" + COLECCION + "/" + id, fields: aCampos(datos) },
           updateTransforms: [{ fieldPath: 'creadoEn', setToServerValue: 'REQUEST_TIME' }],
           currentDocument: { exists: false }
-        }, escrituraBit('CREO_REPORTE', id, 'Reporte creado, pendiente de aprobación', perfil.nombre)] })
+        }, escrituraBit('CREO_REPORTE', id, 'Reporte creado, pendiente de aprobaci\u00f3n', perfil.nombre)] })
       });
       var tr = r && r.writeResults && r.writeResults[0] && r.writeResults[0].transformResults;
       datos.creadoEn = (tr && tr[0] && tr[0].timestampValue) || (r && r.commitTime) || '';
@@ -883,14 +883,14 @@
       return datos;
     }
 
-    // ===== BITÁCORA DE AUDITORÍA =====
-    // Cada acción importante agrega un renglón en la colección "bitacora" (solo se puede agregar; hora del servidor).
+    // ===== BIT\u00c1CORA DE AUDITOR\u00cdA =====
+    // Cada acci\u00f3n importante agrega un rengl\u00f3n en la colecci\u00f3n "bitacora" (solo se puede agregar; hora del servidor).
     var FORMATO_BIT = 'PAP';
-    var NOMBRE_FORMATO_BIT = { PAP: 'Planta de Agua', DPV: 'DP Ventilación' };
+    var NOMBRE_FORMATO_BIT = { PAP: 'Planta de Agua', DPV: 'DP Ventilaci\u00f3n' };
     var ETIQ_BIT = {
-      CREO_REPORTE: ['CREÓ REPORTE', '#2563eb'], FIRMO_APROBO: ['FIRMÓ Y APROBÓ', '#16a34a'],
-      GENERO_PDF: ['GENERÓ PDF', '#7c3aed'], DESCARGO_PDF: ['DESCARGÓ PDF', '#d97706'],
-      ENVIO_CORREO: ['ENVIÓ CORREO', '#0891b2'], REENVIO_CORREO: ['REENVIÓ CORREO', '#db2777']
+      CREO_REPORTE: ['CRE\u00d3 REPORTE', '#2563eb'], FIRMO_APROBO: ['FIRM\u00d3 Y APROB\u00d3', '#16a34a'],
+      GENERO_PDF: ['GENER\u00d3 PDF', '#7c3aed'], DESCARGO_PDF: ['DESCARG\u00d3 PDF', '#d97706'],
+      ENVIO_CORREO: ['ENVI\u00d3 CORREO', '#0891b2'], REENVIO_CORREO: ['REENVI\u00d3 CORREO', '#db2777']
     };
 
     function escrituraBit(evento, rid, detalle, nombre) {
@@ -918,7 +918,7 @@
           body: JSON.stringify({ writes: [escrituraBit(evento, rid, detalle, perfil.nombre)] })
         });
         return true;
-      } catch (e) { console.error('Bitácora:', e); return false; }
+      } catch (e) { console.error('Bit\u00e1cora:', e); return false; }
     }
 
     var bitDatos = [];
@@ -931,7 +931,7 @@
       return [r.id, s ? s.fecha + ' ' + s.hora : '', (ETIQ_BIT[r.evento] || [r.evento])[0], r.usuario, r.nombre,
               NOMBRE_FORMATO_BIT[r.formato] || r.formato, r.reporteId, r.detalle || '', r.creadoEn];
     }
-    var BIT_COLS = ['ID registro', 'Fecha y hora (Bogotá)', 'Evento', 'Usuario (correo)', 'Nombre', 'Formato', 'ID reporte', 'Detalle', 'Marca de tiempo UTC (servidor)'];
+    var BIT_COLS = ['ID registro', 'Fecha y hora (Bogot\u00e1)', 'Evento', 'Usuario (correo)', 'Nombre', 'Formato', 'ID reporte', 'Detalle', 'Marca de tiempo UTC (servidor)'];
 
     async function huellaBit(filas) {
       var txt = filas.map(function(f) {
@@ -942,7 +942,7 @@
 
     async function cargarBitacora() {
       var est = document.getElementById('bit-estado');
-      est.innerText = 'Cargando…';
+      est.innerText = 'Cargando\u2026';
       try {
         var token = await tokenValido();
         var r = await pedir(FS_BASE + ":runQuery?key=" + API_KEY, {
@@ -968,7 +968,7 @@
         sel.value = actual;
         pintarBitacora();
       } catch (e) {
-        est.innerText = 'No se pudo cargar la bitácora: ' + ((e && e.message) || e);
+        est.innerText = 'No se pudo cargar la bit\u00e1cora: ' + ((e && e.message) || e);
       }
     }
 
@@ -999,7 +999,7 @@
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;"><b>' + bitEsc(s ? s.hora : '') + '</b>' +
           '<span style="background:' + et[1] + ';color:#fff;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:bold;">' + bitEsc(et[0]) + '</span></div>' +
           '<div style="margin-top:3px;">' + bitEsc(d.nombre || d.usuario) + '</div>' +
-          '<div style="color:#6b7280;">' + bitEsc(NOMBRE_FORMATO_BIT[d.formato] || d.formato) + ' · ' + bitEsc(d.reporteId) + '</div>' +
+          '<div style="color:#6b7280;">' + bitEsc(NOMBRE_FORMATO_BIT[d.formato] || d.formato) + ' \u00b7 ' + bitEsc(d.reporteId) + '</div>' +
           (d.detalle ? '<div style="color:#6b7280;">' + bitEsc(d.detalle) + '</div>' : '') + '</div>';
       });
       document.getElementById('bit-lista').innerHTML = html;
@@ -1007,14 +1007,14 @@
     }
 
     async function descargarBitacoraExcel() {
-      if (typeof ExcelJS === 'undefined') { alert('La librería de Excel no cargó (revisa tu internet).'); return; }
+      if (typeof ExcelJS === 'undefined') { alert('La librer\u00eda de Excel no carg\u00f3 (revisa tu internet).'); return; }
       if (!bitFiltradas.length) { alert('No hay registros para descargar con estos filtros.'); return; }
-      var clave = prompt('Escribe una clave para proteger el Excel (solo tú la sabrás).\nSi la dejas vacía, queda protegido sin clave.');
+      var clave = prompt('Escribe una clave para proteger el Excel (solo t\u00fa la sabr\u00e1s).\nSi la dejas vac\u00eda, queda protegido sin clave.');
       if (clave === null) return;
       var btn = document.getElementById('bit-excel'), txt0 = btn.innerText;
-      btn.disabled = true; btn.innerText = 'Generando…';
+      btn.disabled = true; btn.innerText = 'Generando\u2026';
       try {
-        // el Excel va de la más antigua a la más reciente
+        // el Excel va de la m\u00e1s antigua a la m\u00e1s reciente
         var filas = bitFiltradas.slice().reverse().map(bitFila);
         var huella = await huellaBit(filas);
         var desde = filas[0][1], hasta = filas[filas.length - 1][1];
@@ -1037,7 +1037,7 @@
 
         var wb = new ExcelJS.Workbook();
         wb.creator = perfil.nombre;
-        var ws = wb.addWorksheet('Bitácora');
+        var ws = wb.addWorksheet('Bit\u00e1cora');
         ws.addRow(BIT_COLS);
         filas.forEach(function(f) { ws.addRow(f.map(function(x) { return String(x == null ? '' : x); })); });
         ws.columns = [{ width: 22 }, { width: 22 }, { width: 18 }, { width: 30 }, { width: 28 }, { width: 16 }, { width: 24 }, { width: 50 }, { width: 28 }];
@@ -1045,16 +1045,16 @@
         h.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         h.eachCell(function(c) { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1D4ED8' } }; });
         ws.views = [{ state: 'frozen', ySplit: 1 }];
-        var wv = wb.addWorksheet('Verificación');
+        var wv = wb.addWorksheet('Verificaci\u00f3n');
         wv.columns = [{ width: 30 }, { width: 90 }];
         var ahoraS = sellosBogota(new Date(Date.now() + ajusteReloj).toISOString());
-        wv.addRow(['Huella SHA-256 de la hoja Bitácora', huella]);
+        wv.addRow(['Huella SHA-256 de la hoja Bit\u00e1cora', huella]);
         wv.addRow(['Registros', String(filas.length)]);
         wv.addRow(['Desde', desde]);
         wv.addRow(['Hasta', hasta]);
         wv.addRow(['Generado por', perfil.nombre + ' (' + perfil.email + ')']);
-        wv.addRow(['Fecha de generación (Bogotá)', ahoraS.fecha + ' ' + ahoraS.hora]);
-        wv.addRow(['Cómo comprobar', 'En la app, pantalla Bitácora de auditoría > "Comprobar un Excel", elige este archivo. Si alguien cambió una sola celda, la huella no coincide.']);
+        wv.addRow(['Fecha de generaci\u00f3n (Bogot\u00e1)', ahoraS.fecha + ' ' + ahoraS.hora]);
+        wv.addRow(['C\u00f3mo comprobar', 'En la app, pantalla Bit\u00e1cora de auditor\u00eda > "Comprobar un Excel", elige este archivo. Si alguien cambi\u00f3 una sola celda, la huella no coincide.']);
         wv.getColumn(1).font = { bold: true };
         var opc = { selectLockedCells: true, selectUnlockedCells: true };
         await ws.protect(clave, opc);
@@ -1066,7 +1066,7 @@
         a.download = 'Bitacora_' + ahoraS.fecha.replace(/-/g, '') + ahoraS.hora.replace(/:/g, '') + '_' + huella.slice(0, 8) + '.xlsx';
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(function() { URL.revokeObjectURL(a.href); }, 5000);
-        if (!okReg) alert('OJO: el Excel se generó, pero su huella NO quedó registrada en Firebase (revisa que las reglas estén publicadas). Sin ese registro no se podrá comprobar contra Firebase.');
+        if (!okReg) alert('OJO: el Excel se gener\u00f3, pero su huella NO qued\u00f3 registrada en Firebase (revisa que las reglas est\u00e9n publicadas). Sin ese registro no se podr\u00e1 comprobar contra Firebase.');
       } catch (e) {
         alert('No se pudo generar el Excel: ' + ((e && e.message) || e));
       }
@@ -1076,12 +1076,12 @@
     async function comprobarExcelBitacora(archivo) {
       var out = document.getElementById('bit-verif-res');
       out.style.color = '#374151';
-      out.innerText = 'Comprobando…';
+      out.innerText = 'Comprobando\u2026';
       try {
         var wb = new ExcelJS.Workbook();
         await wb.xlsx.load(await archivo.arrayBuffer());
-        var ws = wb.getWorksheet('Bitácora'), wv = wb.getWorksheet('Verificación');
-        if (!ws || !wv) throw new Error('El archivo no tiene las hojas Bitácora y Verificación.');
+        var ws = wb.getWorksheet('Bit\u00e1cora'), wv = wb.getWorksheet('Verificaci\u00f3n');
+        if (!ws || !wv) throw new Error('El archivo no tiene las hojas Bit\u00e1cora y Verificaci\u00f3n.');
         var txt = function(c) { return String(c && c.text !== undefined ? c.text : (c && c.value != null ? c.value : '')); };
         var filas = [];
         ws.eachRow(function(row, n) {
@@ -1094,7 +1094,7 @@
         var escrita = txt(wv.getCell('B1')).trim().toLowerCase();
         if (calc !== escrita) {
           out.style.color = '#dc2626';
-          out.innerText = '✖ ARCHIVO ALTERADO. El contenido de la bitácora ya no coincide con la huella que trae el archivo.';
+          out.innerText = '\u2716 ARCHIVO ALTERADO. El contenido de la bit\u00e1cora ya no coincide con la huella que trae el archivo.';
           return;
         }
         var token = await tokenValido();
@@ -1111,10 +1111,10 @@
         if (reg) {
           var d = deCampos(reg.document.fields), s = sellosBogota(d.creadoEn);
           out.style.color = '#16a34a';
-          out.innerText = '✔ AUTÉNTICO. El contenido coincide con la huella registrada en Firebase el ' + (s ? s.fecha + ' ' + s.hora : '') + ' por ' + d.generadoPor + ' (' + filas.length + ' registros).';
+          out.innerText = '\u2714 AUT\u00c9NTICO. El contenido coincide con la huella registrada en Firebase el ' + (s ? s.fecha + ' ' + s.hora : '') + ' por ' + d.generadoPor + ' (' + filas.length + ' registros).';
         } else {
           out.style.color = '#d97706';
-          out.innerText = '⚠ El archivo es coherente consigo mismo, pero su huella NO está registrada en Firebase. No se puede garantizar que lo haya emitido la app.';
+          out.innerText = '\u26a0 El archivo es coherente consigo mismo, pero su huella NO est\u00e1 registrada en Firebase. No se puede garantizar que lo haya emitido la app.';
         }
       } catch (e) {
         out.style.color = '#dc2626';
@@ -1141,7 +1141,7 @@
     var baseUrl = window.location.origin + window.location.pathname;
 
     var padTech, padAdmin;
-    /* ===== Generador de QR propio (modo byte, corrección M, versiones 1 a 10) ===== */
+    /* ===== Generador de QR propio (modo byte, correcci\u00f3n M, versiones 1 a 10) ===== */
     function qrMatriz(texto) {
       var bytes = Array.prototype.slice.call(new TextEncoder().encode(texto));
       var EC = {1:[10,[[1,16]]],2:[16,[[1,28]]],3:[26,[[1,44]]],4:[18,[[2,32]]],5:[24,[[2,43]]],6:[16,[[4,27]]],7:[18,[[4,31]]],8:[22,[[2,38],[2,39]]],9:[22,[[3,36],[2,37]]],10:[26,[[4,43],[1,44]]]};
@@ -1276,14 +1276,14 @@
       return cv.toDataURL('image/png');
     }
 
-    /* ===== VERIFICACIÓN DEL REPORTE ===== */
+    /* ===== VERIFICACI\u00d3N DEL REPORTE ===== */
     var FORMATO_VERIF = "CVSAG005-F001 Planta de Agua Purificada";
     var CAMPOS_VERIF = ['fechaInicio','horaInicio','fecha','hora','tecnico','observaciones','fugas',
       'tag34','tag35','tag39a','tag39b','tag27','tag30','tag28','tag29','tag43','tag38','tag37','tag33','tag53','tag54','tag47','tag50','tag51',
       'tag71_dial','tag71_nivel','tag70','tag42','tag73','tag110','tag74','tag75','tag52','tag80','tag81','tag82','tag83',
       'firmaTec','firmaAdm','fechaFirmaAdm'];
     // Bloqueo del PDF: se abre e imprime normal, pero Adobe/Chrome/celular no dejan editar, copiar ni anotar.
-    // Si algún día da problema, cambia true por false y el PDF sale como antes.
+    // Si alg\u00fan d\u00eda da problema, cambia true por false y el PDF sale como antes.
     var PROTEGER_PDF = true;
     function claveAleatoria() {
       var a = new Uint8Array(16), o = '';
@@ -1305,11 +1305,11 @@
       return o;
     }
 
-    // Huella SHA-256 de los datos del reporte (64 hex). El código impreso son sus primeros 16 caracteres.
+    // Huella SHA-256 de los datos del reporte (64 hex). El c\u00f3digo impreso son sus primeros 16 caracteres.
     async function calcularHuellaVerif(id, d) {
       var partes = [id, FORMATO_VERIF];
       CAMPOS_VERIF.forEach(function(k) { partes.push(k + '=' + String(d[k] == null ? '' : d[k])); });
-      // campos nuevos: solo entran si existen, así los códigos de reportes anteriores siguen siendo válidos
+      // campos nuevos: solo entran si existen, as\u00ed los c\u00f3digos de reportes anteriores siguen siendo v\u00e1lidos
       NUEVOS_VERIF.forEach(function(k) { if (d[k]) partes.push(k + '=' + String(d[k])); });
       return await sha256Hex(new TextEncoder().encode(JSON.stringify(partes)));
     }
@@ -1322,7 +1322,7 @@
       return u;
     }
 
-    // Registra (o agrega) la huella del PDF en la ficha pública mínima del reporte
+    // Registra (o agrega) la huella del PDF en la ficha p\u00fablica m\u00ednima del reporte
     async function guardarFichaVerif(id, d, codigo, hashPdf) {
       var token = await tokenValido();
       var url = FS_BASE + "/verificaciones/" + encodeURIComponent(id);
@@ -1357,7 +1357,7 @@
 
     // ===== Hora del servidor y datos del firmante =====
     // La hora oficial del reporte es la que pone Firestore al guardar (campos creadoEn / aprobadoEn);
-    // el celular no la puede cambiar. Aquí se pasa a hora de Colombia.
+    // el celular no la puede cambiar. Aqu\u00ed se pasa a hora de Colombia.
     function sellosBogota(iso) {
       var t = Date.parse(iso);
       if (!iso || isNaN(t)) return null;
@@ -1438,7 +1438,7 @@
       pintarSellos();
     }
 
-    // Constancia de quién firmó y con qué sentido (texto plano)
+    // Constancia de qui\u00e9n firm\u00f3 y con qu\u00e9 sentido (texto plano)
     function pintarSellos() {
       var d = datosReporte;
       var t = document.getElementById('sello-tec'), a = document.getElementById('sello-adm');
@@ -1446,14 +1446,14 @@
       t.textContent = ''; a.textContent = '';
       if (!d) return;
       var nomT = d.nombreTec || d.tecnico || '';
-      if (nomT) t.textContent = 'Firmado electrónicamente por ' + nomT + ((d.nombreTec && d.tecnico) ? ' (' + d.tecnico + ')' : '') + ' · Elaboró y ejecutó el chequeo.';
+      if (nomT) t.textContent = 'Firmado electr\u00f3nicamente por ' + nomT + ((d.nombreTec && d.tecnico) ? ' (' + d.tecnico + ')' : '') + ' \u00b7 Elabor\u00f3 y ejecut\u00f3 el chequeo.';
       if (d.firmaAdm || d.estado === 'aprobado') {
         var nomA = d.nombreAdm || 'Jorge Alberto Mendoza Ospina';
-        a.textContent = 'Firmado electrónicamente por ' + nomA + (d.aprobadoPor ? ' (' + d.aprobadoPor + ')' : '') + ' · Revisó y aprobó el reporte.';
+        a.textContent = 'Firmado electr\u00f3nicamente por ' + nomA + (d.aprobadoPor ? ' (' + d.aprobadoPor + ')' : '') + ' \u00b7 Revis\u00f3 y aprob\u00f3 el reporte.';
       }
     }
 
-    // Solo acepta imágenes en base64 como firma
+    // Solo acepta im\u00e1genes en base64 como firma
     function srcSeguro(s) {
       return /^data:image\/(jpeg|png);base64,[A-Za-z0-9+\/=]+$/.test(s || '') ? s : '';
     }
@@ -1470,9 +1470,9 @@
       return c.toDataURL('image/jpeg', calidad);
     }
 
-    // ENVÍO DE PDF Y NOTIFICACIÓN MEDIANTE GOOGLE APPS SCRIPT
+    // ENV\u00cdO DE PDF Y NOTIFICACI\u00d3N MEDIANTE GOOGLE APPS SCRIPT
     async function enviarPorAppsScript(payloadData) {
-      // El script comprueba que quien envía es el coordinador usando su sesión de Firebase
+      // El script comprueba que quien env\u00eda es el coordinador usando su sesi\u00f3n de Firebase
       payloadData.idToken = await tokenValido();
 
       var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -1488,7 +1488,7 @@
         resp = await fetch(APPS_SCRIPT_URL, cfg);
       } catch (e) {
         var er = new Error((e && e.name === 'AbortError')
-          ? "el servicio de correo tardó demasiado en responder"
+          ? "el servicio de correo tard\u00f3 demasiado en responder"
           : "no se pudo contactar el servicio de correo (revisa tu internet)");
         er.code = 'script-red';
         throw er;
@@ -1499,7 +1499,7 @@
       var txt = await resp.text();
       var res;
       try { res = JSON.parse(txt); } catch (e) {
-        throw new Error("respuesta inesperada del servicio de correo (¿publicaste la nueva versión del script?)");
+        throw new Error("respuesta inesperada del servicio de correo (\u00bfpublicaste la nueva versi\u00f3n del script?)");
       }
       if (res.status !== 'success') {
         throw new Error(res.message || "error al procesar la solicitud en Apps Script");
@@ -1510,22 +1510,22 @@
     function textoError(e) {
       if (!e) return "desconocido";
       if (e.code === 'script-red' || e.code === 'sin-perfil') return e.message;
-      if (e.code === 'timeout') return "el servidor no respondió, revisa tu internet";
-      if (e.code === 'red') return "sin conexión a internet";
-      if (e.status === 403) return "tu usuario no tiene permiso para esta acción";
-      if (e.status === 404) return "no se encontró en la base de datos";
+      if (e.code === 'timeout') return "el servidor no respondi\u00f3, revisa tu internet";
+      if (e.code === 'red') return "sin conexi\u00f3n a internet";
+      if (e.status === 403) return "tu usuario no tiene permiso para esta acci\u00f3n";
+      if (e.status === 404) return "no se encontr\u00f3 en la base de datos";
       return e.text || e.apiMessage || e.message || String(e);
     }
 
     function mensajeLogin(e) {
-      if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e inténtalo de nuevo.";
-      if (e.code === 'red') return "Sin conexión a internet. Inténtalo de nuevo.";
+      if (e.code === 'timeout') return "Sin respuesta. Revisa tu internet e int\u00e9ntalo de nuevo.";
+      if (e.code === 'red') return "Sin conexi\u00f3n a internet. Int\u00e9ntalo de nuevo.";
       var m = (e.apiMessage || e.message || "").toUpperCase();
       if (m.indexOf("INVALID_LOGIN_CREDENTIALS") >= 0 || m.indexOf("INVALID_PASSWORD") >= 0 || m.indexOf("EMAIL_NOT_FOUND") >= 0)
-        return "Correo o contraseña incorrectos.";
+        return "Correo o contrase\u00f1a incorrectos.";
       if (m.indexOf("TOO_MANY_ATTEMPTS") >= 0) return "Demasiados intentos fallidos. Espera unos minutos.";
-      if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario está deshabilitado.";
-      return "No se pudo iniciar sesión. Inténtalo de nuevo.";
+      if (m.indexOf("USER_DISABLED") >= 0) return "Este usuario est\u00e1 deshabilitado.";
+      return "No se pudo iniciar sesi\u00f3n. Int\u00e9ntalo de nuevo.";
     }
 
     function evaluarRangos() {
@@ -1564,20 +1564,20 @@
         { id: 'tag43', min: 10, max: 13.5, label: 'TAG 43', row: 'row_tag43', unit: 'bar' },
         { id: 'tag38', min: 0.5, max: 4, label: 'TAG 38', row: 'row_tag38', unit: 'bar' },
         { id: 'tag37', min: 10, max: 14, label: 'TAG 37', row: 'row_tag37', unit: 'bar' },
-        { id: 'tag33', min: 1, max: 19, label: 'TAG 33', row: 'row_tag33', unit: 'MΩ*cm' },
+        { id: 'tag33', min: 1, max: 19, label: 'TAG 33', row: 'row_tag33', unit: 'M\u2126*cm' },
         { id: 'tag53', min: 10, max: 95, label: 'TAG 53', row: 'row_tag53', unit: 'VDC' },
         { id: 'tag54', min: 0.5, max: 6, label: 'TAG 54', row: 'row_tag54', unit: 'A' },
-        { id: 'tag47', max: 10, label: 'TAG 47', row: 'row_tag47', unit: 'µS/cm' },
+        { id: 'tag47', max: 10, label: 'TAG 47', row: 'row_tag47', unit: '\u00b5S/cm' },
         { id: 'tag50', exact: 'Verde', label: 'TAG 50', row: 'row_tag50' },
         { id: 'tag51', max: 400, label: 'TAG 51', row: 'row_tag51', unit: 'mV' },
         { id: 'tag71_dial', min: 25, max: 100, label: 'TAG 71 (Dial)', row: 'row_tag71_dial' },
         { id: 'tag71_nivel', min: 10, max: 50, label: 'TAG 71 (Nivel)', row: 'row_tag71_nivel', unit: 'L' },
-        { id: 'tag70', max: 34, label: 'TAG 70', row: 'row_tag70', unit: 'ºC' },
+        { id: 'tag70', max: 34, label: 'TAG 70', row: 'row_tag70', unit: '\u00baC' },
         { id: 'tag42', min: 5, max: 7, label: 'TAG 42', row: 'row_tag42' },
-        { id: 'tag73', min: 30, max: 365, label: 'TAG 73', row: 'row_tag73', unit: 'días' },
-        { id: 'tag110', min: 30, max: 365, label: 'TAG 110', row: 'row_tag110', unit: 'días' },
-        { id: 'tag74', min: 30, max: 365, label: 'TAG 74', row: 'row_tag74', unit: 'días' },
-        { id: 'tag75', min: 30, max: 365, label: 'TAG 75', row: 'row_tag75', unit: 'días' },
+        { id: 'tag73', min: 30, max: 365, label: 'TAG 73', row: 'row_tag73', unit: 'd\u00edas' },
+        { id: 'tag110', min: 30, max: 365, label: 'TAG 110', row: 'row_tag110', unit: 'd\u00edas' },
+        { id: 'tag74', min: 30, max: 365, label: 'TAG 74', row: 'row_tag74', unit: 'd\u00edas' },
+        { id: 'tag75', min: 30, max: 365, label: 'TAG 75', row: 'row_tag75', unit: 'd\u00edas' },
         { id: 'tag52', min: 15, max: 60, label: 'TAG 52', row: 'row_tag52', unit: 'PSI' },
         { id: 'tag80', min: 20, max: 60, label: 'TAG 80', row: 'row_tag80', unit: 'PSI' },
         { val: diff_m1, max: 10, label: 'Diferencial Filtro Multimedia 1', row: 'row_diff_m1', unit: 'PSI' },
@@ -1610,15 +1610,15 @@
         if (typeof v === 'string') {
           if (r.exact && v !== r.exact) {
             fuera = true;
-            msgDesc = r.label + " fuera de especificación (Valor: " + v + ")";
+            msgDesc = r.label + " fuera de especificaci\u00f3n (Valor: " + v + ")";
           }
         } else if (!isNaN(v)) {
           if (r.min !== undefined && v < r.min) {
             fuera = true;
-            msgDesc = r.label + " bajo especificación (Valor: " + v + " " + (r.unit||'') + " | Min: " + r.min + ")";
+            msgDesc = r.label + " bajo especificaci\u00f3n (Valor: " + v + " " + (r.unit||'') + " | Min: " + r.min + ")";
           } else if (r.max !== undefined && v > r.max) {
             fuera = true;
-            msgDesc = r.label + " sobre especificación (Valor: " + v + " " + (r.unit||'') + " | Máx: " + r.max + ")";
+            msgDesc = r.label + " sobre especificaci\u00f3n (Valor: " + v + " " + (r.unit||'') + " | M\u00e1x: " + r.max + ")";
           }
         }
 
@@ -1630,13 +1630,13 @@
         }
       });
 
-      // Lo fuera de especificación se muestra aparte (se calcula solo); el texto del técnico no se toca
+      // Lo fuera de especificaci\u00f3n se muestra aparte (se calcula solo); el texto del t\u00e9cnico no se toca
       var obsAuto = document.getElementById('obs-auto');
       if (obsAuto) {
         obsAuto.textContent = '';
         if (desviaciones.length > 0) {
           var tt = document.createElement('b');
-          tt.textContent = 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:';
+          tt.textContent = 'VALORES FUERA DE ESPECIFICACI\u00d3N DETECTADOS:';
           obsAuto.appendChild(tt);
           desviaciones.forEach(function(t) {
             var ln = document.createElement('div');
@@ -1680,7 +1680,7 @@
       return true;
     }
 
-    // CODIGO_vVERSION_aaaammddhhmmss_ID.pdf  (la hora es la de aprobación puesta por el servidor)
+    // CODIGO_vVERSION_aaaammddhhmmss_ID.pdf  (la hora es la de aprobaci\u00f3n puesta por el servidor)
     function obtenerNombrePDF() {
       var d = datosReporte || {};
       var t = '';
@@ -1695,7 +1695,7 @@
       return FORMATO_XLSX.codigo + '_v' + FORMATO_XLSX.version + '_' + t + '_' + (reporteId || 'SIN-ID') + '.pdf';
     }
 
-    // Solo decide qué pantalla se muestra. Quien realmente puede aprobar lo deciden las reglas de Firestore.
+    // Solo decide qu\u00e9 pantalla se muestra. Quien realmente puede aprobar lo deciden las reglas de Firestore.
     var HASH_COORDINADORES = [
       "dce01c2a945ed722800ca953b71c98dd35e8f70af7a2fade0ff10a3d0be8bf8e",
       "d83282cf900f7e8cb54bfb730ff71687966d5c91786bfa2f4622525645b641f5"
@@ -1726,7 +1726,7 @@
       }
 
       if (!emailValue || !passwordValue) {
-        errorDiv.innerText = "Ingrese correo y contraseña para continuar.";
+        errorDiv.innerText = "Ingrese correo y contrase\u00f1a para continuar.";
         return;
       }
 
@@ -1747,14 +1747,14 @@
         console.log(e);
       }
       btn.disabled = false;
-      btn.innerText = "Iniciar Sesión";
+      btn.innerText = "Iniciar Sesi\u00f3n";
     }
 
     var FORMATO_XLSX = { nombre: 'Planta de Agua Purificada', codigo: 'CVSAG005-F001', version: '04' };
 
     // ---------- EXCEL PARA LA LISTA DE MICROSOFT ----------
-    // Una fila por reporte y una columna por cada ítem del formato, dentro de una tabla de Excel.
-    // Sin títulos ni celdas combinadas, para que Power Automate / Listas la lea directo.
+    // Una fila por reporte y una columna por cada \u00edtem del formato, dentro de una tabla de Excel.
+    // Sin t\u00edtulos ni celdas combinadas, para que Power Automate / Listas la lea directo.
     function bufferABase64(buf) {
       var bytes = new Uint8Array(buf), bin = '', chunk = 0x8000;
       for (var i = 0; i < bytes.length; i += chunk) {
@@ -1772,7 +1772,7 @@
       });
     }
 
-    // Texto de una celda respetando los <br> (innerText los pierde si la pantalla no está visible)
+    // Texto de una celda respetando los <br> (innerText los pierde si la pantalla no est\u00e1 visible)
     function textoCelda(td) {
       var cl = td.cloneNode(true);
       cl.querySelectorAll('br').forEach(function(b) { b.replaceWith('\n'); });
@@ -1796,7 +1796,7 @@
       return new Date(Date.UTC(+f[1], +f[2] - 1, +f[3], h, mi, s));
     }
 
-    // Lee los ítems tal como están en pantalla (la misma fuente del PDF)
+    // Lee los \u00edtems tal como est\u00e1n en pantalla (la misma fuente del PDF)
     function leerItemsParaExcel() {
       var area = document.getElementById('pdf-area');
       var heads = Array.prototype.map.call(
@@ -1804,7 +1804,7 @@
         function(t) { return t.textContent.trim(); });
       var iRango = -1;
       heads.forEach(function(h, i) { if (iRango < 0 && h.indexOf('Rango') === 0) iRango = i; });
-      if (iRango < 1) throw new Error('no se encontró la columna de rango');
+      if (iRango < 1) throw new Error('no se encontr\u00f3 la columna de rango');
       var items = [];
       area.querySelectorAll('table.param-table:not(.pdf-header-repeat) > tbody > tr').forEach(function(tr) {
         if (tr.classList.contains('page-break') || tr.children.length < 3) return;
@@ -1839,15 +1839,15 @@
     }
 
     async function generarXlsxBase64(d) {
-      if (typeof ExcelJS === 'undefined') throw new Error('la librería de Excel no cargó (revisa tu internet)');
+      if (typeof ExcelJS === 'undefined') throw new Error('la librer\u00eda de Excel no carg\u00f3 (revisa tu internet)');
       d = d || {};
       var F = FORMATO_XLSX;
       var items = leerItemsParaExcel();
 
-      // Nombres de columna (únicos)
-      var fijas = ['ID del reporte', 'Formato', 'Código del formato', 'Versión del formato', 'Inicio del chequeo',
-                   'Fecha del reporte', 'Técnico', 'UID del técnico', 'Estado', 'Aprobado por', 'Visto bueno',
-                   'Resultado general', 'Cantidad fuera de rango', 'Parámetros fuera de rango'];
+      // Nombres de columna (\u00fanicos)
+      var fijas = ['ID del reporte', 'Formato', 'C\u00f3digo del formato', 'Versi\u00f3n del formato', 'Inicio del chequeo',
+                   'Fecha del reporte', 'T\u00e9cnico', 'UID del t\u00e9cnico', 'Estado', 'Aprobado por', 'Visto bueno',
+                   'Resultado general', 'Cantidad fuera de rango', 'Par\u00e1metros fuera de rango'];
       var finales = ['Observaciones', 'Enlace al reporte', 'Enlace al PDF', 'Firma del responsable (base64)', 'Firma del coordinador (base64)'];
       var usados = {};
       fijas.concat(finales).forEach(function(n) { usados[n] = 1; });
@@ -1864,7 +1864,7 @@
       var pAdm = fechaAprobTxt(d).split(' ');
       var aprobado = (d.estado === 'aprobado') || !!d.firmaAdm;
       var idRep = (typeof reporteId !== 'undefined' && reporteId) ? reporteId : '';
-      // Firmas en texto base64 (cada celda de Excel admite máx. 32.767 caracteres: se reduce la imagen hasta que quepa)
+      // Firmas en texto base64 (cada celda de Excel admite m\u00e1x. 32.767 caracteres: se reduce la imagen hasta que quepa)
       async function firmaComoTexto(src) {
         var ok = (typeof srcSeguro === 'function') ? srcSeguro(src) : '';
         if (!ok) return '';
@@ -1901,7 +1901,7 @@
         fuera.length,
         fuera.map(function(i) { return i.nombre + ' = ' + i.valor + (i.unidad ? ' ' + i.unidad : ''); }).join('; ')
       ].concat(items.map(function(i) { return i.valor; })).concat([
-        textoObsTecnico(document.getElementById('observaciones').value || d.observaciones || '').split(/\r?\n/).map(function(t) { return t.trim(); }).filter(Boolean).join(' • '),
+        textoObsTecnico(document.getElementById('observaciones').value || d.observaciones || '').split(/\r?\n/).map(function(t) { return t.trim(); }).filter(Boolean).join(' \u2022 '),
         idRep ? (baseUrl + '?mode=ver&id=' + idRep) : '',
         d.pdfUrl || '',
         firmaTecTxt,
@@ -1929,10 +1929,10 @@
         if (n.length > maxCab) maxCab = n.length;
         ws.getColumn(c).width = (i < nF) ? anchosFijos[i] : (i < nF + items.length ? 20 : (n === 'Observaciones' ? 60 : 50));
         ws.getCell(1, c).alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' };
-        ws.getCell(2, c).alignment = { vertical: 'top', horizontal: 'left', wrapText: (n === 'Observaciones' || n === 'Parámetros fuera de rango') };
+        ws.getCell(2, c).alignment = { vertical: 'top', horizontal: 'left', wrapText: (n === 'Observaciones' || n === 'Par\u00e1metros fuera de rango') };
       });
       ws.getRow(1).height = Math.min(210, Math.max(45, Math.ceil(maxCab / 17) * 15 + 6));
-      // Altura de la fila de datos: que se vea completo el texto de Observaciones y de Parámetros fuera de rango
+      // Altura de la fila de datos: que se vea completo el texto de Observaciones y de Par\u00e1metros fuera de rango
       var altObs = Math.ceil(String(fila[nF + items.length] || '').length / 55), altPar = Math.ceil(String(fila[13] || '').length / 38);
       ws.getRow(2).height = Math.min(400, Math.max(30, Math.max(altObs, altPar) * 15 + 4));
       [5, 6, 11].forEach(function(c) { ws.getCell(2, c).numFmt = 'yyyy-mm-dd hh:mm:ss'; });
@@ -1946,7 +1946,7 @@
         }
       });
 
-      // ---- Hoja 2: Firmas (imágenes; las Listas no las importan desde Excel) ----
+      // ---- Hoja 2: Firmas (im\u00e1genes; las Listas no las importan desde Excel) ----
       var wf = wb.addWorksheet('Firmas');
       wf.getColumn(1).width = 26; wf.getColumn(2).width = 40; wf.getColumn(3).width = 40;
       ['ID del reporte', 'Firma del responsable', 'Firma del coordinador'].forEach(function(t, i) {
@@ -1974,7 +1974,7 @@
       cols.forEach(function(n, i) {
         if (/\(base64\)$/.test(n)) return;
         var v = fila[i];
-        if (v instanceof Date) v = v.toISOString().slice(0, 19).replace('T', ' ');   // la hora local se guardó como si fuera UTC
+        if (v instanceof Date) v = v.toISOString().slice(0, 19).replace('T', ' ');   // la hora local se guard\u00f3 como si fuera UTC
         histCols.push(n);
         histVals.push(v === null || v === undefined ? '' : v);
       });
@@ -1985,23 +1985,23 @@
     }
 
     // GENERAR PDF EN MEMORIA BASE64
-    // Observaciones que escribe el técnico: si no hay nada, "N.A."
-    // (los reportes viejos guardaban ahí el bloque automático de fuera de especificación; se ignora)
+    // Observaciones que escribe el t\u00e9cnico: si no hay nada, "N.A."
+    // (los reportes viejos guardaban ah\u00ed el bloque autom\u00e1tico de fuera de especificaci\u00f3n; se ignora)
     function textoObsTecnico(v) {
       v = String(v || '').trim();
-      if (v.indexOf('VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:') === 0) v = '';
+      if (v.indexOf('VALORES FUERA DE ESPECIFICACI\u00d3N DETECTADOS:') === 0) v = '';
       return v || 'N.A.';
     }
 
     // En el PDF hay un solo recuadro de OBSERVACIONES (el formato impreso no cambia):
-    // primero lo fuera de especificación (si hay) y después lo que agregó el técnico (o N.A.)
+    // primero lo fuera de especificaci\u00f3n (si hay) y despu\u00e9s lo que agreg\u00f3 el t\u00e9cnico (o N.A.)
     function textoObsPdf() {
       var tec = textoObsTecnico(document.getElementById('observaciones').value);
       var auto = document.getElementById('obs-auto');
       if (!auto || auto.classList.contains('hidden') || !auto.textContent.trim()) return tec;
       var lineas = [];
       auto.querySelectorAll('div').forEach(function(d) { lineas.push(d.textContent); });
-      return 'VALORES FUERA DE ESPECIFICACIÓN DETECTADOS:\n' + lineas.join('\n') + '\nAdicional: ' + tec;
+      return 'VALORES FUERA DE ESPECIFICACI\u00d3N DETECTADOS:\n' + lineas.join('\n') + '\nAdicional: ' + tec;
     }
 
     async function generarPdfBase64(fechaAdmTexto) {
@@ -2012,8 +2012,8 @@
       document.getElementById('block-tech-sig').classList.remove('hidden');
       document.getElementById('block-admin-sig').classList.remove('hidden');
 
-      // Estado final consistente para el PDF, sin importar cómo se llegó aquí:
-      // toda firma dibujada en un canvas se convierte en imagen (mismo tamaño que la otra firma)
+      // Estado final consistente para el PDF, sin importar c\u00f3mo se lleg\u00f3 aqu\u00ed:
+      // toda firma dibujada en un canvas se convierte en imagen (mismo tama\u00f1o que la otra firma)
       pdfArea.querySelectorAll('canvas').forEach(function(cv) {
         if (cv.classList.contains('hidden')) return;
         var im = cv.parentNode.querySelector('img.firma-img');
@@ -2035,7 +2035,7 @@
         });
       });
 
-      // El "Visto bueno" siempre debe salir si el reporte ya está aprobado
+      // El "Visto bueno" siempre debe salir si el reporte ya est\u00e1 aprobado
       var faEl = document.getElementById('fecha-adm');
       if (fechaAdmTexto && faEl && !faEl.textContent.trim()) {
         var faPrev = faEl.innerHTML;
@@ -2054,12 +2054,12 @@
           qrImg.src = qrDataUrl(urlVerificarBase() + '?id=' + idVerifActual, 260);
           try { await qrImg.decode(); } catch (eq) {}
           document.getElementById('verif-codigo').textContent = codigoVerifActual;
-          document.getElementById('verif-huella').textContent = huellaVerifActual.toLowerCase();
+          var hv = huellaVerifActual.toLowerCase(); document.getElementById('verif-huella').innerHTML = '<br>' + hv.slice(0, 32) + '<br>' + hv.slice(32);
           document.getElementById('verif-id').textContent = idVerifActual;
           document.getElementById('verif-url').textContent = urlVerificarBase().replace(/^https?:\/\//, '');
           vb.classList.remove('hidden');
           restaurar.push(function() { vb.classList.add('hidden'); });
-        } catch (ev) { console.error('Recuadro de verificación:', ev); }
+        } catch (ev) { console.error('Recuadro de verificaci\u00f3n:', ev); }
       }
 
       var nombrePdf = obtenerNombrePDF();
@@ -2097,11 +2097,20 @@
         reponer.push({ inp: inp, span: span, unitLabel: unitLabel });
       });
 
+      // Resolucion: hasta 3x (nitido al imprimir) y se baja sola si el documento es muy largo,
+      // porque los celulares no soportan imagenes de mas de ~16 millones de pixeles.
+      function escalaPdf(el) {
+        try {
+          var w = el.scrollWidth || 794, h = el.scrollHeight || 1123;
+          var sc = Math.sqrt(14000000 / (w * h));
+          return Math.max(2, Math.min(3, Math.floor(sc * 10) / 10));
+        } catch (e) { return 2; }
+      }
       var opt = {
         margin: [8, 8, 12, 8],
         filename: nombrePdf,
-        image: { type: 'jpeg', quality: 0.9 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: escalaPdf(pdfArea), useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
         jsPDF: (function() {
           var j = { unit: 'mm', format: 'a4', orientation: 'portrait' };
           if (PROTEGER_PDF) j.encryption = { userPassword: '', ownerPassword: claveAleatoria(), userPermissions: ['print'] };
@@ -2118,26 +2127,29 @@
 
           for (var i = 1; i <= totalPages; i++) {
             pdfObj.setPage(i);
-            pdfObj.setFontSize(8);
-            pdfObj.setTextColor(100, 116, 139);
+            pdfObj.setFontSize(9);
+            pdfObj.setTextColor(15, 23, 42);
 
-            var yL1 = codigoVerifActual ? pageHeight - 9.5 : pageHeight - 6;
-            var textoPagina = "Página " + i + " de " + totalPages;
-            // el nombre del archivo es largo: se achica lo justo para no pisar el código del centro
-            var fs = 8;
+            var yL1 = codigoVerifActual ? pageHeight - 9 : pageHeight - 6;
+            var textoPagina = "P\u00e1gina " + i + " de " + totalPages;
+            // el nombre del archivo es largo: se achica lo justo para no pisar el c\u00f3digo del centro
+            var fs = 9;
             pdfObj.setFontSize(fs);
             if (codigoVerifActual && typeof pdfObj.getTextWidth === 'function') {
-              var anchoCod = pdfObj.getTextWidth('Cód. ' + codigoVerifActual);
-              while (fs > 5.5 && (10 + pdfObj.getTextWidth(nombrePdf) + 4 > pageWidth / 2 - anchoCod / 2)) { fs -= 0.5; pdfObj.setFontSize(fs); }
+              var anchoCod = pdfObj.getTextWidth('C\u00f3d. ' + codigoVerifActual);
+              while (fs > 6 && (10 + pdfObj.getTextWidth(nombrePdf) + 4 > pageWidth / 2 - anchoCod / 2)) { fs -= 0.5; pdfObj.setFontSize(fs); }
             }
             pdfObj.text(nombrePdf, 10, yL1);
-            pdfObj.setFontSize(8);
-            if (codigoVerifActual) pdfObj.text('Cód. ' + codigoVerifActual, pageWidth / 2, yL1, { align: 'center' });
+            pdfObj.setFontSize(9);
+            if (codigoVerifActual) pdfObj.text('C\u00f3d. ' + codigoVerifActual, pageWidth / 2, yL1, { align: 'center' });
             pdfObj.text(textoPagina, pageWidth - 10, yL1, { align: 'right' });
             if (codigoVerifActual) {
               var hh = huellaVerifActual.toLowerCase();
-              pdfObj.setFontSize(6.5);
-              pdfObj.text('Documento firmado electrónicamente (Ley 527/1999). Huella SHA-256: ' + hh.slice(0, 4) + '…' + hh.slice(-4) + '. ID: ' + idVerifActual + '. App v' + APP_VERSION, 10, pageHeight - 5.5);
+              var tl2 = 'Documento firmado electr\u00f3nicamente (Ley 527/1999). Huella SHA-256: ' + hh.slice(0, 8) + '\u2026' + hh.slice(-8) + '. ID: ' + idVerifActual + '. App v' + APP_VERSION;
+              var fs2 = 7.5;
+              pdfObj.setFontSize(fs2);
+              if (typeof pdfObj.getTextWidth === 'function') { while (fs2 > 6 && pdfObj.getTextWidth(tl2) > pageWidth - 20) { fs2 -= 0.25; pdfObj.setFontSize(fs2); } }
+              pdfObj.text(tl2, 10, pageHeight - 5);
             }
           }
           return pdfObj.output('datauristring');
@@ -2222,7 +2234,7 @@
       }
 
       function ponerDatosTecnico(d) {
-        document.getElementById('tec-nombre').innerText = d.nombreTec || d.tecnico || (sesion ? sesion.email : 'Técnico de Mantenimiento');
+        document.getElementById('tec-nombre').innerText = d.nombreTec || d.tecnico || (sesion ? sesion.email : 'T\u00e9cnico de Mantenimiento');
         if (d.cargoTec) document.getElementById('tec-cargo').innerText = d.cargoTec;
         if (d.nombreAdm) document.getElementById('adm-nombre').innerText = d.nombreAdm;
         if (d.cargoAdm) document.getElementById('adm-cargo').innerText = d.cargoAdm;
@@ -2310,10 +2322,10 @@
         perfilUsuario().then(function(p) {
           document.getElementById('adm-nombre').innerText = p.nombre;
           if (p.cargo) document.getElementById('adm-cargo').innerText = p.cargo;
-        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrás firmar."); });
+        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podr\u00e1s firmar."); });
         ponerDatosTecnico(d);
         badge.innerText = "Modo Coordinador";
-        titulo.innerText = "Aprobación de Servicio";
+        titulo.innerText = "Aprobaci\u00f3n de Servicio";
         
         blockTech.classList.remove('hidden');
         blockAdmin.classList.remove('hidden');
@@ -2341,7 +2353,7 @@
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-title').innerText = "Acceso de Técnicos";
+        document.getElementById('login-title').innerText = "Acceso de T\u00e9cnicos";
         document.getElementById('login-nota').innerText = "";
       }
 
@@ -2349,8 +2361,8 @@
         mainScreen.classList.add('hidden');
         homeCoord.classList.add('hidden');
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-title').innerText = "Iniciar sesión";
-        document.getElementById('login-nota').innerText = "Inicia sesión para ver el reporte.";
+        document.getElementById('login-title').innerText = "Iniciar sesi\u00f3n";
+        document.getElementById('login-nota').innerText = "Inicia sesi\u00f3n para ver el reporte.";
       }
 
       function mostrarHomeCoord(mensaje) {
@@ -2371,11 +2383,11 @@
         loginScreen.classList.add('hidden');
         mainScreen.classList.remove('hidden');
         userDisplay.innerText = sesion ? sesion.email : '';
-        document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'Técnico de Mantenimiento';
+        document.getElementById('tec-nombre').innerText = sesion ? sesion.email : 'T\u00e9cnico de Mantenimiento';
         perfilUsuario().then(function(p) {
           document.getElementById('tec-nombre').innerText = p.nombre;
           if (p.cargo) document.getElementById('tec-cargo').innerText = p.cargo;
-        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podrás enviar el reporte."); });
+        }).catch(function(e) { if (e.code === 'sin-perfil') alert(e.message + "\n\nSin eso no podr\u00e1s enviar el reporte."); });
         
         blockTech.classList.remove('hidden');
         blockAdmin.classList.add('hidden');
@@ -2396,7 +2408,7 @@
         btnSubmit.style.background = "#6b7280";
 
         if (!reporteId) {
-          fallaCarga("Enlace no válido", "Este enlace no es válido. Pide al técnico que reenvíe la notificación.");
+          fallaCarga("Enlace no v\u00e1lido", "Este enlace no es v\u00e1lido. Pide al t\u00e9cnico que reenv\u00ede la notificaci\u00f3n.");
           return;
         }
         leerReporte(reporteId).then(async function(d) {
@@ -2407,7 +2419,7 @@
           userDisplay.innerText = sesion ? sesion.email : "Reporte firmado";
           btnSubmit.classList.remove('hidden');
           if ((modoAprobar && !esCoord) || (modoVer && d.estado !== 'aprobado')) {
-            // Técnico (o cualquiera que no sea coordinador): solo ve hasta su firma
+            // T\u00e9cnico (o cualquiera que no sea coordinador): solo ve hasta su firma
             mostrarSoloTecnico(d);
           } else if (modoVer || d.estado === 'aprobado') {
             mostrarSoloLectura(d);
@@ -2460,11 +2472,11 @@
         await registrarEvento('GENERO_PDF', reporteId, 'Archivo: ' + pdf.filename + ' | SHA-256 PDF: ' + hashPdfBit.slice(0, 16));
         var verifError = '';
         try {
-          if (!codigoVerifActual) throw new Error('no se pudo calcular el código');
+          if (!codigoVerifActual) throw new Error('no se pudo calcular el c\u00f3digo');
           await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdf.base64)));
         } catch (e) {
           verifError = (e && e.message) || String(e);
-          console.error('Ficha de verificación:', e);
+          console.error('Ficha de verificaci\u00f3n:', e);
         }
         var xlsx = null, excelError = '', pdfUrl = '', pdfUrlError = '';
         try {
@@ -2503,7 +2515,7 @@
         if (pdfUrlError) res.pdfUrlError = pdfUrlError;
         if (verifError) res.verifError = verifError;
         await registrarEvento(reenviar ? 'REENVIO_CORREO' : 'ENVIO_CORREO', reporteId,
-          (res && res.duplicado) ? 'El sistema indicó que ya se había enviado' : ('Destinatarios: ' + ((res && res.enviadoA && res.enviadoA.join(', ')) || 'sin confirmar') + (res && res.fallaron && res.fallaron.length ? ' | Fallaron: ' + res.fallaron.join(', ') : '')));
+          (res && res.duplicado) ? 'El sistema indic\u00f3 que ya se hab\u00eda enviado' : ('Destinatarios: ' + ((res && res.enviadoA && res.enviadoA.join(', ')) || 'sin confirmar') + (res && res.fallaron && res.fallaron.length ? ' | Fallaron: ' + res.fallaron.join(', ') : '')));
         if (PROTEGER_PDF && !pdf.protegido) res.sinBloqueo = true;
         res.codigoVerif = codigoVerifActual;
         return res;
@@ -2520,7 +2532,7 @@
             codigoVerifActual = codigoDeHuella(huellaVerifActual);
             idVerifActual = reporteId;
           }
-        } catch (e) { console.error('Código de verificación:', e); }
+        } catch (e) { console.error('C\u00f3digo de verificaci\u00f3n:', e); }
       }
 
       async function descargarPDF() {
@@ -2532,8 +2544,8 @@
           await prepararVerificacion();
           var pdfObj = await generarPdfBase64(fechaAdmActual());
           if (esCoordSesion && codigoVerifActual) {
-            // si el coordinador baja una copia, también queda registrada como original válido
-            try { await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdfObj.base64))); } catch (e) { console.error('Ficha de verificación:', e); }
+            // si el coordinador baja una copia, tambi\u00e9n queda registrada como original v\u00e1lido
+            try { await guardarFichaVerif(reporteId, datosReporte, codigoVerifActual, await sha256Hex(base64ABytes(pdfObj.base64))); } catch (e) { console.error('Ficha de verificaci\u00f3n:', e); }
           }
           var link = document.createElement('a');
           link.href = "data:application/pdf;base64," + pdfObj.base64;
@@ -2606,12 +2618,12 @@
 
             var id = await crearReporte(payload);
             var link = baseUrl + "?mode=aprobar&id=" + id;
-            var texto = "*LISTA DE CHEQUEO PLANTA AGUA PURIFICADA*\nCódigo: CVSAG005-F001\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
-                        "\nEnlace de aprobación: " + link;
+            var texto = "*LISTA DE CHEQUEO PLANTA AGUA PURIFICADA*\nC\u00f3digo: CVSAG005-F001\nFecha inicio: " + payload.fechaInicio + " " + payload.horaInicio +
+                        "\nEnlace de aprobaci\u00f3n: " + link;
             var waUrl = "https://wa.me/" + WHATSAPP_COORDINADOR + "?text=" + encodeURIComponent(texto);
 
-            // El reporte ya quedó guardado: la pantalla pasa a solo lectura con lo que se diligenció
-            // (campos bloqueados y firma del técnico visible). Para otro reporte se recarga la página.
+            // El reporte ya qued\u00f3 guardado: la pantalla pasa a solo lectura con lo que se diligenci\u00f3
+            // (campos bloqueados y firma del t\u00e9cnico visible). Para otro reporte se recarga la p\u00e1gina.
             reporteEnviado = true;
             datosReporte = payload;
             mostrarSoloTecnico(payload);
@@ -2623,7 +2635,7 @@
             if (!w) window.location.href = waUrl;
           } catch (e) {
             if (e.code === 'sin-sesion' || e.status === 401) {
-              alert("Tu sesión venció. Inicia sesión otra vez.");
+              alert("Tu sesi\u00f3n venci\u00f3. Inicia sesi\u00f3n otra vez.");
               guardarSesion(null);
               mostrarLogin();
             } else {
@@ -2637,7 +2649,7 @@
           btnSubmit.disabled = true;
           btnSubmit.innerText = "Generando PDF y Enviando...";
 
-          // La firma se congela desde el momento en que se toca el botón
+          // La firma se congela desde el momento en que se toca el bot\u00f3n
           if (padAdmin) padAdmin.off();
           btnClearAdmin.classList.add('hidden');
 
@@ -2660,7 +2672,7 @@
               ['nombreAdm', 'cargoAdm', 'aprobadoPor', 'aprobadoEn'].forEach(function(k) { datosReporte[k] = datosFirma[k]; });
               pintarFechas(datosReporte.fecha, datosReporte.hora, fechaFirmaAdmTexto);
 
-              // La imagen mostrada (y usada en el PDF) es exactamente la que quedó guardada
+              // La imagen mostrada (y usada en el PDF) es exactamente la que qued\u00f3 guardada
               canvasAdmin.classList.add('hidden');
               imgAdminSig.src = firmaFinal;
               imgAdminSig.classList.remove('hidden');
@@ -2669,28 +2681,28 @@
             // Generar PDF y enviarlo por correo (Apps Script)
             var rs = await enviarCorreoConPdf(false);
 
-            var msg = "¡Reporte aprobado y correo enviado!";
-            if (rs && rs.duplicado) msg = "Este reporte ya se había enviado antes.";
+            var msg = "\u00a1Reporte aprobado y correo enviado!";
+            if (rs && rs.duplicado) msg = "Este reporte ya se hab\u00eda enviado antes.";
             if (rs && rs.enviadoA && rs.enviadoA.length) msg += "\n\nEnviado a:\n" + rs.enviadoA.join("\n");
             if (rs && rs.fallaron && rs.fallaron.length) msg += "\n\nNO se pudo enviar a:\n" + rs.fallaron.join("\n");
             if (rs && rs.adjuntos && rs.adjuntos.length) msg += "\n\nAdjuntos: " + rs.adjuntos.join(", ");
-            if (rs && rs.pdfUrlError) msg += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
-            if (rs && rs.excelError) msg += "\n\nOJO: el Excel no se pudo generar (" + rs.excelError + "). Se envió solo el PDF.";
-            if (rs && rs.sinBloqueo) msg += "\n\nOJO: el PDF salió SIN bloqueo de edición (la librería de PDF no lo aplicó). Avísale a Jorge.";
-            if (rs && rs.verifError) msg += "\n\nOJO: el código de verificación va impreso, pero no quedó registrado (" + rs.verifError + "). Revisa que las reglas de Firestore estén publicadas.";
+            if (rs && rs.pdfUrlError) msg += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs.pdfUrlError+"). La columna Enlace al PDF del Excel va vac\u00eda.";
+            if (rs && rs.excelError) msg += "\n\nOJO: el Excel no se pudo generar (" + rs.excelError + "). Se envi\u00f3 solo el PDF.";
+            if (rs && rs.sinBloqueo) msg += "\n\nOJO: el PDF sali\u00f3 SIN bloqueo de edici\u00f3n (la librer\u00eda de PDF no lo aplic\u00f3). Av\u00edsale a Jorge.";
+            if (rs && rs.verifError) msg += "\n\nOJO: el c\u00f3digo de verificaci\u00f3n va impreso, pero no qued\u00f3 registrado (" + rs.verifError + "). Revisa que las reglas de Firestore est\u00e9n publicadas.";
             msg += textoExtras(rs);
             alert(msg);
             try { history.replaceState(null, '', baseUrl); } catch (e) {}
-            mostrarHomeCoord("✔ Reporte aprobado y enviado con éxito.");
+            mostrarHomeCoord("\u2714 Reporte aprobado y enviado con \u00e9xito.");
             btnSubmit.disabled = false;
           } catch (err) {
             if (!aprobadoGuardado) {
-              // La firma NO quedó guardada: se puede volver a firmar
+              // La firma NO qued\u00f3 guardada: se puede volver a firmar
               if (padAdmin) padAdmin.on();
               btnClearAdmin.classList.remove('hidden');
             }
             if (!aprobadoGuardado && (err.code === 'sin-sesion' || err.status === 401)) {
-              alert("Tu sesión venció. Inicia sesión otra vez.");
+              alert("Tu sesi\u00f3n venci\u00f3. Inicia sesi\u00f3n otra vez.");
               guardarSesion(null);
               pedirLoginCoordinador();
               btnSubmit.disabled = false;
@@ -2698,9 +2710,9 @@
               return;
             }
             if (aprobadoGuardado) {
-              alert("Tu firma quedó guardada y ya no se puede cambiar, pero el correo no salió: " + textoError(err) +
-                    "\n\nToca el botón para reintentar el envío del correo.");
-              btnSubmit.innerText = "Reintentar envío de correo";
+              alert("Tu firma qued\u00f3 guardada y ya no se puede cambiar, pero el correo no sali\u00f3: " + textoError(err) +
+                    "\n\nToca el bot\u00f3n para reintentar el env\u00edo del correo.");
+              btnSubmit.innerText = "Reintentar env\u00edo de correo";
             } else {
               alert("No se pudo guardar la firma: " + textoError(err));
               btnSubmit.innerText = "Firmar y Enviar a Correo";
@@ -2711,7 +2723,7 @@
       };
 
       document.getElementById('btn-resend').onclick = async function() {
-        if (!confirm("¿Reenviar el correo con el PDF y el Excel a los destinatarios?")) return;
+        if (!confirm("\u00bfReenviar el correo con el PDF y el Excel a los destinatarios?")) return;
         var b = this;
         var textoBtn = b.innerText;
         b.disabled = true;
@@ -2722,10 +2734,10 @@
           if (rs2 && rs2.enviadoA && rs2.enviadoA.length) m2 += "\n\nEnviado a:\n" + rs2.enviadoA.join("\n");
           if (rs2 && rs2.fallaron && rs2.fallaron.length) m2 += "\n\nNO se pudo enviar a:\n" + rs2.fallaron.join("\n");
           if (rs2 && rs2.adjuntos && rs2.adjuntos.length) m2 += "\n\nAdjuntos: " + rs2.adjuntos.join(", ");
-          if (rs2 && rs2.pdfUrlError) m2 += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs2.pdfUrlError+"). La columna Enlace al PDF del Excel va vacía.";
-          if (rs2 && rs2.excelError) m2 += "\n\nOJO: el Excel no se pudo generar (" + rs2.excelError + "). Se envió solo el PDF.";
-          if (rs2 && rs2.sinBloqueo) m2 += "\n\nOJO: el PDF salió SIN bloqueo de edición.";
-          if (rs2 && rs2.verifError) m2 += "\n\nOJO: no se pudo registrar la verificación (" + rs2.verifError + ").";
+          if (rs2 && rs2.pdfUrlError) m2 += "\n\nOJO: el PDF no se pudo guardar en Drive ("+rs2.pdfUrlError+"). La columna Enlace al PDF del Excel va vac\u00eda.";
+          if (rs2 && rs2.excelError) m2 += "\n\nOJO: el Excel no se pudo generar (" + rs2.excelError + "). Se envi\u00f3 solo el PDF.";
+          if (rs2 && rs2.sinBloqueo) m2 += "\n\nOJO: el PDF sali\u00f3 SIN bloqueo de edici\u00f3n.";
+          if (rs2 && rs2.verifError) m2 += "\n\nOJO: no se pudo registrar la verificaci\u00f3n (" + rs2.verifError + ").";
           m2 += textoExtras(rs2);
           alert(m2);
         } catch (e) {
