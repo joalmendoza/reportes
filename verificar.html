@@ -35,6 +35,7 @@
     .res { margin-top:10px; padding:11px 12px; border-radius:10px; font-size:14px; font-weight:bold; display:none; }
     .res.bien { display:block; background:#dcfce7; color:#15803d; }
     .res.error { display:block; background:#ffe4e6; color:#9f1239; }
+    .hash { font-family:'Courier New',monospace; font-size:11px; word-break:break-all; color:#1e3a8a; background:#eef2ff; padding:6px 8px; border-radius:8px; margin-top:4px; }
     .nota { font-size:12px; color:#6b7280; line-height:1.5; margin-top:10px; }
     h2 { font-size:15px; margin:0 0 10px; color:#1e3a8a; }
     input[type=file] { width:100%; font-size:14px; padding:10px; border:2px dashed #93c5fd; border-radius:10px; background:#f8fafc; }
@@ -60,12 +61,16 @@
         <div class="fila"><span>Visto bueno</span><span id="r-aprob"></span></div>
         <div style="margin-top:10px;font-size:13px;color:#6b7280">Código registrado</div>
         <div class="cod" id="r-codigo"></div>
+        <div id="bloque-huella" class="hidden">
+          <div style="font-size:13px;color:#6b7280">Huella SHA-256 de los datos</div>
+          <div class="hash" id="r-huella"></div>
+        </div>
       </div>
 
       <div class="card">
         <h2>1. Compara el código impreso</h2>
-        <label for="codigo-impreso">Escribe el código que sale en el pie del PDF</label>
-        <input type="text" id="codigo-impreso" maxlength="19" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX">
+        <label for="codigo-impreso">Escribe el código del pie del PDF, o los 8 caracteres de la huella (los 4 de antes y los 4 de después de “…”)</label>
+        <input type="text" id="codigo-impreso" maxlength="64" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX   o   3f9a…c21e">
         <button type="button" class="btn" id="btn-codigo">Comparar código</button>
         <div id="msg-codigo" class="res"></div>
       </div>
@@ -103,11 +108,13 @@
         if (!r.ok) { mostrar($('msg-consulta'), 'error', 'No se pudo consultar (error ' + r.status + '). Inténtalo de nuevo.'); return; }
         var d = await r.json(), f = d.fields || {};
         function v(k) { return (f[k] && f[k].stringValue) || ''; }
-        ficha = { codigo: v('codigo'), hashes: v('pdfHashes').split(',').filter(Boolean) };
+        ficha = { codigo: v('codigo'), huella: v('huella').toLowerCase(), hashes: v('pdfHashes').split(',').filter(Boolean) };
         $('r-formato').textContent = v('formato');
         $('r-fecha').textContent = v('fechaReporte');
         $('r-aprob').textContent = v('fechaAprobacion');
         $('r-codigo').textContent = v('codigo');
+        $('r-huella').textContent = ficha.huella;
+        $('bloque-huella').classList.toggle('hidden', !ficha.huella);
         $('codigo-impreso').value = ''; $('archivo-pdf').value = '';
         $('msg-codigo').className = 'res'; $('msg-archivo').className = 'res';
         $('msg-consulta').className = 'res';
@@ -119,10 +126,14 @@
 
     function compararCodigo() {
       if (!ficha) return;
-      var c = limpiar($('codigo-impreso').value);
-      if (c.length !== 16) { mostrar($('msg-codigo'), 'error', 'El código tiene 16 caracteres (4 grupos de 4).'); return; }
-      if (c === limpiar(ficha.codigo)) mostrar($('msg-codigo'), 'bien', '✓ El código coincide con el registrado.');
-      else mostrar($('msg-codigo'), 'error', '✗ El código NO coincide. Este reporte pudo ser modificado.');
+      var c = limpiar($('codigo-impreso').value).toLowerCase(), ok = null;
+      if (c.length === 16) ok = (c === limpiar(ficha.codigo).toLowerCase());
+      else if (c.length === 8 && ficha.huella) ok = (c === ficha.huella.slice(0, 4) + ficha.huella.slice(-4));
+      else if (c.length === 64 && ficha.huella) ok = (c === ficha.huella);
+      else if (c.length === 8 || c.length === 64) { mostrar($('msg-codigo'), 'error', 'Este reporte se registró sin huella completa. Usa el código de 16 caracteres.'); return; }
+      else { mostrar($('msg-codigo'), 'error', 'Escribe el código de 16 caracteres (4 grupos de 4) o los 8 de la huella.'); return; }
+      if (ok) mostrar($('msg-codigo'), 'bien', '✓ Coincide con lo registrado.');
+      else mostrar($('msg-codigo'), 'error', '✗ NO coincide. Este reporte pudo ser modificado.');
     }
 
     async function comprobarArchivo() {
