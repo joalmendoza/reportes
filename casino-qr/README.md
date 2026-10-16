@@ -49,6 +49,8 @@ casino-qr/
 ├── js/
 │   ├── config.js       ← aquí va la URL del Apps Script, áreas y nombre empresa
 │   └── api.js          Conexión con el backend (y modo demo sin backend)
+├── plantillas/
+│   └── Registro_Casino.xlsx  Planilla Excel para el encargado del casino
 └── apps-script/
     ├── Code.gs         Backend: registrar, validar, resumen
     └── appsscript.json Zona horaria (America/Santiago) y permisos
